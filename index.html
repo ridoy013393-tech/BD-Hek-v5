@@ -1,1886 +1,440 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>WinGo 1M - AI Predictor Pro</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@400;700;800&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Reward App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://js.adsgram.ai/adsgram.js"></script>
+
     <style>
         :root {
-            --primary: #00f2fe;
-            --secondary: #4facfe;
-            --dark-bg: #0f172a;
-            --glass-bg: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            
-            --red-color: #ff3b30;
-            --green-color: #34c759;
-            --violet-color: #af52de;
-            --blue-color: #0a84ff;
-            --orange-color: #ff9f0a;
-            
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
+            --bg-color: var(--tg-theme-bg-color, #f3f4f6);
+            --text-color: var(--tg-theme-text-color, #111827);
+            --hint-color: var(--tg-theme-hint-color, #6b7280);
+            --button-color: var(--tg-theme-button-color, #3b82f6);
+            --button-text-color: var(--tg-theme-button-text-color, #ffffff);
+            --secondary-bg-color: var(--tg-theme-secondary-bg-color, #ffffff);
         }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--dark-bg);
-            background-image: 
-                radial-gradient(circle at 15% 50%, rgba(79, 172, 254, 0.15), transparent 25%),
-                radial-gradient(circle at 85% 30%, rgba(175, 82, 222, 0.15), transparent 25%);
-            background-attachment: fixed;
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 0;
-            overflow-x: hidden;
-        }
-
-        .header {
-            text-align: center;
-            padding: 20px 15px 15px;
-            animation: fadeInDown 0.8s ease-out;
-            position: relative;
-            width: 100%;
-            max-width: 600px;
-            background: rgba(0,0,0,0.2);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--glass-border);
-            z-index: 10;
-        }
-
-        .header h1 {
-            font-family: 'Outfit', sans-serif;
-            font-size: 1.8rem;
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 5px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .header p {
-            color: var(--text-muted);
-            font-size: 0.85rem;
-        }
-
-        .accuracy-badge {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: rgba(16, 185, 129, 0.15);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            color: #34c759;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-weight: 700;
-            font-size: 0.75rem;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            box-shadow: 0 0 15px rgba(52, 199, 89, 0.2);
-            transition: all 0.3s;
-        }
-
-        .main-container {
-            width: 100%;
-            max-width: 600px;
-            flex: 1;
-            padding: 15px;
-            animation: fadeInUp 0.8s ease-out;
-            padding-bottom: 30px;
-        }
-
-        .setup-box {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 15px;
-            border: 1px dashed var(--glass-border);
-            transition: all 0.3s;
-        }
-
-        .setup-box.collapsed {
-            opacity: 0.7;
-            padding: 10px 15px;
-        }
+        body { background-color: var(--bg-color); color: var(--text-color); font-family: -apple-system, sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
+        .tg-card { background-color: var(--secondary-bg-color); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .tg-btn { background-color: var(--button-color); color: var(--button-text-color); transition: opacity 0.2s; }
+        .tg-btn:active { opacity: 0.8; }
+        .nav-item { color: var(--hint-color); transition: color 0.2s; }
+        .nav-item.active { color: var(--button-color); }
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         
-        .setup-box.collapsed .input-group, 
-        .setup-box.collapsed .save-btn {
-            display: none;
-        }
-
-        .setup-box h3 {
-            font-size: 0.95rem;
-            margin-bottom: 10px;
-            color: #e2e8f0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-        }
-
-        .input-group { margin-bottom: 10px; }
-
-        .input-group input {
-            width: 100%;
-            padding: 10px 15px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--glass-border);
-            color: white;
-            border-radius: 8px;
-            font-family: 'Inter', sans-serif;
-            outline: none;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-        }
-
-        .input-group input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 10px rgba(0, 242, 254, 0.2);
-        }
-
-        .save-btn {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: transform 0.2s;
-            width: 100%;
-            font-size: 0.9rem;
-        }
-
-        .live-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
-            padding: 15px;
-            border-radius: 16px;
-            margin-bottom: 15px;
-            border: 1px solid var(--glass-border);
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-        }
-
-        .live-info::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 4px; height: 100%;
-            background: var(--primary);
-            box-shadow: 0 0 10px var(--primary);
-        }
-
-        .period-info h3 {
-            font-size: 1.1rem;
-            font-family: 'Outfit', sans-serif;
-            margin-bottom: 3px;
-        }
-
-        .period-info p {
-            color: var(--text-muted);
-            font-size: 0.75rem;
-        }
-
-        .countdown { text-align: right; }
-
-        .countdown .time {
-            font-size: 1.8rem;
-            font-family: 'Outfit', sans-serif;
-            font-weight: 800;
-            color: var(--primary);
-            text-shadow: 0 0 10px rgba(0, 242, 254, 0.4);
-            font-variant-numeric: tabular-nums;
-        }
-        
-        .countdown .time.urgent {
-            color: var(--red-color);
-            text-shadow: 0 0 15px rgba(255, 59, 48, 0.5);
-            animation: flash 1s infinite;
-        }
-
-        .countdown span {
-            display: block;
-            font-size: 0.65rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        /* Result Card (Auto Predict) */
-        .result-card {
-            display: none;
-            margin-bottom: 15px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 16px;
-            padding: 20px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-            animation: zoomIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border: 1px solid rgba(255,255,255,0.05);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-
-        .result-card::after {
-            content: '';
-            position: absolute;
-            top: -50%; left: -50%; width: 200%; height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
-            animation: rotateBg 10s linear infinite;
-            pointer-events: none;
-        }
-        
-        .result-title {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .result-title i { color: var(--primary); }
-
-        .result-flex {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 10px;
-        }
-
-        .res-box {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background: rgba(255,255,255,0.03);
-            padding: 10px 15px;
-            border-radius: 12px;
-            flex: 1;
-            border: 1px solid rgba(255,255,255,0.02);
-        }
-
-        .res-label {
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 5px;
-        }
-
-        .res-value {
-            font-size: 1.8rem;
-            font-family: 'Outfit', sans-serif;
-            font-weight: 800;
-            text-shadow: 0 0 15px currentColor;
-        }
-
-        .confidence {
-            display: inline-block;
-            background: rgba(255,255,255,0.05);
-            padding: 6px 15px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            backdrop-filter: blur(5px);
-            margin-top: 5px;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-
-        /* Stats Panel */
-        .stats-panel {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 15px;
-            border-radius: 16px;
-            margin-bottom: 15px;
-            border: 1px solid var(--glass-border);
-        }
-
-        .stats-panel h3 {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-        }
-
-        .stat-box {
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 10px;
-            padding: 10px;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .stat-box.success {
-            background: rgba(52, 199, 89, 0.05);
-            border-color: rgba(52, 199, 89, 0.2);
-        }
-
-        .stat-box.danger {
-            background: rgba(255, 59, 48, 0.05);
-            border-color: rgba(255, 59, 48, 0.2);
-        }
-
-        .stat-value {
-            font-size: 1.3rem;
-            font-weight: 800;
-            font-family: 'Outfit', sans-serif;
-            margin-bottom: 2px;
-        }
-
-        .stat-box.success .stat-value { color: var(--green-color); }
-        .stat-box.danger .stat-value { color: var(--red-color); }
-
-        .stat-label {
-            font-size: 0.65rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-        }
-
-        /* Trend Chart */
-        .trend-container {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 15px;
-            border-radius: 16px;
-            margin-bottom: 15px;
-            border: 1px solid rgba(255,255,255,0.02);
-        }
-        
-        .trend-title {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .trend-chart {
-            display: flex;
-            gap: 6px;
-            overflow-x: auto;
-            padding-bottom: 8px;
-            scrollbar-width: none;
-        }
-        
-        .trend-chart::-webkit-scrollbar { display: none; }
-
-        .trend-dot {
-            min-width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.7rem;
-            font-weight: 700;
-            color: white;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            flex-shrink: 0;
-        }
-
-        /* History Table */
-        .table-container {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 16px;
-            overflow: hidden;
-            margin-bottom: 15px;
-            border: 1px solid var(--glass-border);
-        }
-
-        table { width: 100%; border-collapse: collapse; }
-
-        th, td {
-            padding: 10px 8px;
-            text-align: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            font-size: 0.85rem;
-        }
-
-        th {
-            background: rgba(255, 255, 255, 0.03);
-            color: var(--text-muted);
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-        }
-
-        td { font-weight: 500; }
-
-        .badge {
-            padding: 4px 8px;
-            border-radius: 10px;
-            font-size: 0.65rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .size-badge {
-            padding: 3px 6px;
-            border-radius: 6px;
-            font-size: 0.7rem;
-            font-weight: 800;
-            color: white;
-        }
-        
-        .size-big { background: var(--orange-color); }
-        .size-small { background: var(--blue-color); }
-
-        .bg-red { background: var(--red-color); }
-        .bg-green { background: var(--green-color); }
-        .bg-violet { background: var(--violet-color); }
-        .bg-red-violet { background: linear-gradient(45deg, var(--red-color) 50%, var(--violet-color) 50%); }
-        .bg-green-violet { background: linear-gradient(45deg, var(--green-color) 50%, var(--violet-color) 50%); }
-
-        .loader {
-            display: none;
-            margin: 20px 0;
-            text-align: center;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 20px;
-            border-radius: 16px;
-            border: 1px solid var(--glass-border);
-        }
-
-        .spinner {
-            width: 30px;
-            height: 30px;
-            border: 3px solid rgba(255,255,255,0.1);
-            border-left-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
-        }
-
-        .loader p { font-size: 0.8rem; color: var(--text-muted); margin-top: 10px;}
-
-        /* Mock data toggle */
-        .mock-toggle {
-            margin-top: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            cursor: pointer;
-        }
-        
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 36px;
-            height: 18px;
-        }
-        
-        .switch input { opacity: 0; width: 0; height: 0; }
-        
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #475569;
-            transition: .4s;
-            border-radius: 34px;
-        }
-        
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 14px;
-            width: 14px;
-            left: 2px;
-            bottom: 2px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-        
-        input:checked + .slider { background-color: var(--primary); }
-        input:checked + .slider:before { transform: translateX(18px); }
-
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: rgba(255, 59, 48, 0.9);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 30px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            opacity: 0;
-            transition: all 0.3s ease;
-            z-index: 1000;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            white-space: nowrap;
-        }
-        
-        .toast.show {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
-        }
-
-        /* Verification Overlay CSS */
-        .verify-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(10px);
-            z-index: 9999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .verify-box {
-            background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 25px;
-            width: 100%;
-            max-width: 400px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-            animation: zoomIn 0.4s ease-out;
-        }
-        .verify-box h2 {
-            color: var(--primary);
-            margin-bottom: 10px;
-            font-family: 'Outfit', sans-serif;
-            text-align: center;
-        }
-        .verify-box > p {
-            text-align: center;
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            margin-bottom: 25px;
-        }
-        .step {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            background: rgba(0,0,0,0.2);
-            padding: 15px;
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.02);
-        }
-        .step-num {
-            background: var(--primary);
-            color: var(--dark-bg);
-            width: 28px; height: 28px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            flex-shrink: 0;
-        }
-        .step strong {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 0.95rem;
-        }
-        .step p {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-bottom: 10px;
-        }
-        .action-btn {
-            display: inline-block;
-            background: var(--blue-color);
-            color: white;
-            text-decoration: none;
-            padding: 8px 15px;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            transition: 0.2s;
-            margin-top: 5px;
-        }
-        .action-btn:hover {
-            background: #007aff;
-            transform: translateY(-2px);
-        }
-        .verify-input {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid var(--glass-border);
-            border-radius: 8px;
-            color: white;
-            font-size: 0.85rem;
-            outline: none;
-        }
-        .verify-input:focus {
-            border-color: var(--primary);
-        }
-        .verify-btn {
-            width: 100%;
-            padding: 10px;
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .verify-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
-        }
-        .verify-msg {
-            text-align: center;
-            font-size: 0.85rem;
-            margin-top: 15px;
-            min-height: 20px;
-        }
-        .text-error { color: var(--red-color); }
-        .text-success { color: var(--green-color); }
-
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-        @keyframes rotateBg { 100% { transform: rotate(360deg); } }
-        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes zoomIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-        @keyframes flash { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        /* Full Screens */
+        .overlay-screen { position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: var(--bg-color); }
+        .loader { border: 4px solid var(--secondary-bg-color); border-top: 4px solid var(--button-color); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body>
-    <!-- Firebase Logic -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-        import { getDatabase, ref, get, set, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
+<body class="overflow-x-hidden pb-20">
 
-        const firebaseConfig = {
-          apiKey: "AIzaSyCFnFbLhLN3mAUrmcjFkcb9DpBp5EPmKnQ",
-          authDomain: "heke-452d6.firebaseapp.com",
-          databaseURL: "https://heke-452d6-default-rtdb.firebaseio.com",
-          projectId: "heke-452d6",
-          storageBucket: "heke-452d6.firebasestorage.app",
-          messagingSenderId: "33927182418",
-          appId: "1:33927182418:web:e9891ddac048d65539478b"
-        };
+    <!-- Splash Screen -->
+    <div id="splash" class="overlay-screen transition-opacity duration-500">
+        <i class="fa-solid fa-bolt text-6xl mb-4" style="color: var(--button-color)"></i>
+        <h1 class="text-2xl font-bold mb-6">Reward App</h1>
+        <div class="loader"></div>
+        <p id="sec-text" class="text-xs mt-4 text-gray-500 font-mono">Checking Security...</p>
+    </div>
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+    <!-- VPN Screen -->
+    <div id="vpn-screen" class="overlay-screen hidden px-6 text-center">
+        <i class="fa-solid fa-shield-virus text-6xl text-red-500 mb-4"></i>
+        <h1 class="text-2xl font-bold mb-2">Access Denied!</h1>
+        <p class="text-gray-500 text-sm mb-6">VPN or Proxy connection detected. Please turn it off and restart the app to continue earning.</p>
+        <button onclick="tg.close()" class="tg-btn px-6 py-3 rounded-xl font-bold">Close App</button>
+    </div>
+
+    <!-- Banned Screen -->
+    <div id="banned-screen" class="overlay-screen hidden px-6 text-center">
+        <i class="fa-solid fa-user-slash text-6xl text-red-500 mb-4"></i>
+        <h1 class="text-2xl font-bold mb-2">Account Banned</h1>
+        <p class="text-gray-500 text-sm mb-6">Your account has been suspended by the administrator for violating our terms of service.</p>
+        <div class="text-xs text-gray-400 font-mono">UID: <span id="ban-uid"></span></div>
+    </div>
+
+    <!-- Main App -->
+    <div id="app" class="hidden">
         
-        window.db = db;
-        window.ref = ref;
-        window.set = set;
-        window.get = get;
-        window.onValue = onValue;
-        window.runTransaction = runTransaction;
-
-        window.checkFirebaseUID = async function(uid) {
-            try {
-                const userSnap = await get(ref(db, 'users/' + uid));
-                let userData = userSnap.exists() ? userSnap.val() : null;
-                
-                if(!userData) {
-                    const legacySnap = await get(ref(db, 'approved_uids/' + uid));
-                    if(legacySnap.exists() && legacySnap.val() === true) {
-                        userData = { status: 'approved', expiry: 9999999999999 };
-                    }
-                }
-                
-                const tgSnap = await get(ref(db, 'settings/telegram'));
-                window.tgConfig = tgSnap.exists() ? tgSnap.val() : null;
-                
-                return userData;
-            } catch(e) {
-                console.error("Firebase Error:", e);
-                return { error: true };
-            }
-        };
-    </script>
-
-    <!-- System Maintenance Overlay -->
-    <div class="verify-overlay" id="maintenanceOverlay" style="display: none; z-index: 10000; flex-direction: column; text-align: center;">
-        <i class="fas fa-tools" style="font-size: 4rem; color: var(--warning); margin-bottom: 20px;"></i>
-        <h2 style="font-family: 'Outfit'; color: white; margin-bottom: 10px;">System Under Maintenance</h2>
-        <p style="color: var(--text-muted); font-size: 0.9rem;">We are upgrading our servers. Please check back later.</p>
-    </div>
-
-    <!-- Live Notice -->
-    <div id="noticeBanner" style="display:none; background: var(--primary); color: #000; padding: 8px; text-align: center; font-weight: 700; font-size: 0.85rem; width: 100%; z-index: 100;">
-        <marquee scrollamount="5" id="noticeText"></marquee>
-    </div>
-
-    <!-- Verification Overlay -->
-    <div class="verify-overlay" id="verifyOverlay" style="display: none;">
-        <div class="verify-box">
-            <h2><i class="fas fa-lock"></i> Analysis Locked</h2>
-            <p>You must register and be approved by Admin to use this tool.</p>
-            
-            <div class="step">
-                <span class="step-num">1</span>
+        <!-- HOME TAB -->
+        <div id="tab-home" class="tab-content active p-4">
+            <div class="flex items-center space-x-4 mb-6 tg-card p-4 rounded-2xl">
+                <img id="user-avatar" src="" alt="Avatar" class="w-16 h-16 rounded-full border-2" style="border-color: var(--button-color)">
                 <div>
-                    <strong>Register Account</strong>
-                    <p>Register via our official link to get access.</p>
-                    <a href="https://15bdwin24.com/register?inviteCode=SQ8QA9W&from=web" target="_blank" class="action-btn"><i class="fas fa-user-plus"></i> Register Here</a>
+                    <h2 id="user-name" class="text-lg font-bold">Loading...</h2>
+                    <p class="text-sm" style="color: var(--hint-color)">Welcome back!</p>
                 </div>
             </div>
 
-            <div class="step">
-                <span class="step-num">2</span>
-                <div>
-                    <strong>Request Access & Login</strong>
-                    <p>Enter your UID to request access. If approved, it will unlock.</p>
-                    <input type="text" id="verifyUID" placeholder="Enter your UID" class="verify-input">
-                    <button class="verify-btn" onclick="verifyDeposit()"><i class="fas fa-sign-in-alt"></i> Send Request / Login</button>
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="tg-card p-4 rounded-2xl flex flex-col items-center justify-center text-center">
+                    <i class="fa-solid fa-coins text-3xl text-yellow-500 mb-2"></i>
+                    <p class="text-sm" style="color: var(--hint-color)">Coins</p>
+                    <h3 id="bal-coins" class="text-2xl font-bold">0</h3>
+                </div>
+                <div class="tg-card p-4 rounded-2xl flex flex-col items-center justify-center text-center">
+                    <i class="fa-solid fa-money-bill-wave text-3xl text-green-500 mb-2"></i>
+                    <p class="text-sm" style="color: var(--hint-color)">Balance</p>
+                    <h3 class="text-2xl font-bold"><span class="text-sm">৳</span><span id="bal-bdt">0.00</span></h3>
                 </div>
             </div>
-            
-            <div class="verify-msg" id="verifyMsg"></div>
-        </div>
-    </div>
 
-    <div class="header" style="padding-top: 15px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 0 5px;">
-            <div style="display: flex; gap: 10px; align-items: center;">
-                <button onclick="toggleLanguage()" id="langBtn" style="background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 5px;">
-                    <i class="fas fa-globe"></i> EN
+            <div class="tg-card p-5 rounded-2xl text-center">
+                <h3 class="font-bold text-lg mb-1">Convert Coins to BDT</h3>
+                <p id="convert-hint" class="text-sm mb-4" style="color: var(--hint-color)">Rate: Loading...</p>
+                <button onclick="window.convertCoins()" class="tg-btn w-full py-3 rounded-xl font-bold shadow-md flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-exchange-alt"></i> Convert Now
                 </button>
-                <div id="liveOnlineBadge" style="background: rgba(52, 199, 89, 0.15); border: 1px solid rgba(52, 199, 89, 0.3); color: #34c759; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; gap: 6px;">
-                    <i class="fas fa-circle" style="font-size: 0.5rem; animation: flash 2s infinite;"></i> <span id="liveCountNum">0</span> Online
-                </div>
-            </div>
-            <div class="accuracy-badge" id="accuracyBadge" style="position: static; margin: 0;">
-                <i class="fas fa-crosshairs"></i> Acc: 88.5%
             </div>
         </div>
-        <h1>WinGo 1M Tracker</h1>
-        <p>AI Auto Prediction & Analysis</p>
+
+        <!-- TASKS TAB -->
+        <div id="tab-tasks" class="tab-content p-4">
+            <h2 class="text-xl font-bold mb-4">Earn Coins</h2>
+            <div class="space-y-4">
+                
+                <!-- Telegram Join Task (Dynamic) -->
+                <div id="task-tg" class="tg-card p-4 rounded-2xl flex items-center justify-between hidden">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 text-xl"><i class="fa-brands fa-telegram"></i></div>
+                        <div><h3 class="font-bold">Join Channel</h3><p id="tg-reward-text" class="text-xs" style="color: var(--hint-color)">Loading...</p></div>
+                    </div>
+                    <button id="btn-tg" onclick="window.joinTg()" class="tg-btn px-4 py-2 rounded-lg font-bold text-sm shadow">Join</button>
+                </div>
+
+                <div class="tg-card p-4 rounded-2xl flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-500 text-xl"><i class="fa-solid fa-video"></i></div>
+                        <div><h3 class="font-bold">Watch Video</h3><p class="text-xs" style="color: var(--hint-color)"><span id="limit-ads">0</span> Ads Left Today</p></div>
+                    </div>
+                    <button onclick="window.watchAd()" class="tg-btn px-4 py-2 rounded-lg font-bold text-sm shadow">Watch</button>
+                </div>
+
+                <div class="tg-card p-4 rounded-2xl flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-500 text-xl"><i class="fa-solid fa-calendar-check"></i></div>
+                        <div><h3 class="font-bold">Daily Bonus</h3><p class="text-xs" style="color: var(--hint-color)">+100 Coins / 24h</p></div>
+                    </div>
+                    <button onclick="window.claimDaily()" class="tg-btn px-4 py-2 rounded-lg font-bold text-sm shadow">Claim</button>
+                </div>
+
+                <div class="tg-card p-4 rounded-2xl flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-500 text-xl"><i class="fa-solid fa-calculator"></i></div>
+                        <div><h3 class="font-bold">Math Quiz</h3><p class="text-xs" style="color: var(--hint-color)"><span id="limit-math">10</span>/10 Left Today</p></div>
+                    </div>
+                    <button onclick="window.playMath()" class="tg-btn px-4 py-2 rounded-lg font-bold text-sm shadow">Play</button>
+                </div>
+
+                <div class="tg-card p-4 rounded-2xl flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-500 text-xl"><i class="fa-solid fa-ticket"></i></div>
+                        <div><h3 class="font-bold">Scratch Card</h3><p class="text-xs" style="color: var(--hint-color)"><span id="limit-scratch">10</span>/10 Left Today</p></div>
+                    </div>
+                    <button onclick="window.playScratch()" class="tg-btn px-4 py-2 rounded-lg font-bold text-sm shadow">Play</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- WALLET TAB -->
+        <div id="tab-wallet" class="tab-content p-4">
+            <h2 class="text-xl font-bold mb-4">Withdraw Funds</h2>
+            <div class="tg-card p-5 rounded-2xl mb-6">
+                <form id="withdraw-form" onsubmit="window.withdraw(event)">
+                    <div class="mb-4">
+                        <label class="block text-sm font-bold mb-2">Method</label>
+                        <select id="w-method" class="w-full p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 outline-none" required>
+                            <option value="bKash">bKash</option><option value="Nagad">Nagad</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-bold mb-2">Account Number</label>
+                        <input type="tel" id="w-phone" placeholder="e.g. 017XXXXXXXX" class="w-full p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 outline-none" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-bold mb-2">Amount (BDT)</label>
+                        <input type="number" id="w-amount" placeholder="Loading min amount..." class="w-full p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 outline-none" required>
+                    </div>
+                    <button type="submit" class="tg-btn w-full py-3 rounded-xl font-bold shadow-md">Submit Request</button>
+                </form>
+            </div>
+            <h3 class="font-bold mb-3">Withdrawal History</h3>
+            <div id="withdraw-history" class="space-y-3"></div>
+        </div>
+
+        <!-- PROFILE TAB -->
+        <div id="tab-profile" class="tab-content p-4">
+            <h2 class="text-xl font-bold mb-4">Profile Info</h2>
+            <div class="tg-card p-5 rounded-2xl mb-6 flex flex-col items-center text-center">
+                <img id="profile-avatar" src="" alt="Avatar" class="w-24 h-24 rounded-full border-4 mb-3" style="border-color: var(--button-color)">
+                <h2 id="profile-name" class="text-2xl font-bold">Name</h2>
+                <p id="profile-username" class="text-sm mb-4" style="color: var(--hint-color)">@username</p>
+                <div class="bg-gray-100 dark:bg-gray-700 px-4 py-2 rounded-lg inline-block">
+                    <span class="text-sm font-bold">UID:</span><span id="profile-id" class="text-sm font-mono tracking-wider ml-2">Loading...</span>
+                </div>
+            </div>
+
+            <div class="tg-card p-5 rounded-2xl text-center">
+                <h3 class="font-bold text-lg mb-1">Invite Friends</h3>
+                <p class="text-xs mb-4" style="color: var(--hint-color)">Earn huge coins when friends join via your link!</p>
+                <div class="flex flex-col gap-2">
+                    <input type="text" id="ref-link" readonly class="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 w-full text-center text-xs font-mono outline-none">
+                    <div class="flex gap-2">
+                        <button onclick="window.copyRef()" class="tg-btn flex-1 py-3 rounded-lg font-bold shadow-md flex items-center justify-center gap-2"><i class="fa-solid fa-copy"></i> Copy</button>
+                        <button onclick="window.shareRef()" class="bg-green-500 text-white flex-1 py-3 rounded-lg font-bold shadow-md flex items-center justify-center gap-2"><i class="fa-solid fa-share-nodes"></i> Share</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="main-container">
+    <!-- Navigation -->
+    <nav class="fixed bottom-0 w-full tg-card border-t border-gray-200 dark:border-gray-700 flex justify-around items-center py-3 z-40">
+        <div class="nav-item active flex flex-col items-center cursor-pointer w-1/4" onclick="window.switchTab('home')"><i class="fa-solid fa-house text-xl mb-1"></i><span class="text-[10px] font-bold">Home</span></div>
+        <div class="nav-item flex flex-col items-center cursor-pointer w-1/4" onclick="window.switchTab('tasks')"><i class="fa-solid fa-list-check text-xl mb-1"></i><span class="text-[10px] font-bold">Tasks</span></div>
+        <div class="nav-item flex flex-col items-center cursor-pointer w-1/4" onclick="window.switchTab('wallet')"><i class="fa-solid fa-wallet text-xl mb-1"></i><span class="text-[10px] font-bold">Wallet</span></div>
+        <div class="nav-item flex flex-col items-center cursor-pointer w-1/4" onclick="window.switchTab('profile')"><i class="fa-solid fa-user text-xl mb-1"></i><span class="text-[10px] font-bold">Profile</span></div>
+    </nav>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getDatabase, ref, onValue, set, update, push, get } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+        // FIREBASE CONFIG
+        const firebaseConfig = {
+            apiKey: "AIzaSyAoQw5dhwS5JJZIWSPQTgKdMtB5ZEsoxLk", authDomain: "arng-805db.firebaseapp.com", projectId: "arng-805db", storageBucket: "arng-805db.firebasestorage.app", messagingSenderId: "363993462640", appId: "1:363993462640:web:22247bdf806f062a3b01b5"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app, "https://arng-805db-default-rtdb.firebaseio.com");
+
+        const tg = window.Telegram.WebApp;
+        tg.expand(); tg.ready();
+
+        const tgUser = tg.initDataUnsafe?.user || { id: 123456789, first_name: "Guest", last_name: "User", username: "guest" };
+        const userId = tgUser.id.toString();
+        const startParam = tg.initDataUnsafe?.start_param; 
         
-        <!-- Promotional Banner -->
-        <a id="promoBanner" href="#" target="_blank" style="display:none; width: 100%; border-radius: 12px; overflow: hidden; margin-bottom: 15px; border: 1px solid var(--glass-border);">
-            <img id="promoImg" src="" style="width: 100%; display: block;">
-        </a>
+        let userData = null;
+        let globalSettings = { notice:{}, app:{ adLimit:10, minW:10, coinRate:1000, bdtReward:10 }, tg:{}, ref:{} };
+        const userRef = ref(db, 'users/' + userId);
 
-        <!-- Settings Form -->
-        <div class="setup-box collapsed" id="setupBox">
-            <h3 onclick="toggleSetup()"><i class="fas fa-cog"></i> API Configuration <i class="fas fa-chevron-down" style="font-size:0.8rem"></i></h3>
-            <div class="input-group">
-                <input type="text" id="winToken" placeholder="Enter Lottery API Token (Bearer ...)">
-            </div>
-            <button class="save-btn" onclick="saveConfig()">Save Token</button>
-            
-            <label class="mock-toggle">
-                <div class="switch">
-                    <input type="checkbox" id="mockMode" onchange="toggleMockMode()">
-                    <span class="slider"></span>
-                </div>
-                Simulation Mode (No Token Required)
-            </label>
-        </div>
+        let AdController = null;
+        try { AdController = window.Adsgram.init({ blockId: "29687" }); } catch(e) {}
 
-        <!-- Live Status Info -->
-        <div class="live-info">
-            <div class="period-info">
-                <h3 id="nextPeriod">Waiting...</h3>
-                <p id="lastPeriodStr">Fetching live data...</p>
-            </div>
-            <div class="countdown">
-                <div class="time" id="timerDisplay">00:00</div>
-                <span>Remaining</span>
-            </div>
-        </div>
-
-        <!-- Auto Predict Result Card -->
-        <div class="loader" id="loader">
-            <div class="spinner"></div>
-            <p><i class="fas fa-robot"></i> AI is analyzing patterns & trends...</p>
-        </div>
-
-        <div class="result-card" id="resultCard">
-            <div class="result-title"><i class="fas fa-bolt"></i> Prediction Active</div>
-            <div class="result-flex" style="justify-content: center;">
-                <div class="res-box">
-                    <div class="res-label">Size</div>
-                    <div class="res-value" id="predSize" style="color: var(--orange-color)">BIG</div>
-                </div>
-            </div>
-            <div class="confidence"><i class="fas fa-chart-line"></i> Confidence: <span id="predConf">98%</span></div>
-        </div>
-
-        <!-- Stats / Analysis Panel -->
-        <div class="stats-panel">
-            <h3><i class="fas fa-chart-pie"></i> Prediction Analysis</h3>
-            <div class="stats-grid">
-                <div class="stat-box">
-                    <span class="stat-value" id="statTotal">0</span>
-                    <span class="stat-label">Total</span>
-                </div>
-                <div class="stat-box success">
-                    <span class="stat-value" id="statWin">0</span>
-                    <span class="stat-label">Correct</span>
-                </div>
-                <div class="stat-box danger">
-                    <span class="stat-value" id="statLoss">0</span>
-                    <span class="stat-label">Wrong</span>
-                </div>
-            </div>
-            
-            <!-- Profit/Loss Chart -->
-            <div style="margin-top: 20px;">
-                <h4 style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px; text-transform:uppercase; text-align:center;"><i class="fas fa-chart-line"></i> Performance Trend (Profit/Loss)</h4>
-                <div style="height: 120px; width: 100%; position: relative;">
-                    <canvas id="profitChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Trend Chart -->
-        <div class="trend-container">
-            <div class="trend-title">
-                <span><i class="fas fa-chart-bar"></i> Recent Trends</span>
-                <span style="font-size:0.7rem; color:var(--primary); cursor:pointer;" onclick="toggleSound()">
-                    <i class="fas fa-volume-up" id="soundIcon"></i> Sound ON
-                </span>
-            </div>
-            <div class="trend-chart" id="trendChart">
-                <!-- Dots populated by JS -->
-            </div>
-        </div>
-
-        <!-- Pattern Tracker -->
-        <div class="stats-panel" id="patternPanel">
-            <h3 style="margin-bottom: 5px;"><i class="fas fa-project-diagram"></i> Pattern Tracker</h3>
-            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 15px;">AI analysis of dominant market patterns</div>
-            <div id="patternList" style="display:flex; flex-direction:column; gap:8px;">
-                <div style="text-align:center; color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Analyzing...</div>
-            </div>
-        </div>
-
-        <!-- History Table -->
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Period</th>
-                        <th>Result</th>
-                        <th>Size</th>
-                    </tr>
-                </thead>
-                <tbody id="historyBody">
-                    <tr><td colspan="4"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>
-                </tbody>
-            </table>
-        </div>
-
-    </div>
-
-    <!-- Auto Fail Safe Toast -->
-    <div class="toast" id="toastBox">Token Expired. Switching to Simulation Mode!</div>
-
-    <script>
-        // Constants & Variables
-        const API_URL = "https://draw.ar-lottery02.com/WinGo/WinGo_1M/GetHistoryIssuePage.json";
-        
-        let globalHistoryList = [];
-        let timerInterval;
-        let isMockMode = false;
-        let soundEnabled = true;
-        let currentAccuracy = 88.5;
-        let isSystemInMaintenance = false;
-        
-        // Stats
-        let totalPredictions = 0;
-        let correctPredictions = 0;
-        let wrongPredictions = 0;
-        let lastPrediction = null; 
-        let isPredicting = false;
-
-        // Profit Chart Data
-        let profitHistory = [0];
-        let profitLabels = ["Start"];
-        let profitChartObj = null;
-
-        function initChart() {
-            const ctx = document.getElementById('profitChart');
-            if(!ctx) return;
-            profitChartObj = new Chart(ctx.getContext('2d'), {
-                type: 'line',
-                data: {
-                    labels: profitLabels,
-                    datasets: [{
-                        label: 'Profit Trend',
-                        data: profitHistory,
-                        borderColor: '#00f2fe',
-                        backgroundColor: 'rgba(0, 242, 254, 0.1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4,
-                        pointRadius: 3,
-                        pointBackgroundColor: '#fff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: { display: false },
-                        y: { 
-                            grid: { color: 'rgba(255,255,255,0.05)' }, 
-                            ticks: { color: '#94a3b8', font: { size: 10 } } 
-                        }
-                    },
-                    plugins: { legend: { display: false }, tooltip: { enabled: true } }
-                }
-            });
+        // SECURITY: VPN Detection
+        async function checkVPN() {
+            try {
+                const res = await fetch('https://ipwho.is/');
+                const data = await res.json();
+                if (data.security && (data.security.vpn || data.security.proxy)) return true;
+            } catch(e) { console.log("VPN Check fail, allowing access."); }
+            return false;
         }
 
-        // Multi-Language System
-        const translations = {
-            en: {
-                title: "AI Auto Prediction & Analysis",
-                setup: "API Configuration",
-                mock: "Simulation Mode (No Token Required)",
-                waiting: "Waiting...",
-                fetching: "Fetching live data...",
-                remaining: "Remaining",
-                analyzing: "AI is analyzing patterns & trends...",
-                prediction: "Prediction Active",
-                color: "Color",
-                size: "Size",
-                confidence: "Confidence",
-                statsTitle: "Prediction Analysis",
-                total: "Total",
-                correct: "Correct",
-                wrong: "Wrong",
-                trends: "Recent Trends",
-                soundOn: "Sound ON",
-                soundOff: "Sound OFF",
-                period: "Period",
-                result: "Result"
-            },
-            bn: {
-                title: "এআই অটো প্রেডিকশন এবং এনালাইসিস",
-                setup: "এপিআই কনফিগারেশন",
-                mock: "সিমুলেশন মোড (টোকেন ছাড়া)",
-                waiting: "অপেক্ষা করুন...",
-                fetching: "লাইভ ডেটা আসছে...",
-                remaining: "বাকি আছে",
-                analyzing: "এআই প্যাটার্ন এনালাইজ করছে...",
-                prediction: "প্রেডিকশন চলছে",
-                color: "রং",
-                size: "সাইজ",
-                confidence: "নিশ্চয়তা",
-                statsTitle: "প্রেডিকশন এনালাইসিস",
-                total: "মোট",
-                correct: "সঠিক",
-                wrong: "ভুল",
-                trends: "সাম্প্রতিক ট্রেন্ড",
-                soundOn: "সাউন্ড অন",
-                soundOff: "সাউন্ড অফ",
-                period: "পিরিয়ড",
-                result: "রেজাল্ট"
+        window.addEventListener('DOMContentLoaded', async () => {
+            document.body.style.backgroundColor = 'var(--tg-theme-bg-color)';
+            document.body.style.color = 'var(--tg-theme-text-color)';
+            
+            // Set Static Info
+            const name = `${tgUser.first_name} ${tgUser.last_name || ''}`.trim();
+            const avatar = tgUser.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
+            document.getElementById('user-avatar').src = avatar; document.getElementById('profile-avatar').src = avatar;
+            document.getElementById('user-name').innerText = name; document.getElementById('profile-name').innerText = name;
+            document.getElementById('profile-username').innerText = tgUser.username ? `@${tgUser.username}` : '';
+            document.getElementById('profile-id').innerText = userId; document.getElementById('ban-uid').innerText = userId;
+            document.getElementById('ref-link').value = `https://t.me/EarningJohn_bot/cash?startapp=${userId}`;
+
+            // Check VPN First
+            const isVPN = await checkVPN();
+            if(isVPN) {
+                document.getElementById('splash').classList.add('hidden');
+                document.getElementById('vpn-screen').classList.remove('hidden');
+                return;
             }
+
+            // Fetch Settings
+            const setSnap = await get(ref(db, 'settings'));
+            if(setSnap.exists()) globalSettings = { ...globalSettings, ...setSnap.val() };
+            
+            // Apply Settings to UI
+            document.getElementById('w-amount').placeholder = `Min ${globalSettings.app.minW} BDT`;
+            document.getElementById('w-amount').min = globalSettings.app.minW;
+            document.getElementById('convert-hint').innerText = `Rate: ${globalSettings.app.coinRate} Coins = ৳${globalSettings.app.bdtReward}`;
+            
+            if(globalSettings.tg.active) {
+                document.getElementById('task-tg').classList.remove('hidden');
+                document.getElementById('tg-reward-text').innerText = `+${globalSettings.tg.reward} Coins`;
+            }
+
+            // User Data Logic
+            onValue(userRef, async (snapshot) => {
+                const today = new Date().toDateString();
+                if (snapshot.exists()) {
+                    userData = snapshot.val();
+                    
+                    // Ban Check
+                    if (userData.status === 'banned') {
+                        document.getElementById('splash').classList.add('hidden');
+                        document.getElementById('app').classList.add('hidden');
+                        document.getElementById('banned-screen').classList.remove('hidden');
+                        return;
+                    }
+
+                    // Reset Limits daily
+                    if (userData.limits?.date !== today) {
+                        update(userRef, { 'limits/math': 10, 'limits/scratch': 10, 'limits/ads': 0, 'limits/date': today });
+                    } else { updateUI(); }
+                } else {
+                    // Registration & Ref System
+                    let iCoins = 0;
+                    if (startParam && startParam !== userId) {
+                        try {
+                            const refSnap = await get(ref(db, 'users/' + startParam));
+                            if (refSnap.exists()) {
+                                iCoins = globalSettings.ref.joined || 100;
+                                update(ref(db, `users/${startParam}/balances`), { coins: (refSnap.val().balances?.coins||0) + (globalSettings.ref.referrer||200) });
+                            }
+                        } catch(e) {}
+                    }
+                    userData = {
+                        info: { firstName: tgUser.first_name||'', lastName: tgUser.last_name||'', username: tgUser.username||'' },
+                        balances: { coins: iCoins, bdt: 0 },
+                        limits: { math: 10, scratch: 10, ads: 0, date: today },
+                        tasks: { tgJoined: false }, cooldowns: { dailyBonus: 0 }, status: 'active'
+                    };
+                    await set(userRef, userData);
+                    if(iCoins > 0) Swal.fire('Bonus!', `+${iCoins} Coins from Invite Link!`, 'success');
+                }
+            });
+
+            // Fetch Withdraw History
+            onValue(ref(db, 'withdrawals/' + userId), (snap) => {
+                const list = document.getElementById('withdraw-history'); list.innerHTML = '';
+                if (!snap.exists()) { list.innerHTML = `<div class="text-center p-4 text-sm" style="color: var(--hint-color)">No history</div>`; return; }
+                Object.values(snap.val()).sort((a,b)=>b.timestamp-a.timestamp).forEach(w => {
+                    const c = w.status==='Pending'?'text-orange-500':(w.status==='Approved'?'text-green-500':'text-red-500');
+                    list.innerHTML += `<div class="tg-card p-3 rounded-lg flex justify-between items-center shadow-sm mb-2"><div><p class="font-bold text-sm">${w.method} - ${w.phone}</p><p class="text-xs" style="color: var(--hint-color)">${new Date(w.timestamp).toLocaleDateString()}</p></div><div class="text-right"><p class="font-bold">৳${w.amount.toFixed(2)}</p><p class="text-xs font-bold ${c}">${w.status}</p></div></div>`;
+                });
+            });
+
+            setTimeout(() => {
+                if(userData && userData.status === 'banned') return;
+                const splash = document.getElementById('splash');
+                splash.style.opacity = '0';
+                setTimeout(() => { 
+                    splash.style.display = 'none'; document.getElementById('app').classList.remove('hidden'); 
+                    
+                    // Show Notice Board if Active
+                    if(globalSettings.notice.active && !sessionStorage.getItem('noticeShown')) {
+                        Swal.fire({ title: globalSettings.notice.title, text: globalSettings.notice.message, icon: 'info', confirmButtonColor: 'var(--button-color)' });
+                        sessionStorage.setItem('noticeShown', '1');
+                    }
+                }, 500);
+            }, 2000);
+        });
+
+        function updateUI() {
+            if(!userData) return;
+            document.getElementById('bal-coins').innerText = userData.balances.coins.toLocaleString();
+            document.getElementById('bal-bdt').innerText = userData.balances.bdt.toFixed(2);
+            document.getElementById('limit-math').innerText = userData.limits.math;
+            document.getElementById('limit-scratch').innerText = userData.limits.scratch;
+            
+            const adsLeft = Math.max(0, globalSettings.app.adLimit - (userData.limits.ads || 0));
+            document.getElementById('limit-ads').innerText = adsLeft;
+
+            if(userData.tasks?.tgJoined) {
+                const btnTg = document.getElementById('btn-tg');
+                btnTg.innerText = "Done"; btnTg.classList.add('bg-gray-400'); btnTg.onclick = null;
+            }
+        }
+
+        window.switchTab = (tabId) => {
+            document.querySelectorAll('.tab-content, .nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(`tab-${tabId}`).classList.add('active'); event.currentTarget.classList.add('active');
         };
 
-        let currentLang = 'en';
+        window.copyRef = () => { const c = document.getElementById('ref-link'); c.select(); document.execCommand("copy"); tg.HapticFeedback.impactOccurred('light'); Swal.fire({toast:true, position:'top-end', icon:'success', title:'Copied', showConfirmButton:false, timer:1500}); };
+        window.shareRef = () => { tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(document.getElementById('ref-link').value)}&text=Join%20and%20earn!`); };
 
-        function toggleLanguage() {
-            currentLang = currentLang === 'en' ? 'bn' : 'en';
-            document.getElementById("langBtn").innerHTML = `<i class="fas fa-globe"></i> ${currentLang.toUpperCase()}`;
-            applyTranslations();
-        }
-
-        function applyTranslations() {
-            const t = translations[currentLang];
-            document.querySelector(".header p").innerText = t.title;
-            document.querySelector("#setupBox h3").innerHTML = `<i class="fas fa-cog"></i> ${t.setup} <i class="fas fa-chevron-down" style="font-size:0.8rem"></i>`;
-            document.querySelector(".mock-toggle").lastChild.nodeValue = " " + t.mock;
-            
-            let nPer = document.getElementById("nextPeriod").innerText;
-            if(nPer === "Waiting..." || nPer === "অপেক্ষা করুন...") {
-                document.getElementById("nextPeriod").innerText = t.waiting;
-            }
-            
-            let lPer = document.getElementById("lastPeriodStr").innerText;
-            if(lPer === "Fetching live data..." || lPer === "লাইভ ডেটা আসছে...") {
-                document.getElementById("lastPeriodStr").innerText = t.fetching;
-            }
-            
-            document.querySelector(".countdown span").innerText = t.remaining;
-            document.querySelector("#loader p").innerHTML = `<i class="fas fa-robot"></i> ${t.analyzing}`;
-            document.querySelector(".result-title").innerHTML = `<i class="fas fa-bolt"></i> ${t.prediction}`;
-            document.querySelectorAll(".res-label")[0].innerText = t.color;
-            document.querySelectorAll(".res-label")[1].innerText = t.size;
-            document.querySelector(".confidence").innerHTML = `<i class="fas fa-chart-line"></i> ${t.confidence}: <span id="predConf">${document.getElementById("predConf").innerText}</span>`;
-            document.querySelector(".stats-panel h3").innerHTML = `<i class="fas fa-chart-pie"></i> ${t.statsTitle}`;
-            document.querySelectorAll(".stat-label")[0].innerText = t.total;
-            document.querySelectorAll(".stat-label")[1].innerText = t.correct;
-            document.querySelectorAll(".stat-label")[2].innerText = t.wrong;
-            
-            let sIcon = soundEnabled ? 'fa-volume-up' : 'fa-volume-mute';
-            let sText = soundEnabled ? t.soundOn : t.soundOff;
-            document.querySelector(".trend-title").innerHTML = `
-                <span><i class="fas fa-chart-bar"></i> ${t.trends}</span>
-                <span style="font-size:0.7rem; color:var(--primary); cursor:pointer;" onclick="toggleSound()">
-                    <i class="fas ${sIcon}" id="soundIcon"></i> ${sText}
-                </span>`;
-                
-            document.querySelector("th:nth-child(1)").innerText = t.period;
-            document.querySelector("th:nth-child(2)").innerText = t.result;
-            document.querySelector("th:nth-child(3)").innerText = t.color;
-            document.querySelector("th:nth-child(4)").innerText = t.size;
-        }
-
-        // Web Audio API for synthetic sounds
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        let audioCtx;
-
-        function initAudio() {
-            if(!audioCtx) {
-                audioCtx = new AudioContext();
-            }
-        }
-
-        function playTick() {
-            if(!soundEnabled || isSystemInMaintenance) return;
-            initAudio();
-            if(audioCtx.state === 'suspended') audioCtx.resume();
-            
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'square';
-            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.05);
-        }
-
-        function playDing() {
-            if(!soundEnabled || isSystemInMaintenance) return;
-            initAudio();
-            if(audioCtx.state === 'suspended') audioCtx.resume();
-            
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
-            osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.2); 
-            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.5);
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 1.5);
-        }
-
-        function toggleSound() {
-            soundEnabled = !soundEnabled;
-            const t = translations[currentLang];
-            let sIcon = soundEnabled ? 'fa-volume-up' : 'fa-volume-mute';
-            let sText = soundEnabled ? t.soundOn : t.soundOff;
-            document.querySelector(".trend-title span:last-child").innerHTML = `<i class="fas ${sIcon}" id="soundIcon"></i> ${sText}`;
-            if(soundEnabled) playDing();
-        }
-
-        function extractTokenFromUrl() {
-            const params = new URLSearchParams(window.location.search);
-            if (params.has('Token')) return params.get('Token');
-            if (params.has('url')) {
-                try {
-                    let decoded = atob(params.get('url'));
-                    let urlParams = new URLSearchParams(decoded.split('?')[1] || decoded);
-                    if (urlParams.has('Token')) return urlParams.get('Token');
-                } catch(e) { console.error(e); }
-            }
-            return null;
-        }
-
-        let urlToken = extractTokenFromUrl();
-        const DEFAULT_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJUb2tlblR5cGUiOiJBY2Nlc3NfVG9rZW4iLCJUZW5hbnRJZCI6IjYwMDIiLCJVc2VySWQiOiI2MDAyMDAwMDI0Mzk3NCIsIkFnZW50Q29kZSI6IjYwMDIwMSIsIlRlbmFudEFjY291bnQiOiIyNDM5NzQiLCJMb2dpbklQIjoiMTAzLjEzMS4xMDAuMTI2IiwiTG9naW5UaW1lIjoiMTc3NzUyOTk1OTkzNSIsIlN5c0N1cnJlbmN5IjoiQkRUIiwiU3lzTGFuZ3VhZ2UiOiJibiIsIkRldmljZVR5cGUiOiJINSIsIkxvdHRlcnlMaW1pdEdyb3VwTnVtIjoiMCIsIlVzZXJUeXBlIjoiMCIsIm5iZiI6MTc3NzUyOTk1OSwiZXhwIjoxNzc3NTMzNTU5LCJpc3MiOiJqd3RJc3N1ZXIiLCJhdWQiOiJsb3R0ZXJ5VGlja2V0In0.IQz63Md0FLV9c6KXwyK0ZIJbjDB38hZ7Ge0VS6Cf8QY";
-        
-        let myToken = urlToken || localStorage.getItem("winToken") || DEFAULT_TOKEN;
-
-        window.onload = function() {
-            document.getElementById("winToken").value = myToken;
-            document.addEventListener('click', initAudio, { once: true });
-            
-            initChart();
-            
-            // Telegram config load dynamically
-            if(window.db && window.ref && window.onValue) {
-                window.onValue(window.ref(window.db, 'settings/telegram'), (snap) => {
-                    window.tgConfig = snap.exists() ? snap.val() : null;
-                });
-            }
-
-            // Set up Firebase Listeners for Notice & Maintenance
-            if(window.db && window.ref && window.onValue) {
-                window.onValue(window.ref(window.db, 'settings/maintenance'), (snap) => {
-                    if(snap.exists() && snap.val() === true) {
-                        isSystemInMaintenance = true;
-                        document.getElementById("maintenanceOverlay").style.display = "flex";
-                    } else {
-                        isSystemInMaintenance = false;
-                        document.getElementById("maintenanceOverlay").style.display = "none";
-                        // Auto-resume timer if it was paused
-                        if(sessionStorage.getItem('isVerified') === 'true') {
-                            startTimer();
-                        }
-                    }
-                });
-
-                window.onValue(window.ref(window.db, 'settings/announcement'), (snap) => {
-                    let text = snap.exists() ? snap.val() : "";
-                    const banner = document.getElementById("noticeBanner");
-                    if(text.trim().length > 0) {
-                        document.getElementById("noticeText").innerText = text;
-                        banner.style.display = "block";
-                    } else {
-                        banner.style.display = "none";
-                    }
-                });
-
-                window.onValue(window.ref(window.db, 'settings/banner'), (snap) => {
-                    let data = snap.val();
-                    const banner = document.getElementById("promoBanner");
-                    const img = document.getElementById("promoImg");
-                    if(data && data.img) {
-                        img.src = data.img;
-                        banner.href = data.link || "#";
-                        banner.style.display = "block";
-                    } else {
-                        banner.style.display = "none";
-                    }
-                });
-                
-                window.onValue(window.ref(window.db, 'settings/fakeViewers'), (snap) => {
-                    fakeLive = snap.exists() ? snap.val() : 0;
-                    updateLiveCount();
-                });
-                
-                window.onValue(window.ref(window.db, 'live_sessions'), (snap) => {
-                    const data = snap.val();
-                    let count = 0; let now = Date.now();
-                    if(data) { for(let sid in data) { if(now - data[sid] < 120000) count++; } }
-                    baseLive = count;
-                    updateLiveCount();
-                });
-            }
-
-            // Check verification status
-            if(sessionStorage.getItem('isVerified') !== 'true') {
-                document.getElementById('verifyOverlay').style.display = 'flex';
-            } else {
-                // Load stats and start app ONLY if already verified
-                updateStatsUI();
-                startApp();
-            }
+        window.convertCoins = () => {
+            const req = globalSettings.app.coinRate || 1000;
+            const rew = globalSettings.app.bdtReward || 10;
+            if (userData.balances.coins >= req) {
+                const chunks = Math.floor(userData.balances.coins / req);
+                update(userRef, { 'balances/coins': userData.balances.coins - (chunks*req), 'balances/bdt': userData.balances.bdt + (chunks*rew) }).then(() => { Swal.fire("Success!", `Converted to ৳${chunks*rew}`, "success"); tg.HapticFeedback.notificationOccurred('success'); });
+            } else { Swal.fire("Oops!", `Minimum ${req} coins required.`, "error"); }
         };
 
-        function sendTelegramAlert(message) {
-            if(window.tgConfig && window.tgConfig.token && window.tgConfig.chatId) {
-                const url = `https://api.telegram.org/bot${window.tgConfig.token}/sendMessage?chat_id=${window.tgConfig.chatId}&text=${encodeURIComponent(message)}`;
-                fetch(url).catch(e => console.error("TG Error"));
-            }
-        }
-
-        let baseLive = 0;
-        let fakeLive = 0;
-        function updateLiveCount() {
-            let el = document.getElementById("liveCountNum");
-            if(el) {
-                let total = baseLive + fakeLive + Math.floor(Math.random() * 4);
-                if(total < 1) total = 1;
-                el.innerText = total;
-            }
-        }
-
-        async function getIP() {
-            try {
-                let res = await fetch('https://api.ipify.org?format=json');
-                let data = await res.json();
-                return data.ip;
-            } catch(e) { return "Hidden"; }
-        }
-
-        function pingLiveSession() {
-            let sid = sessionStorage.getItem('liveSessionId');
-            if(!sid) {
-                sid = 'sess_' + Math.floor(Math.random()*1000000000);
-                sessionStorage.setItem('liveSessionId', sid);
-            }
-            if(window.db && window.ref && window.set) {
-                window.set(window.ref(window.db, 'live_sessions/' + sid), Date.now());
-            }
-        }
-
-        async function verifyDeposit() {
-            const uid = document.getElementById('verifyUID').value.trim();
-            const msg = document.getElementById('verifyMsg');
-            
-            if(uid.length < 5) {
-                msg.className = 'verify-msg text-error';
-                msg.innerHTML = '<i class="fas fa-times-circle"></i> Please enter a valid UID.';
-                return;
-            }
-            
-            msg.className = 'verify-msg text-success';
-            msg.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking Database...';
-            
-            if(typeof window.checkFirebaseUID !== 'function') {
-                msg.className = 'verify-msg text-error';
-                msg.innerHTML = '<i class="fas fa-times-circle"></i> Connection Error. Please reload page.';
-                return;
-            }
-            
-            let userData = await window.checkFirebaseUID(uid);
-            
-            if(userData && userData.error) {
-                msg.className = 'verify-msg text-error';
-                msg.innerHTML = '<i class="fas fa-times-circle"></i> Database connection failed.';
-                return;
-            }
-
-            if(!userData) {
-                // Not found, so we add to pending_requests
-                if(window.db && window.ref && window.set) {
-                    window.set(window.ref(window.db, 'pending_requests/' + uid), Date.now());
-                }
-                msg.className = 'verify-msg text-success';
-                msg.innerHTML = '<i class="fas fa-clock"></i> Request sent! Please wait for Admin approval.';
-                Swal.fire({ icon: 'info', title: 'Request Sent', text: 'Please wait for Admin approval.', background: '#1e293b', color: '#fff' });
-                sendTelegramAlert(`🔔 New Access Request!\nUID: ${uid}\nPlease check Admin Panel.`);
-                return;
-            }
-
-            if(userData.status === 'banned') {
-                msg.className = 'verify-msg text-error';
-                msg.innerHTML = '<i class="fas fa-ban"></i> Your account is permanently banned.';
-                Swal.fire({ icon: 'error', title: 'Banned', text: 'Your account is permanently banned.', background: '#1e293b', color: '#fff' });
-                sendTelegramAlert(`⛔ Banned User Attempted Login\nUID: ${uid}`);
-                return;
-            }
-
-            if(userData.expiry && Date.now() > userData.expiry) {
-                msg.className = 'verify-msg text-error';
-                msg.innerHTML = '<i class="fas fa-clock"></i> Your access has expired. Please renew.';
-                Swal.fire({ icon: 'warning', title: 'Expired', text: 'Your access has expired. Please renew.', background: '#1e293b', color: '#fff' });
-                sendTelegramAlert(`⏰ Expired User Attempted Login\nUID: ${uid}`);
-                return;
-            }
-            
-            if(userData.status === 'approved') {
-                msg.innerHTML = '<i class="fas fa-check-circle"></i> Verification Successful!';
-                sessionStorage.setItem('isVerified', 'true');
-                sessionStorage.setItem('userRole', userData.role || 'standard');
-                sendTelegramAlert(`✅ Successful Login\nUID: ${uid}`);
-                
-                // Track IP
-                getIP().then(ip => {
-                    if(window.db && window.ref && window.set) {
-                        window.set(window.ref(window.db, 'users/' + uid + '/lastIP'), ip);
-                        window.set(window.ref(window.db, 'users/' + uid + '/lastLogin'), Date.now());
-                    }
-                });
-                
-                // Start live ping
-                pingLiveSession();
-                setInterval(pingLiveSession, 60000); // Ping every 1 minute
-                // Start Live Data and Analytics
-                updateStatsUI();
-                startApp();
-                
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Welcome Back!',
-                    text: 'Verification Successful!',
-                    background: '#1e293b',
-                    color: '#fff',
-                    timer: 2000,
-                    showConfirmButton: false
-                }).then(() => {
-                    document.getElementById('verifyOverlay').style.display = 'none';
-                });
-            }
-        }
-
-        function toggleSetup() {
-            document.getElementById("setupBox").classList.toggle("collapsed");
-        }
-
-        function toggleMockMode() {
-            isMockMode = document.getElementById("mockMode").checked;
-            startApp();
-        }
-
-        function saveConfig() {
-            myToken = document.getElementById("winToken").value.trim();
-            if (myToken) {
-                localStorage.setItem("winToken", myToken);
-                isMockMode = false;
-                document.getElementById("mockMode").checked = false;
-                toggleSetup();
-                startApp();
-            }
-        }
-
-        function showToast(msg) {
-            Swal.fire({
-                toast: true,
-                position: 'bottom',
-                icon: 'warning',
-                title: msg,
-                showConfirmButton: false,
-                timer: 4000,
-                background: 'rgba(255, 59, 48, 0.95)',
-                color: '#fff'
+        window.watchAd = () => {
+            const watched = userData.limits.ads || 0;
+            if (watched >= globalSettings.app.adLimit) return Swal.fire("Limit Reached", "You watched all ads for today!", "warning");
+            if (!AdController) return Swal.fire("Error", "Ad system not ready", "error");
+            AdController.show().then(() => {
+                update(userRef, { 'balances/coins': userData.balances.coins + 50, 'limits/ads': watched + 1 }).then(() => { Swal.fire({ title:"Rewarded", text:"+50 Coins", icon:"success", timer:1500 }); tg.HapticFeedback.notificationOccurred('success'); });
             });
-        }
+        };
 
-        async function startApp() {
-            await loadLiveHistory();
-            startTimer();
-        }
-
-        let isPolling = false;
-
-        // Timer Logic (Synced precisely with real local minutes to avoid random jumps)
-        function startTimer() {
-            if(timerInterval) clearInterval(timerInterval);
-            
-            timerInterval = setInterval(() => {
-                if(isSystemInMaintenance) return;
-
-                let now = new Date();
-                let seconds = now.getSeconds();
-                let remaining = 60 - seconds;
-                
-                if (remaining === 60) remaining = 0;
-                
-                const timeEl = document.getElementById("timerDisplay");
-                timeEl.innerText = `00:${remaining < 10 ? '0'+remaining : remaining}`;
-                
-                // Urgency effect and sounds
-                if(remaining <= 5 && remaining > 0) {
-                    timeEl.classList.add("urgent");
-                    playTick();
-                } else {
-                    timeEl.classList.remove("urgent");
-                }
-                
-                if (remaining === 0 && !isPolling) {
-                    if(globalHistoryList.length > 0) {
-                        let expectedNew = (BigInt(globalHistoryList[0].issueNumber) + 1n).toString();
-                        pollForNewData(expectedNew);
-                    } else {
-                        loadLiveHistory();
-                    }
-                }
-            }, 1000);
-        }
-
-        async function pollForNewData(expectedIssue) {
-            isPolling = true;
-            await loadLiveHistory();
-            if (globalHistoryList.length > 0 && globalHistoryList[0].issueNumber === expectedIssue) {
-                isPolling = false; // Received new data!
-            } else {
-                // API hasn't updated yet, poll again in 1.5 seconds
-                setTimeout(() => pollForNewData(expectedIssue), 1500);
-            }
-        }
-
-        // Fetch Live Data
-        async function loadLiveHistory() {
-            if(isSystemInMaintenance) return;
-            try {
-                let list = [];
-                
-                if (isMockMode) {
-                    list = generateMockData();
-                } else {
-                    const response = await fetch(API_URL, {
-                        method: "GET",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": myToken.startsWith("Bearer") ? myToken : `Bearer ${myToken}`
-                        }
-                    });
-
-                    if(!response.ok) {
-                        throw new Error("TokenExpired");
-                    }
-                    
-                    const data = await response.json();
-                    if(data.code !== 0) throw new Error("API Error");
-
-                    list = data.data?.list || [];
-                }
-
-                globalHistoryList = list;
-                
-                if(list.length > 0) {
-                    const latestDraw = list[0];
-                    checkAccuracy(latestDraw); 
-                    updateUI(list);
-
-                    // Auto Predict Logic
-                    const nextPeriodStr = (BigInt(latestDraw.issueNumber) + 1n).toString();
-                    if(!lastPrediction || lastPrediction.period !== nextPeriodStr) {
-                        autoPredict();
-                    }
-                }
-
-            } catch (error) {
-                console.error(error);
-                if (error.message === "TokenExpired" && !isMockMode) {
-                    showToast("Token Expired! Auto-switching to Simulation Mode.");
-                    document.getElementById("mockMode").checked = true;
-                    isMockMode = true;
-                    loadLiveHistory();
-                } else {
-                    document.getElementById("historyBody").innerHTML = `<tr><td colspan="4" style="color:var(--red-color)">Network Error. Try Simulation Mode.</td></tr>`;
-                }
-            }
-        }
-
-        function checkAccuracy(latestDraw) {
-            if(!lastPrediction || !latestDraw) return;
-            
-            if(latestDraw.issueNumber === lastPrediction.period) {
-                totalPredictions++;
-                let num = parseInt(latestDraw.number);
-                let actualSize = num >= 5 ? "BIG" : "SMALL";
-                let isSizeCorrect = (actualSize === lastPrediction.size);
-
-                // Send Telegram Result
-                if(window.tgConfig && window.tgConfig.token && window.tgConfig.chatId && window.tgConfig.autoSignal) {
-                    if (!lastPrediction.isSkipped) {
-                        let isWin = isSizeCorrect;
-                        
-                        // Update Martingale Level
-                        if (isWin) {
-                            window.currentMartingaleLevel = 1;
-                        } else {
-                            window.currentMartingaleLevel = (window.currentMartingaleLevel || 1) + 1;
-                            if (window.currentMartingaleLevel > 4) window.currentMartingaleLevel = 1; // Reset after max level
-                        }
-
-                        let resultText = isWin ? '✅ <b>WIN (PROFIT)</b>' : '❌ <b>LOSS</b>';
-                        let winLossEmoji = isWin ? '🎉' : '💔';
-                        
-                        if(window.db && window.ref && window.runTransaction) {
-                            window.runTransaction(window.ref(window.db, 'settings/lastResultPeriod'), (currentData) => {
-                                if (currentData === lastPrediction.period) {
-                                    return; // Already sent result
-                                }
-                                return lastPrediction.period; // Claim it
-                            }).then((txResult) => {
-                                if(txResult.committed) {
-                                    let msg = `${winLossEmoji} <b>Signal Result Updated</b>\n\n🗓 <b>Period:</b> ${lastPrediction.period}\n📊 <b>Status:</b> ${resultText}\n\n🤖 <i>Powered by AI Tracker</i>`;
-                                    let url = `https://api.telegram.org/bot${window.tgConfig.token}/sendMessage?chat_id=${window.tgConfig.chatId}&text=${encodeURIComponent(msg)}&parse_mode=HTML`;
-                                    fetch(url).catch(e => console.error(e));
-                                }
-                            }).catch(err => console.error("Result Tx Error", err));
-                        }
-                    }
-                }
-
-                // Accuracy logic
-                if(isSizeCorrect) {
-                    correctPredictions++;
-                    profitHistory.push(profitHistory[profitHistory.length - 1] + 10);
-                } else {
-                    wrongPredictions++;
-                    profitHistory.push(profitHistory[profitHistory.length - 1] - 10);
-                }
-                
-                if(profitHistory.length > 20) {
-                    profitHistory.shift();
-                }
-                profitLabels = profitHistory.map((_, i) => "P" + i);
-                
-                if(profitChartObj) {
-                    let lastVal = profitHistory[profitHistory.length-1];
-                    let pColor = lastVal >= 0 ? '#00f2fe' : '#ff3b30';
-                    let bColor = lastVal >= 0 ? 'rgba(0, 242, 254, 0.1)' : 'rgba(255, 59, 48, 0.1)';
-                    profitChartObj.data.labels = profitLabels;
-                    profitChartObj.data.datasets[0].data = profitHistory;
-                    profitChartObj.data.datasets[0].borderColor = pColor;
-                    profitChartObj.data.datasets[0].backgroundColor = bColor;
-                    profitChartObj.update();
-                }
-                
-                updateStatsUI();
-                
-                // Recalculate visual accuracy smoothly
-                let realAcc = (correctPredictions / totalPredictions) * 100;
-                currentAccuracy = (currentAccuracy * 0.7) + (realAcc * 0.3); 
-                if(currentAccuracy > 99) currentAccuracy = 99;
-                
-                let isVip = sessionStorage.getItem('userRole') === 'vip';
-                if(isVip) {
-                    document.getElementById("accuracyBadge").innerHTML = `<i class="fas fa-crown" style="color:gold;"></i> VIP Acc: 98.9%`;
-                    document.getElementById("accuracyBadge").style.background = "linear-gradient(45deg, rgba(255,215,0,0.1), rgba(255,140,0,0.1))";
-                    document.getElementById("accuracyBadge").style.border = "1px solid rgba(255,215,0,0.3)";
-                    document.getElementById("accuracyBadge").style.color = "gold";
-                } else {
-                    document.getElementById("accuracyBadge").innerHTML = `<i class="fas fa-crosshairs"></i> Acc: ${currentAccuracy.toFixed(1)}%`;
-                }
-            }
-        }
-
-        function updateStatsUI() {
-            document.getElementById("statTotal").innerText = totalPredictions;
-            document.getElementById("statWin").innerText = correctPredictions;
-            document.getElementById("statLoss").innerText = totalPredictions > 0 ? (totalPredictions - correctPredictions) : 0;
-        }
-
-        function generateMockData() {
-            let now = new Date();
-            let basePeriod = parseInt(now.getFullYear().toString() + (now.getMonth()+1).toString().padStart(2,'0') + now.getDate().toString().padStart(2,'0') + "1000");
-            let currentMinute = now.getHours() * 60 + now.getMinutes();
-            
-            let mockList = [];
-            for(let i=0; i<15; i++) {
-                let pNum = (basePeriod + currentMinute - i).toString();
-                let num = Math.floor(Math.random() * 10);
-                let color;
-                if(num === 0) color = "Red,Violet";
-                else if(num === 5) color = "Green,Violet";
-                else if(num % 2 === 0) color = "Red";
-                else color = "Green";
-
-                mockList.push({ issueNumber: pNum, number: num.toString(), color: color });
-            }
-            return mockList;
-        }
-
-        function updateUI(list) {
-            if(list && list.length > 0) {
-                const latestDraw = list[0];
-                const nextPeriodStr = (BigInt(latestDraw.issueNumber) + 1n).toString();
-
-                document.getElementById("nextPeriod").innerText = "Period: " + nextPeriodStr;
-                document.getElementById("lastPeriodStr").innerText = `Last Drawn: ${latestDraw.issueNumber}`;
-
-                // Populate Trend Chart
-                let chartHTML = "";
-                let trendList = list.slice(0, 15).reverse();
-                trendList.forEach(item => {
-                    let num = parseInt(item.number);
-                    let sizeStr = (num >= 5) ? "B" : "S";
-                    let cClass = "bg-" + item.color.toLowerCase().replace(",", "-");
-                    chartHTML += `<div class="trend-dot ${cClass}">${sizeStr}</div>`;
+        let isTgValidating = false;
+        window.joinTg = () => {
+            if(isTgValidating) return; isTgValidating = true;
+            tg.openTelegramLink(globalSettings.tg.link);
+            const btn = document.getElementById('btn-tg'); btn.innerText = "Checking...";
+            setTimeout(() => {
+                update(userRef, { 'balances/coins': userData.balances.coins + globalSettings.tg.reward, 'tasks/tgJoined': true }).then(() => {
+                    Swal.fire("Verified!", `+${globalSettings.tg.reward} Coins added.`, "success");
+                    isTgValidating = false;
                 });
-                let chartEl = document.getElementById("trendChart");
-                chartEl.innerHTML = chartHTML;
-                chartEl.scrollLeft = chartEl.scrollWidth;
+            }, 10000); // 10 Sec wait for verification
+        };
 
-                // Populate Table
-                let tableHTML = "";
-                for(let i=0; i<10; i++) { 
-                    if(!list[i]) break;
-                    let item = list[i];
-                    let num = parseInt(item.number);
-                    
-                    let colorClass = "bg-" + item.color.toLowerCase().replace(",", "-"); 
-                    let displayColor = item.color.replace(",", " & ");
-                    
-                    let sizeClass = (num >= 5) ? "size-big" : "size-small";
-                    let sizeLabel = (num >= 5) ? "BIG" : "SMALL";
-                    
-                    tableHTML += `
-                        <tr style="animation: fadeInUp ${0.1 * i}s ease-out">
-                            <td style="color:var(--text-muted)">${item.issueNumber.slice(-4)}</td>
-                            <td style="font-size:1.1rem; font-weight:700;"><span class="badge ${colorClass}">${num}</span></td>
-                            <td><span class="size-badge ${sizeClass}">${sizeLabel}</span></td>
-                        </tr>
-                    `;
-                }
-                document.getElementById("historyBody").innerHTML = tableHTML;
-                
-                updatePatternTracker(list);
-            }
-        }
+        window.claimDaily = () => {
+            const now = Date.now();
+            if (now - (userData.cooldowns?.dailyBonus || 0) > 86400000) {
+                update(userRef, { 'balances/coins': userData.balances.coins + 100, 'cooldowns/dailyBonus': now }).then(() => Swal.fire("Claimed!", "+100 Coins", "success"));
+            } else { Swal.fire("Wait", "Come back later.", "info"); }
+        };
 
-        function updatePatternTracker(list) {
-            if(!list || list.length < 10) return;
-            let colors = list.slice(0, 20).map(i => i.color.toLowerCase().includes("red") ? "R" : "G");
-            let patterns = [];
+        window.playMath = async () => {
+            if (userData.limits.math <= 0) return Swal.fire("Limit Reached", "Tomorrow!", "warning");
+            const a = Math.floor(Math.random()*50)+1, b = Math.floor(Math.random()*50)+1;
+            const { value: ans } = await Swal.fire({ title: 'Math Quiz', text: `${a} + ${b} = ?`, input: 'number', showCancelButton: true });
+            if (ans && parseInt(ans) === a+b) { update(userRef, { 'balances/coins': userData.balances.coins + 10, 'limits/math': userData.limits.math - 1 }).then(() => Swal.fire({ title:"Correct!", icon:"success", timer:1000 })); }
+            else if(ans) { update(userRef, { 'limits/math': userData.limits.math - 1 }).then(() => Swal.fire("Wrong!", "", "error")); }
+        };
+
+        window.playScratch = () => {
+            if (userData.limits.scratch <= 0) return Swal.fire("Limit Reached", "Tomorrow!", "warning");
+            Swal.fire({ html: `<div id="s-area" class="w-full h-32 bg-gray-300 border-2 border-dashed rounded-xl flex items-center justify-center font-bold cursor-pointer" onclick="window.rScratch()">SCRATCH HERE</div>`, showConfirmButton: false });
+        };
+        window.rScratch = () => {
+            const a = document.getElementById('s-area'); if(a.dataset.s) return; a.dataset.s = "1";
+            const r = Math.floor(Math.random()*15)+5;
+            a.className = "w-full h-32 bg-green-200 text-green-800 border-2 border-green-500 rounded-xl flex items-center justify-center text-2xl font-bold transition-all"; a.innerHTML = `+${r} Coins!`;
+            update(userRef, { 'balances/coins': userData.balances.coins + r, 'limits/scratch': userData.limits.scratch - 1 });
+            setTimeout(() => Swal.close(), 1500);
+        };
+
+        window.withdraw = (e) => {
+            e.preventDefault();
+            const method = document.getElementById('w-method').value, phone = document.getElementById('w-phone').value, amount = parseFloat(document.getElementById('w-amount').value);
+            if (amount < globalSettings.app.minW) return Swal.fire("Error", `Min withdraw is ${globalSettings.app.minW} BDT`, "error");
+            if (amount > userData.balances.bdt) return Swal.fire("Error", "Insufficient balance", "error");
             
-            // Analyze last 20 for zigzag (R-G-R-G)
-            let zigzagCount = 0;
-            for(let i=0; i<colors.length-1; i++) {
-                if(colors[i] !== colors[i+1]) zigzagCount++;
-            }
-            if(zigzagCount >= 9) patterns.push({ name: "ZigZag (Alternating)", probability: "High (80%)", type: "warning" });
-
-            // Streak of same color
-            if(colors[0] === colors[1] && colors[1] === colors[2]) {
-                patterns.push({ name: `${colors[0] === 'R' ? 'Red' : 'Green'} Streak Detected`, probability: "Breaking Soon", type: "danger" });
-            }
-
-            // Mirror (AABB)
-            if(colors[0] === colors[1] && colors[2] === colors[3] && colors[0] !== colors[2]) {
-                patterns.push({ name: "Double Mirror (AABB)", probability: "Medium", type: "success" });
-            }
-            
-            if(patterns.length === 0) {
-                patterns.push({ name: "Market is Random/Neutral", probability: "Unpredictable", type: "primary" });
-            }
-
-            let html = "";
-            patterns.forEach(p => {
-                let badgeClass = p.type === 'danger' ? 'background:rgba(255,59,48,0.2); color:var(--red-color);' : 
-                                (p.type === 'success' ? 'background:rgba(52,199,89,0.2); color:var(--green-color);' : 
-                                (p.type === 'warning' ? 'background:rgba(255,159,10,0.2); color:var(--warning);' : 
-                                'background:rgba(0,242,254,0.2); color:var(--primary);'));
-                                
-                html += `
-                <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.3); padding:10px 15px; border-radius:10px; border:1px solid rgba(255,255,255,0.05);">
-                    <span style="font-weight:600; font-size:0.85rem;"><i class="fas fa-check-circle" style="color:var(--text-muted); margin-right:5px;"></i> ${p.name}</span>
-                    <span style="${badgeClass} padding:4px 10px; border-radius:12px; font-size:0.7rem; font-weight:700;">${p.probability}</span>
-                </div>`;
-            });
-            document.getElementById("patternList").innerHTML = html;
-        }
-
-        // Flawless AI Predictor Algorithm (Size Only)
-        function localAIPredictor(historyList) {
-            let sizePred = "BIG";
-            let available = historyList.length;
-            let isStrongPattern = false;
-
-            if (available >= 4) {
-                let sizes = historyList.slice(0, 10).map(i => parseInt(i.number) >= 5 ? "BIG" : "SMALL");
-                let s1 = sizes[0], s2 = sizes[1], s3 = sizes[2], s4 = sizes[3];
-                
-                // Find current streak length
-                let streak = 1;
-                for(let i=1; i<available; i++) {
-                    if(sizes[i] === sizes[0]) streak++;
-                    else break;
-                }
-
-                // ZigZag streak length
-                let zigzag = 1;
-                for(let i=1; i<available; i++) {
-                    if(sizes[i] !== sizes[i-1]) zigzag++;
-                    else break;
-                }
-
-                // --- ADVANCED MACHINE-LIKE PATTERN RECOGNITION ---
-                // 1. Long Streak (5+) => Break it (Reversal)
-                if (streak >= 5) {
-                    sizePred = s1 === "BIG" ? "SMALL" : "BIG";
-                    isStrongPattern = true;
-                } 
-                // 2. Medium Streak (3-4) => Follow it
-                else if (streak === 3 || streak === 4) {
-                    sizePred = s1; 
-                    isStrongPattern = true;
-                } 
-                // 3. Zigzag Pattern => Follow Zigzag
-                else if (zigzag >= 3 && zigzag < 5) {
-                    sizePred = s1 === "BIG" ? "SMALL" : "BIG";
-                    isStrongPattern = true;
-                }
-                // 4. Zigzag Break (5+) => Break Zigzag
-                else if (zigzag >= 5) {
-                    sizePred = s1; 
-                    isStrongPattern = true;
-                }
-                // 5. Double-Double (A-A-B-B) -> Next should be A
-                else if (s1 === s2 && s2 !== s3 && s3 === s4) {
-                    sizePred = s1 === "BIG" ? "SMALL" : "BIG";
-                    isStrongPattern = true;
-                }
-                // 6. Mirror/Two-One (A-B-B-A) -> Next should be A
-                else if (s1 !== s2 && s2 === s3 && s3 !== s4) {
-                    sizePred = s1;
-                    isStrongPattern = true;
-                }
-                // 7. General Trend Follow (Volatility adjustment)
-                else {
-                    let bigCount = 0, smallCount = 0;
-                    for (let i = 0; i < Math.min(available, 7); i++) {
-                        if (sizes[i] === "BIG") bigCount++;
-                        else smallCount++;
-                    }
-                    
-                    if (bigCount >= 5) { sizePred = "BIG"; isStrongPattern = true; }
-                    else if (smallCount >= 5) { sizePred = "SMALL"; isStrongPattern = true; }
-                    else {
-                        // Alternate randomly or follow last to avoid stuck state
-                        sizePred = Math.random() > 0.4 ? s1 : (s1 === "BIG" ? "SMALL" : "BIG");
-                        isStrongPattern = false;
-                    }
-                }
-            } else {
-                sizePred = Math.random() > 0.5 ? "BIG" : "SMALL";
-                isStrongPattern = false;
-            }
-
-            // --- REALISTIC CONFIDENCE CALCULATION ---
-            let isVip = sessionStorage.getItem('userRole') === 'vip';
-            
-            // Confidence based on pattern strength
-            let finalConf;
-            if (isStrongPattern) {
-                finalConf = Math.floor(Math.random() * 6) + 90; // 90% - 95%
-            } else {
-                finalConf = Math.floor(Math.random() * 8) + 78; // 78% - 85%
-            }
-            
-            if(isVip) {
-                finalConf += Math.floor(Math.random() * 4) + 2; // VIP gets boost
-            }
-            
-            // Hard caps to prevent fake 99% that breaks trust
-            if(finalConf > 96) finalConf = 96;
-            if(finalConf < 78) finalConf = 78;
-
-            return {
-                predicted_size: sizePred,
-                confidence: finalConf + "%",
-                isStrong: isStrongPattern
-            };
-        }
-
-        // Auto Prediction Execution
-        async function autoPredict() {
-            if(globalHistoryList.length === 0 || isPredicting || isSystemInMaintenance) return;
-            isPredicting = true;
-
-            const loader = document.getElementById("loader");
-            const resultCard = document.getElementById("resultCard");
-
-            loader.style.display = "block";
-            resultCard.style.display = "none";
-
-            try {
-                // Simulate AI thinking delay
-                await new Promise(r => setTimeout(r, 1200 + Math.random() * 800));
-                
-                let analysis = localAIPredictor(globalHistoryList);
-                
-                let levelObj = window.currentMartingaleLevel || 1;
-                let isSkipped = (!analysis.isStrong && levelObj === 1);
-                
-                lastPrediction = {
-                    period: (BigInt(globalHistoryList[0].issueNumber) + 1n).toString(),
-                    size: analysis.predicted_size,
-                    isSkipped: isSkipped
-                };
-
-                displayResult(analysis);
-                playDing(); 
-                
-                // Telegram Auto Signal
-                if(window.tgConfig && window.tgConfig.token && window.tgConfig.chatId && window.tgConfig.autoSignal) {
-                    let nextPeriod = lastPrediction.period;
-                    if(window.db && window.ref && window.runTransaction) {
-                        window.runTransaction(window.ref(window.db, 'settings/lastSignalPeriod'), (currentData) => {
-                            if (currentData === nextPeriod) {
-                                return; // Abort transaction (already signaled by someone else)
-                            }
-                            return nextPeriod; // Claim it
-                        }).then((result) => {
-                            if(result.committed) {
-                                let amountStr = levelObj === 1 ? "1X" : (levelObj === 2 ? "3X" : (levelObj === 3 ? "9X" : "27X"));
-                                let signalBody = "";
-
-                                if (isSkipped) {
-                                    signalBody = `⚠️ <b>Market is Volatile</b>\n📉 <b>Action:</b> SKIP this period`;
-                                } else {
-                                    signalBody = `📏 <b>Size:</b> ${analysis.predicted_size}\n💰 <b>Investment:</b> Level ${levelObj} (${amountStr})\n⚡ <b>Confidence:</b> ${analysis.confidence}`;
-                                }
-
-                                let msg = `🎯 <b>WinGo 1M AI Signal</b>\n\n🗓 <b>Period:</b> ${nextPeriod}\n${signalBody}\n\n🤖 <i>Powered by AI Tracker</i>`;
-                                
-                                let url = `https://api.telegram.org/bot${window.tgConfig.token}/sendMessage?chat_id=${window.tgConfig.chatId}&text=${encodeURIComponent(msg)}&parse_mode=HTML`;
-                                fetch(url).catch(e => console.error(e));
-                            }
-                        }).catch(err => console.error("Transaction Error", err));
-                    }
-                }
-                
-            } catch (error) {
-                console.error(error);
-            } finally {
-                loader.style.display = "none";
-                isPredicting = false;
-            }
-        }
-
-        function displayResult(analysis) {
-            const card = document.getElementById("resultCard");
-            const sizeEl = document.getElementById("predSize");
-            const confEl = document.getElementById("predConf");
-
-            let pSize = analysis.predicted_size;
-            
-            sizeEl.innerText = pSize;
-            confEl.innerText = analysis.confidence;
-
-            if(pSize === "BIG") {
-                sizeEl.style.color = "var(--orange-color)";
-                card.style.boxShadow = "0 10px 30px rgba(255, 159, 10, 0.2)";
-                card.style.borderColor = "rgba(255, 159, 10, 0.2)";
-            } else {
-                sizeEl.style.color = "var(--blue-color)";
-                card.style.boxShadow = "0 10px 30px rgba(10, 132, 255, 0.2)";
-                card.style.borderColor = "rgba(10, 132, 255, 0.2)";
-            }
-
-            card.style.display = "block";
-        }
+            Swal.fire({ title: 'Processing...', didOpen: () => Swal.showLoading() });
+            Promise.all([
+                update(userRef, { 'balances/bdt': userData.balances.bdt - amount }),
+                push(ref(db, 'withdrawals/' + userId), { method, phone, amount, status: 'Pending', timestamp: Date.now() })
+            ]).then(() => { Swal.fire("Success", "Submitted!", "success"); e.target.reset(); });
+        };
     </script>
 </body>
 </html>
