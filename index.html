@@ -8,16 +8,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    
-    <!-- Ad Network SDK -->
-    <script async src="https://libtl.com/sdk.js" data-zone="10981447" data-sdk="show_10981447"></script>
-    
+    <script src="https://libtl.com/sdk.js" data-zone="10981447" data-sdk="show_10981447"></script>
     <style>
         :root { --bg-color: var(--tg-theme-bg-color, #f3f4f6); --text-color: var(--tg-theme-text-color, #111827); --hint-color: var(--tg-theme-hint-color, #6b7280); --button-color: var(--tg-theme-button-color, #3b82f6); --button-text-color: var(--tg-theme-button-text-color, #ffffff); --secondary-bg-color: var(--tg-theme-secondary-bg-color, #ffffff); }
         body { background-color: var(--bg-color); color: var(--text-color); font-family: -apple-system, sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
         .tg-card { background-color: var(--secondary-bg-color); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .tg-btn { background-color: var(--button-color); color: var(--button-text-color); transition: transform 0.1s, opacity 0.2s; }
         .tg-btn:active { transform: scale(0.96); opacity: 0.8; }
+        .tg-btn:disabled { opacity: 0.6; cursor: not-allowed; }
         .tg-input { background-color: var(--bg-color); color: var(--text-color); border: 1px solid var(--hint-color); }
         .tg-input:focus { border-color: var(--button-color); outline: none; }
         .nav-item { color: var(--hint-color); transition: all 0.2s; } .nav-item.active { color: var(--button-color); transform: translateY(-2px); }
@@ -31,27 +29,23 @@
 </head>
 <body class="overflow-x-hidden pb-20">
 
-    <!-- Splash Screen -->
     <div id="splash" class="overlay-screen transition-opacity duration-500">
-        <i class="fa-solid fa-bolt text-6xl mb-4" style="color: var(--button-color)"></i>
-        <div class="loader" id="loader-spinner"></div>
-        <p class="text-xs mt-4 font-mono text-gray-500 font-bold">Connecting Secure Server...</p>
+        <i class="fa-solid fa-bolt text-6xl mb-4" style="color: var(--button-color)"></i><div class="loader"></div><p class="text-xs mt-4 font-mono text-gray-500">Loading Secure Data...</p>
     </div>
 
-    <!-- Error Detector Update: Professional Look -->
-    <script>
-        setTimeout(() => {
-            if(document.getElementById('app').classList.contains('hidden')) {
-                document.getElementById('loader-spinner').style.display = 'none';
-                document.getElementById('splash').innerHTML = `
-                    <i class="fa-solid fa-wifi text-red-500 text-5xl mb-4"></i>
-                    <h2 class="text-xl font-bold text-gray-800 mb-2">Slow Network!</h2>
-                    <p class="text-xs text-gray-500 mb-6 px-8 text-center leading-relaxed">We are having trouble connecting to the secure server. Please check your internet connection.</p>
-                    <button onclick="location.reload()" class="bg-indigo-600 text-white px-8 py-3 rounded-2xl font-bold shadow-md hover:bg-indigo-700 transition"><i class="fa-solid fa-rotate-right mr-2"></i> Try Again</button>
-                `;
-            }
-        }, 10000);
-    </script>
+    <!-- VPN BLOCK SCREEN (NEW) -->
+    <div id="vpn-screen" class="overlay-screen hidden z-[100] bg-red-50 text-center p-6">
+        <i class="fa-solid fa-shield-virus text-6xl text-red-500 mb-4"></i>
+        <h2 class="text-2xl font-bold text-red-600 mb-2">VPN Detected!</h2>
+        <p class="text-gray-600 font-medium">Please disable your VPN or Proxy to use this app and prevent fraudulent activities.</p>
+    </div>
+
+    <!-- BANNED SCREEN -->
+    <div id="banned-screen" class="overlay-screen hidden z-[100] bg-red-50 text-center p-6">
+        <i class="fa-solid fa-ban text-6xl text-red-500 mb-4"></i>
+        <h2 class="text-2xl font-bold text-red-600 mb-2">Account Banned</h2>
+        <p class="text-gray-600 font-medium">Your account has been suspended due to policy violation or auto-clicker usage.</p>
+    </div>
 
     <div id="app" class="hidden">
         <!-- HOME TAB -->
@@ -91,8 +85,10 @@
                 <div class="tg-card p-4 rounded-2xl flex flex-col items-center text-center"><div class="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center text-pink-500 text-xl mb-2"><i class="fa-solid fa-ticket"></i></div><h3 class="font-bold text-sm">Scratch Card</h3><p id="txt-scratch-reward" class="text-[10px] font-bold text-green-500 mb-1">Loading...</p><p class="text-[10px] mb-3" style="color: var(--hint-color)"><span id="limit-scratch">0</span> Left</p><button onclick="window.playScratch()" class="tg-btn w-full py-2 rounded-lg font-bold text-xs shadow">Scratch</button></div>
             </div>
 
-            <!-- Dynamic Social Tasks -->
-            <div id="social-tasks-container" class="space-y-3 mt-4"></div>
+            <!-- DYNAMIC SOCIAL TASKS CONTAINER (NEW) -->
+            <div id="social-tasks-container" class="space-y-3 mt-4">
+                <!-- Tasks will load here dynamically based on Admin settings -->
+            </div>
         </div>
 
         <!-- WALLET TAB -->
@@ -100,12 +96,8 @@
             <h2 class="text-xl font-bold mb-4">Cashout</h2>
             <div class="tg-card p-5 rounded-3xl mb-6">
                 <!-- Condition Notice -->
-                <div id="withdraw-notice" class="bg-red-50 border border-red-200 p-3 rounded-xl mb-4 text-center hidden">
-                    <p class="text-xs font-bold text-red-600 mb-1"><i class="fa-solid fa-lock mr-1"></i> Require <span id="req-ads-w">0</span> Ads for Withdrawal</p>
-                    <div class="flex justify-between text-[10px] font-bold mt-2">
-                        <span class="text-gray-500">Watched: <span id="done-ads-w" class="text-indigo-600">0</span></span>
-                        <span class="text-gray-500">Remaining: <span id="left-ads-w" class="text-red-500">0</span></span>
-                    </div>
+                <div id="withdraw-notice" class="bg-red-50 border border-red-200 text-red-600 p-3 rounded-xl text-xs font-bold mb-4 text-center hidden">
+                    <i class="fa-solid fa-lock mr-1"></i> You must watch <span id="req-ads-w">0</span> Ads to unlock withdrawal. (Watched: <span id="done-ads-w">0</span>)
                 </div>
 
                 <form id="withdraw-form" onsubmit="window.withdraw(event)">
@@ -166,13 +158,28 @@
         const startParam = tg.initDataUnsafe?.start_param;
 
         let userData = null;
-        let globalSettings = { app:{ adLimit:10, mathLimit:10, scratchLimit:10, minW:10, coinRate:1000, bdtReward:10, minAdsWithdraw: 20, minAdsDaily: 5, adsPerClick: 3 }, rewards:{ video:50, daily:100, math:15, scratchMax:20 }, socialTasks:{}, support:{tg:'', wa:'', fb:''}, ref:{} };
+        let globalSettings = { app:{ adLimit:10, mathLimit:10, scratchLimit:10, minW:10, coinRate:1000, bdtReward:10, minAdsWithdraw: 20, minAdsDaily: 5, adsPerClick: 3 }, rewards:{ video:50, daily:100, math:15, scratchMax:20 }, socialTasks:{}, support:{tg:'', wa:'', fb:''}, ref:{}, security:{vpnBlock:false, taskCooldown:5, spamLimit:3} };
         const userRef = ref(db, 'users/' + userId);
 
-        let lastClickTime = 0; let spamWarnings = 0;
+        let lastClickTime = 0; let spamWarnings = 0; let onCooldown = false;
 
-        // FIXED TIMING LOGIC: Replaced DOMContentLoaded with direct execution
-        async function startAppInit() {
+        // NEW: VPN Checker
+        async function checkVPN() {
+            if (globalSettings.security?.vpnBlock) {
+                try {
+                    let res = await fetch('https://ipwho.is/');
+                    let data = await res.json();
+                    if (data.security && (data.security.vpn || data.security.proxy || data.security.tor)) {
+                        document.getElementById('splash').style.display = 'none';
+                        document.getElementById('vpn-screen').classList.remove('hidden');
+                        return true; 
+                    }
+                } catch(e) { console.log("VPN Check API failed", e); }
+            }
+            return false;
+        }
+
+        window.addEventListener('DOMContentLoaded', async () => {
             const name = `${tgUser.first_name} ${tgUser.last_name || ''}`.trim();
             document.getElementById('user-avatar').src = tgUser.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}`;
             document.getElementById('profile-avatar').src = tgUser.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}`;
@@ -180,7 +187,13 @@
             document.getElementById('profile-username').innerText = tgUser.username ? `@${tgUser.username}` : '';
             document.getElementById('profile-id').innerText = userId; document.getElementById('ref-link').value = `https://t.me/EarningJohn_bot/cash?startapp=${userId}`;
 
-            onValue(ref(db, 'settings'), (snap) => { if(snap.exists()) { globalSettings = { ...globalSettings, ...snap.val() }; updateUI(); } });
+            onValue(ref(db, 'settings'), async (snap) => { 
+                if(snap.exists()) { 
+                    globalSettings = { ...globalSettings, ...snap.val() }; 
+                    if(await checkVPN()) return; // Block access if VPN
+                    updateUI(); 
+                } 
+            });
 
             onValue(userRef, async (snapshot) => {
                 const today = new Date().toDateString();
@@ -188,8 +201,7 @@
                     userData = snapshot.val();
                     if (userData.status === 'banned') {
                         document.getElementById('splash').style.display = 'none'; document.getElementById('app').style.display = 'none';
-                        document.body.innerHTML = `<div class="fixed inset-0 flex flex-col items-center justify-center bg-gray-50 z-[100]"><i class="fa-solid fa-user-slash text-6xl text-red-500 mb-4"></i><h1 class="text-2xl font-bold mb-2">Account Banned</h1><p class="text-sm text-gray-500">Your account has been suspended.</p></div>`;
-                        return;
+                        document.getElementById('banned-screen').classList.remove('hidden'); return;
                     }
                     if (userData.limits?.date !== today) {
                         await update(userRef, { 'limits/ads': 0, 'limits/math': globalSettings.app.mathLimit||10, 'limits/scratch': globalSettings.app.scratchLimit||10, 'limits/date': today });
@@ -199,12 +211,13 @@
                     if (startParam && startParam !== userId) {
                         try { const refSnap = await get(ref(db, 'users/' + startParam)); if (refSnap.exists()) { iCoins = globalSettings.ref?.joined || 100; update(ref(db, `users/${startParam}/balances`), { coins: (refSnap.val().balances?.coins||0) + (globalSettings.ref?.referrer||200) }); push(ref(db, `users/${startParam}/history`), { title: 'Referral Bonus', amount: globalSettings.ref?.referrer||200, timestamp: Date.now() }); } } catch(e) {}
                     }
-                    userData = { info: { firstName: name, username: tgUser.username||'' }, balances: { coins: iCoins, bdt: 0 }, limits: { ads: 0, math: globalSettings.app.mathLimit||10, scratch: globalSettings.app.scratchLimit||10, date: today }, stats: { totalAds: 0 }, tasks:{}, status: 'active' };
+                    userData = { info: { firstName: tgUser.first_name, username: tgUser.username||'' }, balances: { coins: iCoins, bdt: 0 }, limits: { ads: 0, math: globalSettings.app.mathLimit||10, scratch: globalSettings.app.scratchLimit||10, date: today }, stats: { totalAds: 0 }, tasks:{}, status: 'active' };
                     await set(userRef, userData);
                     if(iCoins > 0) push(ref(db, `users/${userId}/history`), { title: 'Welcome Bonus', amount: iCoins, timestamp: Date.now() });
                 }
             });
 
+            // LOAD EARNING HISTORY
             onValue(ref(db, `users/${userId}/history`), (snap) => {
                 const hList = document.getElementById('earning-history'); hList.innerHTML = '';
                 if(!snap.exists()) { hList.innerHTML = `<p class="text-center text-xs text-gray-400 py-4">No earnings yet. Start playing!</p>`; return; }
@@ -213,6 +226,7 @@
                 });
             });
 
+            // LOAD WITHDRAWALS
             onValue(ref(db, 'withdrawals/' + userId), (snap) => {
                 const list = document.getElementById('withdraw-history'); list.innerHTML = '';
                 if (!snap.exists()) { list.innerHTML = `<p class="text-center text-xs text-gray-400 py-4">No history yet</p>`; return; }
@@ -222,12 +236,8 @@
                 });
             });
 
-            // Show app exactly after connecting to DB
-            setTimeout(() => { document.getElementById('splash').style.display = 'none'; document.getElementById('app').classList.remove('hidden'); }, 1000);
-        }
-
-        // Call the setup directly!
-        startAppInit();
+            setTimeout(() => { if(!document.getElementById('vpn-screen').classList.contains('hidden')) return; document.getElementById('splash').style.display = 'none'; document.getElementById('app').classList.remove('hidden'); }, 1500);
+        });
 
         function updateUI() {
             if(!userData) return;
@@ -241,7 +251,7 @@
             const adsPerClick = globalSettings.app.adsPerClick || 3;
             document.getElementById('btn-ad-text').innerText = `Watch ${adsPerClick} Ads`;
             
-            document.getElementById('txt-daily-reward').innerText = `+${globalSettings.rewards.daily} Coins`;
+            document.getElementById('txt-daily-req').innerText = `+${globalSettings.rewards.daily} Coins`;
             document.getElementById('txt-video-reward').innerText = `+${globalSettings.rewards.video} Coins`;
             document.getElementById('txt-math-reward').innerText = `+${globalSettings.rewards.math} Coins`;
             document.getElementById('txt-scratch-reward').innerText = `Up to +${globalSettings.rewards.scratchMax} Coins`;
@@ -257,28 +267,33 @@
 
             const minAdsWithdraw = globalSettings.app.minAdsWithdraw || 20;
             const totalWatched = userData.stats?.totalAds || 0;
-            const remaining = Math.max(0, minAdsWithdraw - totalWatched);
-            
-            if(remaining > 0) {
+            if(totalWatched < minAdsWithdraw) {
                 document.getElementById('withdraw-notice').classList.remove('hidden');
-                document.getElementById('req-ads-w').innerText = minAdsWithdraw; 
-                document.getElementById('done-ads-w').innerText = totalWatched;
-                document.getElementById('left-ads-w').innerText = remaining;
+                document.getElementById('req-ads-w').innerText = minAdsWithdraw; document.getElementById('done-ads-w').innerText = totalWatched;
             } else { document.getElementById('withdraw-notice').classList.add('hidden'); }
 
-            let stHtml = '';
-            for(let i=1; i<=3; i++) {
-                const st = globalSettings.socialTasks?.['tg'+i];
-                if(st && st.active) {
-                    const isJoined = userData.tasks?.['tg'+i+'Joined'];
-                    stHtml += `
-                    <div class="tg-card p-4 rounded-2xl flex items-center justify-between">
-                        <div class="flex items-center gap-3"><div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 text-xl"><i class="fa-brands fa-telegram"></i></div><div><h3 class="font-bold text-sm">Join Task ${i}</h3><p class="text-[11px] font-bold text-green-500">Reward: +${st.reward}</p></div></div>
-                        <button onclick="window.joinSocialTg(${i}, '${st.link}', ${st.reward})" class="tg-btn px-4 py-2 rounded-lg font-bold text-xs shadow" ${isJoined ? 'disabled style="background:#e5e7eb;color:#9ca3af;"'}>${isJoined ? 'Completed' : 'Join'}</button>
-                    </div>`;
+            // NEW: DYNAMIC SOCIAL TASKS RENDER
+            const stContainer = document.getElementById('social-tasks-container');
+            stContainer.innerHTML = '';
+            ['tg1', 'tg2', 'tg3'].forEach((taskId, index) => {
+                const task = globalSettings.socialTasks?.[taskId];
+                if (task && task.active) {
+                    const isDone = userData.tasks?.[taskId];
+                    const btnHtml = isDone 
+                        ? `<button class="tg-btn bg-gray-200 text-gray-500 px-4 py-2 rounded-lg font-bold text-xs shadow-inner" disabled>Completed</button>`
+                        : `<button id="btn-${taskId}" onclick="window.doSocialTask('${taskId}', '${task.link}', ${task.reward})" class="tg-btn px-4 py-2 rounded-lg font-bold text-xs shadow">Join</button>`;
+                    
+                    stContainer.innerHTML += `
+                        <div class="tg-card p-4 rounded-2xl flex items-center justify-between border border-gray-100">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 text-lg"><i class="fa-brands fa-telegram"></i></div>
+                                <div><h3 class="font-bold text-sm">Join Channel ${index+1}</h3><p class="text-[11px] font-bold text-green-500">Reward: +${task.reward} Coins</p></div>
+                            </div>
+                            ${btnHtml}
+                        </div>
+                    `;
                 }
-            }
-            document.getElementById('social-tasks-container').innerHTML = stHtml;
+            });
         }
 
         window.switchTab = (tabId) => { document.querySelectorAll('.tab-content, .nav-item').forEach(el => el.classList.remove('active')); document.getElementById(`tab-${tabId}`).classList.add('active'); event.currentTarget.classList.add('active'); };
@@ -292,6 +307,7 @@
             if(sup.wa) html += `<button onclick="window.goLink('${sup.wa}')" class="w-full bg-[#25D366] text-white p-3.5 rounded-xl font-bold flex items-center justify-center gap-3 shadow-md"><i class="fa-brands fa-whatsapp text-2xl"></i> WhatsApp Support</button>`;
             if(sup.fb) html += `<button onclick="window.goLink('${sup.fb}')" class="w-full bg-[#1877F2] text-white p-3.5 rounded-xl font-bold flex items-center justify-center gap-3 shadow-md"><i class="fa-brands fa-facebook text-2xl"></i> Facebook Support</button>`;
             html += '</div>';
+
             Swal.fire({ title: 'Contact Us', html: html, showConfirmButton: false, showCloseButton: true });
         };
         
@@ -303,11 +319,30 @@
         window.copyRef = () => { document.getElementById('ref-link').select(); document.execCommand("copy"); tg.HapticFeedback.impactOccurred('light'); Swal.fire({toast:true, position:'top-end', icon:'success', title:'Link Copied!', showConfirmButton:false, timer:1500}); };
         window.shareRef = () => { tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(document.getElementById('ref-link').value)}&text=Join%20and%20earn%20free%20money%20with%20me!`); };
 
+        // NEW: ANTI-CHEAT Cooldown Timer
+        function startTaskCooldown() {
+            const cdSeconds = globalSettings.security?.taskCooldown || 5;
+            onCooldown = true;
+            setTimeout(() => { onCooldown = false; }, cdSeconds * 1000);
+        }
+
         function checkAntiCheat() {
+            if (onCooldown) {
+                const waitSec = globalSettings.security?.taskCooldown || 5;
+                Swal.fire("Wait!", `Please wait ${waitSec} seconds between tasks to prevent spam.`, "warning");
+                return true;
+            }
+
             const now = Date.now();
             if (now - lastClickTime < 1500) { 
                 spamWarnings++;
-                if(spamWarnings >= 3) { update(userRef, { status: 'banned' }); Swal.fire({ title: "Banned!", text: "Account suspended for fast clicking.", icon: "error", allowOutsideClick: false }); setTimeout(() => location.reload(), 2000); return true; }
+                const maxSpam = globalSettings.security?.spamLimit || 3;
+                if(spamWarnings >= maxSpam) { 
+                    update(userRef, { status: 'banned' }); 
+                    Swal.fire({ title: "Banned!", text: "Account suspended for using Auto-Clicker or Scripts.", icon: "error", allowOutsideClick: false }); 
+                    setTimeout(() => location.reload(), 2000); 
+                    return true; 
+                }
                 Swal.fire("Warning", "You are clicking too fast! Slow down.", "warning"); return true;
             }
             lastClickTime = now; spamWarnings = 0; return false;
@@ -319,12 +354,6 @@
             updates[`history/${historyRefKey}`] = { title, amount, timestamp: Date.now() };
             await update(userRef, updates);
         }
-
-        const showAdFirst = async () => {
-            if (typeof show_10981447 !== 'function') { Swal.fire("Ad Error", "Ad network is blocked. Try again.", "error"); return false; }
-            Swal.fire({ title: 'Loading Advertisement...', text: 'Watch full video to get reward!', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-            try { await show_10981447(); Swal.close(); return true; } catch (error) { Swal.close(); Swal.fire("Cancelled", "You must watch the full video.", "error"); return false; }
-        };
 
         window.convertCoins = async () => {
             const req = globalSettings.app.coinRate || 1000; const rew = globalSettings.app.bdtReward || 10;
@@ -347,13 +376,16 @@
                 try {
                     await show_10981447(); 
                     if(i < adsToWatch) await new Promise(r => setTimeout(r, 1500)); 
-                } catch(e) { return Swal.fire("Cancelled", `You stopped at Ad ${i}. Watch all continuously to get coins.`, "error"); }
+                } catch(e) { return Swal.fire("Cancelled", `You stopped at Ad ${i}. You must watch all ${adsToWatch} ads continuously to get coins.`, "error"); }
             }
 
             const currentTotal = userData.stats?.totalAds || 0;
-            await update(userRef, { 'limits/ads': watched + 1, 'stats/totalAds': currentTotal + adsToWatch });
-            await giveReward('Video Task', globalSettings.rewards.video||50);
+            await update(userRef, { 'balances/coins': userData.balances.coins + (globalSettings.rewards.video||50), 'limits/ads': watched + 1, 'stats/totalAds': currentTotal + adsToWatch });
+            const historyRefKey = push(ref(db, `users/${userId}/history`)).key;
+            await update(ref(db, `users/${userId}/history/${historyRefKey}`), { title: 'Video Task', amount: globalSettings.rewards.video||50, timestamp: Date.now() });
+            
             Swal.fire({ title: "Excellent!", text: `+${globalSettings.rewards.video} Coins Added!`, icon: "success" }); tg.HapticFeedback.notificationOccurred('success');
+            startTaskCooldown();
         };
 
         window.claimDaily = async () => {
@@ -372,19 +404,13 @@
             if (userData.limits.math <= 0) return Swal.fire("Limit Reached", "Come back tomorrow!", "warning");
             const a = Math.floor(Math.random()*20)+1, b = Math.floor(Math.random()*20)+1;
             const { value: ans } = await Swal.fire({ title: 'Math Quiz', text: `${a} + ${b} = ?`, input: 'number', showCancelButton: true });
-            
             if(checkAntiCheat()) return;
-            
             if (ans && parseInt(ans) === a+b) { 
-                if (await showAdFirst()) { 
-                    await giveReward('Math Quiz', globalSettings.rewards.math||15);
-                    const currentTotal = userData.stats?.totalAds || 0;
-                    await update(userRef, { 'limits/math': userData.limits.math - 1, 'stats/totalAds': currentTotal + 1 });
-                    Swal.fire({ title:"Correct!", text:`+${globalSettings.rewards.math} Coins`, icon:"success", timer:1500 }); 
-                }
-            } else if(ans) { 
-                await update(userRef, { 'limits/math': userData.limits.math - 1 }); Swal.fire("Wrong!", "Try again.", "error"); 
-            }
+                await giveReward('Math Quiz', globalSettings.rewards.math||15);
+                await update(userRef, { 'limits/math': userData.limits.math - 1 });
+                Swal.fire({ title:"Correct!", text:`+${globalSettings.rewards.math} Coins`, icon:"success", timer:1500 }); 
+                startTaskCooldown();
+            } else if(ans) { await update(userRef, { 'limits/math': userData.limits.math - 1 }); Swal.fire("Wrong!", "Try again.", "error"); startTaskCooldown(); }
         };
 
         window.playScratch = () => {
@@ -398,27 +424,18 @@
             const r = Math.floor(Math.random() * ((globalSettings.rewards.scratchMax||20) - 5 + 1)) + 5; 
             a.className = "w-full h-32 bg-gradient-to-r from-pink-500 to-rose-500 text-white border-none rounded-2xl flex justify-center items-center text-3xl font-extrabold shadow-inner"; 
             a.innerHTML = `🎉 +${r}`;
-            
-            await new Promise(res => setTimeout(res, 800));
-            
-            if (await showAdFirst()) { 
-                await giveReward('Scratch Card', r);
-                const currentTotal = userData.stats?.totalAds || 0;
-                await update(userRef, { 'limits/scratch': userData.limits.scratch - 1, 'stats/totalAds': currentTotal + 1 });
-                Swal.fire({ title:"Great!", text:`+${r} Coins Added!`, icon:"success", timer:1500 }); 
-            } else {
-                a.dataset.s = ""; 
-                a.className = "w-full h-32 border-2 border-dashed border-gray-300 rounded-2xl flex items-center justify-center font-extrabold cursor-pointer text-xl text-gray-400 bg-gray-50"; 
-                a.innerHTML = "TAP TO SCRATCH AGAIN";
-            }
+            await giveReward('Scratch Card', r);
+            await update(userRef, { 'limits/scratch': userData.limits.scratch - 1 });
+            setTimeout(() => Swal.close(), 1500);
+            startTaskCooldown();
         };
 
-        window.joinSocialTg = async (id, link, reward) => {
+        window.doSocialTask = async (taskId, link, reward) => {
+            const btn = document.getElementById(`btn-${taskId}`); btn.disabled = true; btn.innerText = "Verifying...";
             window.goLink(link);
-            Swal.fire({ title: 'Checking...', text: 'Please wait, verifying your join...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             setTimeout(async () => {
-                await giveReward(`Social Task ${id}`, reward);
-                await update(userRef, { [`tasks/tg${id}Joined`]: true });
+                await giveReward(`Social Task (${taskId})`, reward);
+                await update(userRef, { [`tasks/${taskId}`]: true });
                 Swal.fire("Verified!", `Received +${reward} Coins.`, "success");
             }, 5000);
         };
