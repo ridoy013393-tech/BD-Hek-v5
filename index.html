@@ -9,8 +9,8 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
-    <!-- Ad Network SDK -->
-    <script src="https://libtl.com/sdk.js" data-zone="10981447" data-sdk="show_10981447"></script>
+    <!-- Fix: Added async to prevent ad-blockers from stopping app load -->
+    <script async src="https://libtl.com/sdk.js" data-zone="10981447" data-sdk="show_10981447"></script>
     
     <style>
         :root { --bg-color: var(--tg-theme-bg-color, #f3f4f6); --text-color: var(--tg-theme-text-color, #111827); --hint-color: var(--tg-theme-hint-color, #6b7280); --button-color: var(--tg-theme-button-color, #3b82f6); --button-text-color: var(--tg-theme-button-text-color, #ffffff); --secondary-bg-color: var(--tg-theme-secondary-bg-color, #ffffff); }
@@ -31,31 +31,31 @@
 </head>
 <body class="overflow-x-hidden pb-20">
 
-    <!-- Splash / Loading Screen -->
+    <!-- Splash Screen -->
     <div id="splash" class="overlay-screen transition-opacity duration-500">
         <i class="fa-solid fa-bolt text-6xl mb-4" style="color: var(--button-color)"></i>
         <div class="loader" id="loader-spinner"></div>
-        <p id="loading-text" class="text-xs mt-4 font-mono text-gray-500 font-bold">Connecting Secure Server...</p>
+        <p class="text-xs mt-4 font-mono text-gray-500">Connecting Secure Server...</p>
     </div>
 
-    <!-- Error Detector Script -->
+    <!-- Smart Error Detector -->
     <script>
         setTimeout(() => {
             if(document.getElementById('app').classList.contains('hidden')) {
                 document.getElementById('loader-spinner').style.display = 'none';
                 document.getElementById('splash').innerHTML = `
-                    <i class="fa-solid fa-triangle-exclamation text-red-500 text-6xl mb-4"></i>
+                    <i class="fa-solid fa-triangle-exclamation text-red-500 text-5xl mb-4"></i>
                     <h2 class="text-xl font-bold text-red-500 mb-2">Connection Blocked!</h2>
                     <div class="bg-red-50 p-4 rounded-xl border border-red-200 text-left w-[90%] max-w-sm">
-                        <p class="text-xs text-red-600 font-bold mb-2">Please fix these issues to open the app:</p>
-                        <ol class="text-[11px] text-gray-700 list-decimal pl-4 space-y-1">
-                            <li>You opened this directly from your <b>File Manager</b>. Please upload it to GitHub Pages or use a Live Server.</li>
-                            <li>Turn OFF your <b>Ad-Blocker</b> or Brave Browser shields.</li>
-                            <li>Check your Internet Connection.</li>
+                        <p class="text-xs text-red-600 font-bold mb-2">Please fix these to open the app:</p>
+                        <ol class="text-[11px] text-gray-700 list-decimal pl-4 space-y-1 font-medium">
+                            <li>Do not open directly from <b>File Manager</b>. Upload to GitHub or Server.</li>
+                            <li>Turn OFF <b>Ad-Blocker</b> or Brave Browser shields.</li>
+                            <li>Check Internet Connection.</li>
                         </ol>
                     </div>`;
             }
-        }, 4000);
+        }, 8000);
     </script>
 
     <div id="app" class="hidden">
@@ -96,7 +96,6 @@
                 <div class="tg-card p-4 rounded-2xl flex flex-col items-center text-center"><div class="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center text-pink-500 text-xl mb-2"><i class="fa-solid fa-ticket"></i></div><h3 class="font-bold text-sm">Scratch Card</h3><p id="txt-scratch-reward" class="text-[10px] font-bold text-green-500 mb-1">Loading...</p><p class="text-[10px] mb-3" style="color: var(--hint-color)"><span id="limit-scratch">0</span> Left</p><button onclick="window.playScratch()" class="tg-btn w-full py-2 rounded-lg font-bold text-xs shadow">Scratch</button></div>
             </div>
 
-            <!-- Dynamic Social Tasks -->
             <div id="social-tasks-container" class="space-y-3 mt-4"></div>
         </div>
 
@@ -104,7 +103,7 @@
         <div id="tab-wallet" class="tab-content p-4">
             <h2 class="text-xl font-bold mb-4">Cashout</h2>
             <div class="tg-card p-5 rounded-3xl mb-6">
-                <!-- Condition Notice -->
+                <!-- Lock Notice -->
                 <div id="withdraw-notice" class="bg-red-50 border border-red-200 p-3 rounded-xl mb-4 text-center hidden">
                     <p class="text-xs font-bold text-red-600 mb-1"><i class="fa-solid fa-lock mr-1"></i> Require <span id="req-ads-w">0</span> Ads for Withdrawal</p>
                     <div class="flex justify-between text-[10px] font-bold mt-2">
@@ -132,13 +131,11 @@
                 <div class="bg-gray-100 px-4 py-2 rounded-lg inline-block shadow-inner" style="background-color: var(--bg-color);"><span class="text-xs font-bold text-gray-500">UID:</span><span id="profile-id" class="text-sm font-mono tracking-wider ml-2 font-bold">...</span></div>
             </div>
 
-            <!-- Earning History -->
             <div class="tg-card p-5 rounded-3xl mb-6">
                 <h3 class="font-bold text-lg mb-3 flex items-center gap-2 border-b pb-2"><i class="fa-solid fa-clock-rotate-left text-indigo-500"></i> Recent Earnings</h3>
                 <div id="earning-history" class="space-y-2 max-h-60 overflow-y-auto"><p class="text-center text-xs text-gray-400 py-4">Loading history...</p></div>
             </div>
 
-            <!-- Referral Section -->
             <div class="tg-card p-5 rounded-3xl text-center mb-6">
                 <h3 class="font-bold text-lg mb-1">Refer & Earn</h3><p id="txt-ref-reward" class="text-xs font-bold text-green-500 mb-3">Share link and earn extra coins!</p>
                 <input type="text" id="ref-link" readonly class="tg-input p-3 rounded-xl w-full text-center text-xs font-mono mb-4 bg-gray-50">
@@ -192,7 +189,7 @@
                     userData = snapshot.val();
                     if (userData.status === 'banned') {
                         document.getElementById('splash').style.display = 'none'; document.getElementById('app').style.display = 'none';
-                        document.body.innerHTML = `<div class="fixed inset-0 flex flex-col items-center justify-center bg-gray-50"><i class="fa-solid fa-user-slash text-6xl text-red-500 mb-4"></i><h1 class="text-2xl font-bold mb-2">Account Banned</h1><p class="text-sm text-gray-500">Your account has been suspended.</p></div>`;
+                        document.body.innerHTML = `<div class="fixed inset-0 flex flex-col items-center justify-center bg-gray-50 z-[100]"><i class="fa-solid fa-user-slash text-6xl text-red-500 mb-4"></i><h1 class="text-2xl font-bold mb-2">Account Banned</h1><p class="text-sm text-gray-500">Your account has been suspended.</p></div>`;
                         return;
                     }
                     if (userData.limits?.date !== today) {
@@ -226,7 +223,6 @@
                 });
             });
 
-            // Everything is verified, hide splash screen
             setTimeout(() => { document.getElementById('splash').style.display = 'none'; document.getElementById('app').classList.remove('hidden'); }, 1000);
         });
 
