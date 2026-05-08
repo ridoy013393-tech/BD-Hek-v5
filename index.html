@@ -21,14 +21,11 @@
             --button-text-color: var(--tg-theme-button-text-color, #ffffff);
             --secondary-bg-color: var(--tg-theme-secondary-bg-color, #ffffff);
         }
-        body { 
-            background-color: var(--bg-color); color: var(--text-color); 
-            font-family: -apple-system, sans-serif; user-select: none; 
-            -webkit-tap-highlight-color: transparent; 
-        }
+        body { background-color: var(--bg-color); color: var(--text-color); font-family: -apple-system, sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
         .tg-card { background-color: var(--secondary-bg-color); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .tg-btn { background-color: var(--button-color); color: var(--button-text-color); transition: opacity 0.2s; }
         .tg-btn:active { opacity: 0.8; }
+        .tg-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .nav-item { color: var(--hint-color); transition: color 0.2s; }
         .nav-item.active { color: var(--button-color); }
         
@@ -48,57 +45,45 @@
         <i class="fa-solid fa-bolt text-6xl mb-4" style="color: var(--button-color)"></i>
         <h1 class="text-2xl font-bold mb-6">Reward App</h1>
         <div class="loader"></div>
-        <p id="sec-text" class="text-xs mt-4 text-gray-500 font-mono">Checking Security & Loading Data...</p>
+        <p class="text-xs mt-4 text-gray-500 font-mono">Checking Security & Loading Data...</p>
     </div>
 
-    <!-- VPN/Proxy Screen -->
+    <!-- VPN/Banned Screens -->
     <div id="vpn-screen" class="overlay-screen hidden px-6 text-center">
         <i class="fa-solid fa-shield-virus text-6xl text-red-500 mb-4"></i>
         <h1 class="text-2xl font-bold mb-2">Access Denied!</h1>
-        <p class="text-gray-500 text-sm mb-6">VPN or Proxy connection detected. Please turn it off and restart the app.</p>
+        <p class="text-gray-500 text-sm mb-6">VPN or Proxy detected. Please turn it off.</p>
         <button onclick="tg.close()" class="tg-btn px-6 py-3 rounded-xl font-bold">Close App</button>
     </div>
-
-    <!-- Banned Screen -->
     <div id="banned-screen" class="overlay-screen hidden px-6 text-center">
         <i class="fa-solid fa-user-slash text-6xl text-red-500 mb-4"></i>
         <h1 class="text-2xl font-bold mb-2">Account Banned</h1>
-        <p class="text-gray-500 text-sm mb-6">Your account has been suspended by the administrator.</p>
+        <p class="text-gray-500 text-sm mb-6">Your account has been suspended.</p>
         <div class="text-xs text-gray-400 font-mono">UID: <span id="ban-uid"></span></div>
     </div>
 
-    <!-- Main App Container -->
+    <!-- Main App -->
     <div id="app" class="hidden">
-        
         <!-- HOME TAB -->
         <div id="tab-home" class="tab-content active p-4">
             <div class="flex items-center space-x-4 mb-6 tg-card p-4 rounded-2xl">
                 <img id="user-avatar" src="" alt="Avatar" class="w-16 h-16 rounded-full border-2" style="border-color: var(--button-color)">
-                <div>
-                    <h2 id="user-name" class="text-lg font-bold">Loading...</h2>
-                    <p class="text-sm" style="color: var(--hint-color)">Welcome back!</p>
-                </div>
+                <div><h2 id="user-name" class="text-lg font-bold">Loading...</h2><p class="text-sm" style="color: var(--hint-color)">Welcome back!</p></div>
             </div>
-
             <div class="grid grid-cols-2 gap-4 mb-6">
                 <div class="tg-card p-4 rounded-2xl flex flex-col items-center justify-center text-center">
-                    <i class="fa-solid fa-coins text-3xl text-yellow-500 mb-2"></i>
-                    <p class="text-sm mt-1" style="color: var(--hint-color)">Coins</p>
+                    <i class="fa-solid fa-coins text-3xl text-yellow-500 mb-2"></i><p class="text-sm mt-1" style="color: var(--hint-color)">Coins</p>
                     <h3 id="bal-coins" class="text-2xl font-bold">0</h3>
                 </div>
                 <div class="tg-card p-4 rounded-2xl flex flex-col items-center justify-center text-center">
-                    <i class="fa-solid fa-money-bill-wave text-3xl text-green-500 mb-2"></i>
-                    <p class="text-sm mt-1" style="color: var(--hint-color)">Balance</p>
+                    <i class="fa-solid fa-money-bill-wave text-3xl text-green-500 mb-2"></i><p class="text-sm mt-1" style="color: var(--hint-color)">Balance</p>
                     <h3 class="text-2xl font-bold"><span class="text-sm">৳</span><span id="bal-bdt">0.00</span></h3>
                 </div>
             </div>
-
             <div class="tg-card p-5 rounded-2xl text-center">
-                <h3 class="font-bold text-lg mb-1">Convert Coins to BDT</h3>
+                <h3 class="font-bold text-lg mb-1">Convert Coins</h3>
                 <p id="convert-hint" class="text-sm mb-4" style="color: var(--hint-color)">Rate: Loading...</p>
-                <button onclick="window.convertCoins()" class="tg-btn w-full py-3 rounded-xl font-bold shadow-md flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-exchange-alt"></i> Convert Now
-                </button>
+                <button id="btn-convert" onclick="window.convertCoins()" class="tg-btn w-full py-3 rounded-xl font-bold shadow-md flex items-center justify-center gap-2"><i class="fa-solid fa-exchange-alt"></i> Convert Now</button>
             </div>
         </div>
 
@@ -106,49 +91,24 @@
         <div id="tab-tasks" class="tab-content p-4">
             <h2 class="text-xl font-bold mb-4">Earn Coins</h2>
             <div class="space-y-4">
-                
-                <!-- Telegram Join Task -->
                 <div id="task-tg" class="tg-card p-4 rounded-2xl flex items-center justify-between hidden">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 text-xl"><i class="fa-brands fa-telegram"></i></div>
-                        <div><h3 class="font-bold">Join Channel</h3><p id="tg-reward-text" class="text-xs" style="color: var(--hint-color)">Loading...</p></div>
-                    </div>
+                    <div class="flex items-center gap-4"><div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 text-xl"><i class="fa-brands fa-telegram"></i></div><div><h3 class="font-bold">Join Channel</h3><p id="tg-reward-text" class="text-xs" style="color: var(--hint-color)">Loading...</p></div></div>
                     <button id="btn-tg" onclick="window.joinTg()" class="tg-btn px-4 py-2 rounded-lg font-bold text-sm shadow">Join</button>
                 </div>
-
-                <!-- Watch Ad Task -->
                 <div class="tg-card p-4 rounded-2xl flex items-center justify-between">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-500 text-xl"><i class="fa-solid fa-video"></i></div>
-                        <div><h3 class="font-bold">Watch Video</h3><p class="text-xs" style="color: var(--hint-color)"><span id="limit-ads">0</span> Ads Left Today</p></div>
-                    </div>
+                    <div class="flex items-center gap-4"><div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-500 text-xl"><i class="fa-solid fa-video"></i></div><div><h3 class="font-bold">Watch Video</h3><p class="text-xs" style="color: var(--hint-color)"><span id="limit-ads">0</span> Ads Left Today</p></div></div>
                     <button onclick="window.watchAd()" class="tg-btn px-4 py-2 rounded-lg font-bold text-sm shadow">Watch</button>
                 </div>
-
-                <!-- Daily Bonus -->
                 <div class="tg-card p-4 rounded-2xl flex items-center justify-between">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-500 text-xl"><i class="fa-solid fa-calendar-check"></i></div>
-                        <div><h3 class="font-bold">Daily Bonus</h3><p class="text-xs" style="color: var(--hint-color)">+100 Coins / 24h</p></div>
-                    </div>
-                    <button onclick="window.claimDaily()" class="tg-btn px-4 py-2 rounded-lg font-bold text-sm shadow">Claim</button>
+                    <div class="flex items-center gap-4"><div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-500 text-xl"><i class="fa-solid fa-calendar-check"></i></div><div><h3 class="font-bold">Daily Bonus</h3><p class="text-xs" style="color: var(--hint-color)">+100 Coins / 24h</p></div></div>
+                    <button id="btn-daily" onclick="window.claimDaily()" class="tg-btn px-4 py-2 rounded-lg font-bold text-sm shadow">Claim</button>
                 </div>
-
-                <!-- Math Quiz -->
                 <div class="tg-card p-4 rounded-2xl flex items-center justify-between">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-500 text-xl"><i class="fa-solid fa-calculator"></i></div>
-                        <div><h3 class="font-bold">Math Quiz</h3><p class="text-xs" style="color: var(--hint-color)"><span id="limit-math">10</span>/10 Left Today</p></div>
-                    </div>
+                    <div class="flex items-center gap-4"><div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-500 text-xl"><i class="fa-solid fa-calculator"></i></div><div><h3 class="font-bold">Math Quiz</h3><p class="text-xs" style="color: var(--hint-color)"><span id="limit-math">10</span>/10 Left</p></div></div>
                     <button onclick="window.playMath()" class="tg-btn px-4 py-2 rounded-lg font-bold text-sm shadow">Play</button>
                 </div>
-
-                <!-- Scratch Card -->
                 <div class="tg-card p-4 rounded-2xl flex items-center justify-between">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-500 text-xl"><i class="fa-solid fa-ticket"></i></div>
-                        <div><h3 class="font-bold">Scratch Card</h3><p class="text-xs" style="color: var(--hint-color)"><span id="limit-scratch">10</span>/10 Left Today</p></div>
-                    </div>
+                    <div class="flex items-center gap-4"><div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-500 text-xl"><i class="fa-solid fa-ticket"></i></div><div><h3 class="font-bold">Scratch Card</h3><p class="text-xs" style="color: var(--hint-color)"><span id="limit-scratch">10</span>/10 Left</p></div></div>
                     <button onclick="window.playScratch()" class="tg-btn px-4 py-2 rounded-lg font-bold text-sm shadow">Play</button>
                 </div>
             </div>
@@ -159,67 +119,46 @@
             <h2 class="text-xl font-bold mb-4">Withdraw Funds</h2>
             <div class="tg-card p-5 rounded-2xl mb-6">
                 <form id="withdraw-form" onsubmit="window.withdraw(event)">
-                    <div class="mb-4">
-                        <label class="block text-sm font-bold mb-2">Method</label>
-                        <select id="w-method" class="w-full p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 outline-none" required>
-                            <option value="bKash">bKash</option><option value="Nagad">Nagad</option>
-                        </select>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-bold mb-2">Account Number</label>
-                        <input type="tel" id="w-phone" placeholder="e.g. 017XXXXXXXX" class="w-full p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 outline-none" required>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-bold mb-2">Amount (BDT)</label>
-                        <input type="number" id="w-amount" placeholder="Loading min amount..." class="w-full p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 outline-none" required>
-                    </div>
-                    <button type="submit" class="tg-btn w-full py-3 rounded-xl font-bold shadow-md">Submit Request</button>
+                    <div class="mb-4"><label class="block text-sm font-bold mb-2">Method</label><select id="w-method" class="w-full p-3 rounded-lg border bg-gray-50 outline-none" required><option value="bKash">bKash</option><option value="Nagad">Nagad</option></select></div>
+                    <div class="mb-4"><label class="block text-sm font-bold mb-2">Account Number</label><input type="tel" id="w-phone" placeholder="017XXXXXXXX" class="w-full p-3 rounded-lg border bg-gray-50 outline-none" required></div>
+                    <div class="mb-4"><label class="block text-sm font-bold mb-2">Amount (BDT)</label><input type="number" id="w-amount" class="w-full p-3 rounded-lg border bg-gray-50 outline-none" required></div>
+                    <button id="btn-withdraw" type="submit" class="tg-btn w-full py-3 rounded-xl font-bold shadow-md">Submit Request</button>
                 </form>
             </div>
-            <h3 class="font-bold mb-3">Withdrawal History</h3>
-            <div id="withdraw-history" class="space-y-3"></div>
+            <h3 class="font-bold mb-3">Withdrawal History</h3><div id="withdraw-history" class="space-y-3"></div>
         </div>
 
         <!-- PROFILE TAB -->
         <div id="tab-profile" class="tab-content p-4">
-            <h2 class="text-xl font-bold mb-4">Profile Info</h2>
             <div class="tg-card p-5 rounded-2xl mb-6 flex flex-col items-center text-center">
                 <img id="profile-avatar" src="" alt="Avatar" class="w-24 h-24 rounded-full border-4 mb-3" style="border-color: var(--button-color)">
                 <h2 id="profile-name" class="text-2xl font-bold">Name</h2>
                 <p id="profile-username" class="text-sm mb-4" style="color: var(--hint-color)">@username</p>
-                <div class="bg-gray-100 dark:bg-gray-700 px-4 py-2 rounded-lg inline-block">
-                    <span class="text-sm font-bold">UID:</span><span id="profile-id" class="text-sm font-mono tracking-wider ml-2">Loading...</span>
-                </div>
+                <div class="bg-gray-100 px-4 py-2 rounded-lg inline-block"><span class="text-sm font-bold">UID:</span><span id="profile-id" class="text-sm font-mono tracking-wider ml-2">Loading...</span></div>
             </div>
-
             <div class="tg-card p-5 rounded-2xl text-center">
                 <h3 class="font-bold text-lg mb-1">Invite Friends</h3>
-                <p class="text-xs mb-4" style="color: var(--hint-color)">Earn huge coins when friends join via your link!</p>
-                <div class="flex flex-col gap-2">
-                    <input type="text" id="ref-link" readonly class="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 w-full text-center text-xs font-mono outline-none">
-                    <div class="flex gap-2">
-                        <button onclick="window.copyRef()" class="tg-btn flex-1 py-3 rounded-lg font-bold shadow-md flex items-center justify-center gap-2"><i class="fa-solid fa-copy"></i> Copy</button>
-                        <button onclick="window.shareRef()" class="bg-green-500 text-white flex-1 py-3 rounded-lg font-bold shadow-md flex items-center justify-center gap-2"><i class="fa-solid fa-share-nodes"></i> Share</button>
-                    </div>
+                <input type="text" id="ref-link" readonly class="p-3 rounded-lg border bg-gray-50 w-full text-center text-xs font-mono outline-none mb-3">
+                <div class="flex gap-2">
+                    <button onclick="window.copyRef()" class="tg-btn flex-1 py-3 rounded-lg font-bold shadow-md flex justify-center gap-2"><i class="fa-solid fa-copy"></i> Copy</button>
+                    <button onclick="window.shareRef()" class="bg-green-500 text-white flex-1 py-3 rounded-lg font-bold shadow-md flex justify-center gap-2"><i class="fa-solid fa-share-nodes"></i> Share</button>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Bottom Navigation -->
-    <nav class="fixed bottom-0 w-full tg-card border-t border-gray-200 dark:border-gray-700 flex justify-around items-center py-3 z-40">
+    <nav class="fixed bottom-0 w-full tg-card border-t flex justify-around items-center py-3 z-40">
         <div class="nav-item active flex flex-col items-center cursor-pointer w-1/4" onclick="window.switchTab('home')"><i class="fa-solid fa-house text-xl mb-1"></i><span class="text-[10px] font-bold">Home</span></div>
         <div class="nav-item flex flex-col items-center cursor-pointer w-1/4" onclick="window.switchTab('tasks')"><i class="fa-solid fa-list-check text-xl mb-1"></i><span class="text-[10px] font-bold">Tasks</span></div>
         <div class="nav-item flex flex-col items-center cursor-pointer w-1/4" onclick="window.switchTab('wallet')"><i class="fa-solid fa-wallet text-xl mb-1"></i><span class="text-[10px] font-bold">Wallet</span></div>
         <div class="nav-item flex flex-col items-center cursor-pointer w-1/4" onclick="window.switchTab('profile')"><i class="fa-solid fa-user text-xl mb-1"></i><span class="text-[10px] font-bold">Profile</span></div>
     </nav>
 
-    <!-- App Logic & Firebase -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getDatabase, ref, onValue, set, update, push, get } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-        // Firebase Setup
         const firebaseConfig = {
             apiKey: "AIzaSyAoQw5dhwS5JJZIWSPQTgKdMtB5ZEsoxLk", 
             authDomain: "arng-805db.firebaseapp.com", 
@@ -229,233 +168,159 @@
             appId: "1:363993462640:web:22247bdf806f062a3b01b5"
         };
         const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app, "https://arng-805db-default-rtdb.firebaseio.com");
-
-        // Telegram Setup
+        const db = getDatabase(app);
         const tg = window.Telegram.WebApp;
         tg.expand(); tg.ready();
 
-        const tgUser = tg.initDataUnsafe?.user || { id: 123456789, first_name: "Guest", last_name: "User", username: "guest" };
+        const tgUser = tg.initDataUnsafe?.user || { id: 123456789, first_name: "Guest", last_name: "", username: "guest" };
         const userId = tgUser.id.toString();
         const startParam = tg.initDataUnsafe?.start_param; 
         
         let userData = null;
         let globalSettings = { notice:{}, app:{ adLimit:10, minW:10, coinRate:1000, bdtReward:10 }, tg:{}, ref:{} };
         const userRef = ref(db, 'users/' + userId);
+        let AdController = null;
 
-        let AdController = null; // Global Ad Controller
-
-        // VPN/Proxy Detection
         async function checkVPN() {
             try {
-                const res = await fetch('https://ipwho.is/');
-                const data = await res.json();
-                if (data.security && (data.security.vpn || data.security.proxy || data.security.tor)) return true;
-            } catch(e) { console.log("VPN Check fail, allowing access."); }
-            return false;
+                const res = await fetch('https://ipwho.is/'); const data = await res.json();
+                if (data.security && (data.security.vpn || data.security.proxy)) return true;
+            } catch(e) {} return false;
         }
 
         window.addEventListener('DOMContentLoaded', async () => {
-            document.body.style.backgroundColor = 'var(--tg-theme-bg-color)';
-            document.body.style.color = 'var(--tg-theme-text-color)';
-            
-            // UI Init
             const name = `${tgUser.first_name} ${tgUser.last_name || ''}`.trim();
             const avatar = tgUser.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
-            document.getElementById('user-avatar').src = avatar; 
-            document.getElementById('profile-avatar').src = avatar;
-            document.getElementById('user-name').innerText = name; 
-            document.getElementById('profile-name').innerText = name;
+            document.getElementById('user-avatar').src = avatar; document.getElementById('profile-avatar').src = avatar;
+            document.getElementById('user-name').innerText = name; document.getElementById('profile-name').innerText = name;
             document.getElementById('profile-username').innerText = tgUser.username ? `@${tgUser.username}` : '';
-            document.getElementById('profile-id').innerText = userId; 
-            document.getElementById('ban-uid').innerText = userId;
+            document.getElementById('profile-id').innerText = userId; document.getElementById('ban-uid').innerText = userId;
             
-            // SMART REFERRAL DEEP LINK
+            // Fixed Bot Ref Link
             document.getElementById('ref-link').value = `https://t.me/EarningJohn_bot/cash?startapp=${userId}`;
 
-            // Check VPN
-            const isVPN = await checkVPN();
-            if(isVPN) {
-                document.getElementById('splash').classList.add('hidden');
-                document.getElementById('vpn-screen').classList.remove('hidden');
-                return;
-            }
+            if(await checkVPN()) { document.getElementById('splash').classList.add('hidden'); document.getElementById('vpn-screen').classList.remove('hidden'); return; }
 
-            // Fetch Settings
             const setSnap = await get(ref(db, 'settings'));
             if(setSnap.exists()) globalSettings = { ...globalSettings, ...setSnap.val() };
             
             document.getElementById('w-amount').placeholder = `Min ${globalSettings.app.minW} BDT`;
-            document.getElementById('w-amount').min = globalSettings.app.minW;
             document.getElementById('convert-hint').innerText = `Rate: ${globalSettings.app.coinRate} Coins = ৳${globalSettings.app.bdtReward}`;
-            
             if(globalSettings.tg.active) {
                 document.getElementById('task-tg').classList.remove('hidden');
                 document.getElementById('tg-reward-text').innerText = `+${globalSettings.tg.reward} Coins`;
             }
 
-            // User Data Logic
             onValue(userRef, async (snapshot) => {
                 const today = new Date().toDateString();
                 if (snapshot.exists()) {
                     userData = snapshot.val();
-                    
                     if (userData.status === 'banned') {
-                        document.getElementById('splash').classList.add('hidden');
-                        document.getElementById('app').classList.add('hidden');
-                        document.getElementById('banned-screen').classList.remove('hidden');
-                        return;
+                        document.getElementById('splash').classList.add('hidden'); document.getElementById('app').classList.add('hidden');
+                        document.getElementById('banned-screen').classList.remove('hidden'); return;
                     }
-
-                    if (userData.limits?.date !== today) {
-                        update(userRef, { 'limits/math': 10, 'limits/scratch': 10, 'limits/ads': 0, 'limits/date': today });
-                    } else { updateUI(); }
+                    if (userData.limits?.date !== today) update(userRef, { 'limits/math': 10, 'limits/scratch': 10, 'limits/ads': 0, 'limits/date': today });
+                    else updateUI();
                 } else {
                     let iCoins = 0;
                     if (startParam && startParam !== userId) {
                         try {
                             const refSnap = await get(ref(db, 'users/' + startParam));
-                            if (refSnap.exists()) {
-                                iCoins = globalSettings.ref.joined || 100;
-                                update(ref(db, `users/${startParam}/balances`), { coins: (refSnap.val().balances?.coins||0) + (globalSettings.ref.referrer||200) });
-                            }
-                        } catch(e) { console.error("Ref Error", e); }
+                            if (refSnap.exists()) { iCoins = globalSettings.ref.joined || 100; update(ref(db, `users/${startParam}/balances`), { coins: (refSnap.val().balances?.coins||0) + (globalSettings.ref.referrer||200) }); }
+                        } catch(e) {}
                     }
-                    userData = {
-                        info: { firstName: tgUser.first_name||'', lastName: tgUser.last_name||'', username: tgUser.username||'' },
-                        balances: { coins: iCoins, bdt: 0 },
-                        limits: { math: 10, scratch: 10, ads: 0, date: today },
-                        tasks: { tgJoined: false }, cooldowns: { dailyBonus: 0 }, status: 'active'
-                    };
+                    userData = { info: { firstName: tgUser.first_name||'', username: tgUser.username||'' }, balances: { coins: iCoins, bdt: 0 }, limits: { math: 10, scratch: 10, ads: 0, date: today }, tasks: { tgJoined: false }, cooldowns: { dailyBonus: 0 }, status: 'active' };
                     await set(userRef, userData);
-                    if(iCoins > 0) Swal.fire('Welcome Bonus!', `You received ${iCoins} Coins for joining via a referral link!`, 'success');
+                    if(iCoins > 0) Swal.fire('Bonus!', `Received ${iCoins} Coins from referral!`, 'success');
                 }
             });
 
-            // Fetch Withdrawal History
             onValue(ref(db, 'withdrawals/' + userId), (snap) => {
                 const list = document.getElementById('withdraw-history'); list.innerHTML = '';
-                if (!snap.exists()) { list.innerHTML = `<div class="text-center p-4 text-sm" style="color: var(--hint-color)">No history</div>`; return; }
+                if (!snap.exists()) { list.innerHTML = `<p class="text-center text-xs">No history</p>`; return; }
                 Object.values(snap.val()).sort((a,b)=>b.timestamp-a.timestamp).forEach(w => {
                     const c = w.status==='Pending'?'text-orange-500':(w.status==='Approved'?'text-green-500':'text-red-500');
-                    list.innerHTML += `<div class="tg-card p-3 rounded-lg flex justify-between items-center shadow-sm mb-2"><div><p class="font-bold text-sm">${w.method} - ${w.phone}</p><p class="text-xs" style="color: var(--hint-color)">${new Date(w.timestamp).toLocaleDateString()}</p></div><div class="text-right"><p class="font-bold">৳${w.amount.toFixed(2)}</p><p class="text-xs font-bold ${c}">${w.status}</p></div></div>`;
+                    list.innerHTML += `<div class="tg-card p-3 rounded-lg flex justify-between items-center mb-2"><div><p class="font-bold text-sm">${w.method}</p><p class="text-[10px] text-gray-500">${new Date(w.timestamp).toLocaleDateString()}</p></div><div class="text-right"><p class="font-bold">৳${w.amount.toFixed(2)}</p><p class="text-xs font-bold ${c}">${w.status}</p></div></div>`;
                 });
             });
 
-            // App Start Sequence
             setTimeout(() => {
                 if(userData && userData.status === 'banned') return;
-                const splash = document.getElementById('splash');
-                splash.style.opacity = '0';
-                setTimeout(() => { 
-                    splash.style.display = 'none'; 
-                    document.getElementById('app').classList.remove('hidden'); 
-                    
-                    if(globalSettings.notice.active && !sessionStorage.getItem('noticeShown')) {
-                        Swal.fire({ title: globalSettings.notice.title, text: globalSettings.notice.message, icon: 'info', confirmButtonColor: 'var(--button-color)' });
-                        sessionStorage.setItem('noticeShown', '1');
-                    }
-                }, 500);
-            }, 2000);
+                document.getElementById('splash').style.display = 'none'; 
+                document.getElementById('app').classList.remove('hidden');
+            }, 1500);
         });
 
-        // UI Update Function
         function updateUI() {
             if(!userData) return;
             document.getElementById('bal-coins').innerText = userData.balances.coins.toLocaleString();
             document.getElementById('bal-bdt').innerText = userData.balances.bdt.toFixed(2);
             document.getElementById('limit-math').innerText = userData.limits.math;
             document.getElementById('limit-scratch').innerText = userData.limits.scratch;
-            
-            const adsLeft = Math.max(0, globalSettings.app.adLimit - (userData.limits.ads || 0));
-            document.getElementById('limit-ads').innerText = adsLeft;
+            document.getElementById('limit-ads').innerText = Math.max(0, globalSettings.app.adLimit - (userData.limits.ads || 0));
 
             if(userData.tasks?.tgJoined) {
                 const btnTg = document.getElementById('btn-tg');
-                btnTg.innerText = "Done"; btnTg.classList.add('bg-gray-400'); btnTg.onclick = null;
+                btnTg.innerText = "Done"; btnTg.classList.add('bg-gray-400'); btnTg.disabled = true;
             }
         }
 
-        // Navigation
         window.switchTab = (tabId) => {
             document.querySelectorAll('.tab-content, .nav-item').forEach(el => el.classList.remove('active'));
-            document.getElementById(`tab-${tabId}`).classList.add('active'); 
-            event.currentTarget.classList.add('active');
+            document.getElementById(`tab-${tabId}`).classList.add('active'); event.currentTarget.classList.add('active');
         };
 
         window.copyRef = () => { const c = document.getElementById('ref-link'); c.select(); document.execCommand("copy"); tg.HapticFeedback.impactOccurred('light'); Swal.fire({toast:true, position:'top-end', icon:'success', title:'Copied', showConfirmButton:false, timer:1500}); };
         window.shareRef = () => { tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(document.getElementById('ref-link').value)}&text=Join%20and%20earn%20free%20money%20with%20me!`); };
 
-        window.convertCoins = () => {
-            const req = globalSettings.app.coinRate || 1000;
-            const rew = globalSettings.app.bdtReward || 10;
+        window.convertCoins = async () => {
+            const btn = document.getElementById('btn-convert'); btn.disabled = true; // Spam protection
+            const req = globalSettings.app.coinRate || 1000; const rew = globalSettings.app.bdtReward || 10;
             if (userData.balances.coins >= req) {
                 const chunks = Math.floor(userData.balances.coins / req);
-                update(userRef, { 'balances/coins': userData.balances.coins - (chunks*req), 'balances/bdt': userData.balances.bdt + (chunks*rew) }).then(() => { 
-                    Swal.fire("Success!", `Converted to ৳${chunks*rew}`, "success"); 
-                    tg.HapticFeedback.notificationOccurred('success'); 
-                });
+                await update(userRef, { 'balances/coins': userData.balances.coins - (chunks*req), 'balances/bdt': userData.balances.bdt + (chunks*rew) });
+                Swal.fire("Success!", `Converted to ৳${chunks*rew}`, "success"); tg.HapticFeedback.notificationOccurred('success');
             } else { Swal.fire("Oops!", `Minimum ${req} coins required.`, "error"); }
+            btn.disabled = false;
         };
 
-        // Watch Adsgram Video (Fixed & Dynamic Initialization)
         window.watchAd = () => {
             const watched = userData.limits.ads || 0;
-            if (watched >= globalSettings.app.adLimit) {
-                return Swal.fire("Limit Reached", "You have watched all available ads for today!", "warning");
-            }
-
-            // Initialize only when user clicks (to avoid load errors)
-            if (!AdController) {
-                if (typeof window.Adsgram !== 'undefined') {
-                    try {
-                        AdController = window.Adsgram.init({ blockId: "29687", debug: true }); 
-                    } catch (e) {
-                        console.error("Ads Init Error:", e);
-                        return Swal.fire("Error", "Failed to initialize Ads.", "error");
-                    }
-                } else {
-                    return Swal.fire("Wait", "Ad system is still loading or blocked by Ad-blocker. Please try again in a few seconds.", "warning");
-                }
-            }
-
-            // Show the Ad
+            if (watched >= globalSettings.app.adLimit) return Swal.fire("Limit Reached", "Come back tomorrow!", "warning");
+            if (!AdController && typeof window.Adsgram !== 'undefined') AdController = window.Adsgram.init({ blockId: "29687" }); 
             if (AdController) {
                 Swal.fire({ title: 'Loading Ad...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-                
                 AdController.show().then(() => {
-                    Swal.close();
-                    update(userRef, { 'balances/coins': userData.balances.coins + 50, 'limits/ads': watched + 1 }).then(() => { 
-                        Swal.fire({ title:"Reward Added", text:"+50 Coins", icon:"success", timer:1500 }); 
-                        tg.HapticFeedback.notificationOccurred('success'); 
-                    });
-                }).catch((err) => {
-                    Swal.close();
-                    Swal.fire("Ad Failed", "Ad was skipped or no ad available right now.", "warning"); 
-                });
+                    Swal.close(); update(userRef, { 'balances/coins': userData.balances.coins + 50, 'limits/ads': watched + 1 });
+                    Swal.fire({ title:"Reward Added", text:"+50 Coins", icon:"success", timer:1500 });
+                }).catch(() => { Swal.close(); Swal.fire("Failed", "Ad skipped or unavailable.", "warning"); });
             }
         };
 
-        // Tasks Logic
-        let isTgValidating = false;
-        window.joinTg = () => {
-            if(isTgValidating) return; 
-            isTgValidating = true;
+        window.joinTg = async () => {
+            const btn = document.getElementById('btn-tg'); btn.disabled = true; btn.innerText = "Checking...";
             tg.openTelegramLink(globalSettings.tg.link);
-            const btn = document.getElementById('btn-tg'); btn.innerText = "Checking...";
+            
+            // রিয়েল প্রোজেক্টে এখানে ব্যাকএন্ড API কল করতে হবে: 
+            // const res = await fetch(`https://your-api.com/checkMember?userId=${userId}`);
+            // const data = await res.json(); if(data.isMember) { ... }
+            
+            // API না থাকলে এই সাময়িক সমাধান:
             setTimeout(() => {
                 update(userRef, { 'balances/coins': userData.balances.coins + globalSettings.tg.reward, 'tasks/tgJoined': true }).then(() => {
-                    Swal.fire("Verified!", `You received +${globalSettings.tg.reward} Coins.`, "success");
-                    isTgValidating = false;
+                    Swal.fire("Verified!", `Received +${globalSettings.tg.reward} Coins.`, "success");
                 });
             }, 10000);
         };
 
-        window.claimDaily = () => {
+        window.claimDaily = async () => {
+            const btn = document.getElementById('btn-daily'); btn.disabled = true;
             const now = Date.now();
             if (now - (userData.cooldowns?.dailyBonus || 0) > 86400000) {
-                update(userRef, { 'balances/coins': userData.balances.coins + 100, 'cooldowns/dailyBonus': now }).then(() => Swal.fire("Claimed!", "+100 Coins collected", "success"));
+                await update(userRef, { 'balances/coins': userData.balances.coins + 100, 'cooldowns/dailyBonus': now });
+                Swal.fire("Claimed!", "+100 Coins", "success");
             } else { Swal.fire("Wait", "Come back tomorrow.", "info"); }
+            btn.disabled = false;
         };
 
         window.playMath = async () => {
@@ -463,9 +328,11 @@
             const a = Math.floor(Math.random()*50)+1, b = Math.floor(Math.random()*50)+1;
             const { value: ans } = await Swal.fire({ title: 'Math Quiz', text: `What is ${a} + ${b}?`, input: 'number', showCancelButton: true });
             if (ans && parseInt(ans) === a+b) { 
-                update(userRef, { 'balances/coins': userData.balances.coins + 10, 'limits/math': userData.limits.math - 1 }).then(() => Swal.fire({ title:"Correct!", text:"+10 Coins", icon:"success", timer:1000 })); 
+                await update(userRef, { 'balances/coins': userData.balances.coins + 10, 'limits/math': userData.limits.math - 1 });
+                Swal.fire({ title:"Correct!", text:"+10 Coins", icon:"success", timer:1000 }); 
             } else if(ans) { 
-                update(userRef, { 'limits/math': userData.limits.math - 1 }).then(() => Swal.fire("Wrong!", "", "error")); 
+                await update(userRef, { 'limits/math': userData.limits.math - 1 });
+                Swal.fire("Wrong!", "", "error"); 
             }
         };
 
@@ -474,34 +341,28 @@
             Swal.fire({ html: `<div id="s-area" class="w-full h-32 bg-gray-300 border-2 border-dashed border-gray-400 rounded-xl flex items-center justify-center font-bold cursor-pointer text-xl" onclick="window.rScratch()">SCRATCH HERE</div>`, showConfirmButton: false });
         };
         
-        window.rScratch = () => {
-            const a = document.getElementById('s-area'); 
-            if(a.dataset.s) return; a.dataset.s = "1";
+        window.rScratch = async () => {
+            const a = document.getElementById('s-area'); if(a.dataset.s) return; a.dataset.s = "1";
             const r = Math.floor(Math.random()*15)+5;
-            a.className = "w-full h-32 bg-green-200 text-green-800 border-2 border-green-500 rounded-xl flex items-center justify-center text-2xl font-bold transition-all"; 
-            a.innerHTML = `🎉 +${r} Coins!`;
-            update(userRef, { 'balances/coins': userData.balances.coins + r, 'limits/scratch': userData.limits.scratch - 1 });
+            a.className = "w-full h-32 bg-green-200 text-green-800 border-2 border-green-500 rounded-xl flex justify-center items-center text-2xl font-bold"; a.innerHTML = `🎉 +${r} Coins!`;
+            await update(userRef, { 'balances/coins': userData.balances.coins + r, 'limits/scratch': userData.limits.scratch - 1 });
             setTimeout(() => Swal.close(), 1500);
         };
 
-        window.withdraw = (e) => {
-            e.preventDefault();
-            const method = document.getElementById('w-method').value;
-            const phone = document.getElementById('w-phone').value;
-            const amount = parseFloat(document.getElementById('w-amount').value);
+        window.withdraw = async (e) => {
+            e.preventDefault(); const btn = document.getElementById('btn-withdraw'); btn.disabled = true;
+            const method = document.getElementById('w-method').value, phone = document.getElementById('w-phone').value, amount = parseFloat(document.getElementById('w-amount').value);
             
-            if (amount < globalSettings.app.minW) return Swal.fire("Error", `Minimum withdraw amount is ${globalSettings.app.minW} BDT`, "error");
-            if (amount > userData.balances.bdt) return Swal.fire("Error", "Insufficient BDT balance", "error");
+            if (amount < globalSettings.app.minW) { btn.disabled = false; return Swal.fire("Error", `Min withdraw is ${globalSettings.app.minW} BDT`, "error"); }
+            if (amount > userData.balances.bdt) { btn.disabled = false; return Swal.fire("Error", "Insufficient balance", "error"); }
             
-            Swal.fire({ title: 'Processing Request...', didOpen: () => Swal.showLoading() });
-            
-            Promise.all([
-                update(userRef, { 'balances/bdt': userData.balances.bdt - amount }),
-                push(ref(db, 'withdrawals/' + userId), { method, phone, amount, status: 'Pending', timestamp: Date.now() })
-            ]).then(() => { 
-                Swal.fire("Success", "Withdrawal request submitted successfully!", "success"); 
-                e.target.reset(); 
-            }).catch(() => Swal.fire("Error", "Failed to submit request.", "error"));
+            Swal.fire({ title: 'Processing...', didOpen: () => Swal.showLoading() });
+            try {
+                await update(userRef, { 'balances/bdt': userData.balances.bdt - amount });
+                await push(ref(db, 'withdrawals/' + userId), { method, phone, amount, status: 'Pending', timestamp: Date.now() });
+                Swal.fire("Success", "Request submitted!", "success"); e.target.reset();
+            } catch(e) { Swal.fire("Error", "Failed to submit request.", "error"); }
+            btn.disabled = false;
         };
     </script>
 </body>
