@@ -8,7 +8,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <!-- Ad Network SDK -->
     <script src="https://libtl.com/sdk.js" data-zone="10981447" data-sdk="show_10981447"></script>
+    
     <style>
         :root { --bg-color: var(--tg-theme-bg-color, #f3f4f6); --text-color: var(--tg-theme-text-color, #111827); --hint-color: var(--tg-theme-hint-color, #6b7280); --button-color: var(--tg-theme-button-color, #3b82f6); --button-text-color: var(--tg-theme-button-text-color, #ffffff); --secondary-bg-color: var(--tg-theme-secondary-bg-color, #ffffff); }
         body { background-color: var(--bg-color); color: var(--text-color); font-family: -apple-system, sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -28,9 +31,32 @@
 </head>
 <body class="overflow-x-hidden pb-20">
 
+    <!-- Splash / Loading Screen -->
     <div id="splash" class="overlay-screen transition-opacity duration-500">
-        <i class="fa-solid fa-bolt text-6xl mb-4" style="color: var(--button-color)"></i><div class="loader"></div><p class="text-xs mt-4 font-mono text-gray-500">Loading Secure Data...</p>
+        <i class="fa-solid fa-bolt text-6xl mb-4" style="color: var(--button-color)"></i>
+        <div class="loader" id="loader-spinner"></div>
+        <p id="loading-text" class="text-xs mt-4 font-mono text-gray-500 font-bold">Connecting Secure Server...</p>
     </div>
+
+    <!-- Error Detector Script -->
+    <script>
+        setTimeout(() => {
+            if(document.getElementById('app').classList.contains('hidden')) {
+                document.getElementById('loader-spinner').style.display = 'none';
+                document.getElementById('splash').innerHTML = `
+                    <i class="fa-solid fa-triangle-exclamation text-red-500 text-6xl mb-4"></i>
+                    <h2 class="text-xl font-bold text-red-500 mb-2">Connection Blocked!</h2>
+                    <div class="bg-red-50 p-4 rounded-xl border border-red-200 text-left w-[90%] max-w-sm">
+                        <p class="text-xs text-red-600 font-bold mb-2">Please fix these issues to open the app:</p>
+                        <ol class="text-[11px] text-gray-700 list-decimal pl-4 space-y-1">
+                            <li>You opened this directly from your <b>File Manager</b>. Please upload it to GitHub Pages or use a Live Server.</li>
+                            <li>Turn OFF your <b>Ad-Blocker</b> or Brave Browser shields.</li>
+                            <li>Check your Internet Connection.</li>
+                        </ol>
+                    </div>`;
+            }
+        }, 4000);
+    </script>
 
     <div id="app" class="hidden">
         <!-- HOME TAB -->
@@ -70,7 +96,7 @@
                 <div class="tg-card p-4 rounded-2xl flex flex-col items-center text-center"><div class="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center text-pink-500 text-xl mb-2"><i class="fa-solid fa-ticket"></i></div><h3 class="font-bold text-sm">Scratch Card</h3><p id="txt-scratch-reward" class="text-[10px] font-bold text-green-500 mb-1">Loading...</p><p class="text-[10px] mb-3" style="color: var(--hint-color)"><span id="limit-scratch">0</span> Left</p><button onclick="window.playScratch()" class="tg-btn w-full py-2 rounded-lg font-bold text-xs shadow">Scratch</button></div>
             </div>
 
-            <!-- Dynamic Social Tasks will be injected here -->
+            <!-- Dynamic Social Tasks -->
             <div id="social-tasks-container" class="space-y-3 mt-4"></div>
         </div>
 
@@ -78,7 +104,7 @@
         <div id="tab-wallet" class="tab-content p-4">
             <h2 class="text-xl font-bold mb-4">Cashout</h2>
             <div class="tg-card p-5 rounded-3xl mb-6">
-                <!-- Advanced Condition Notice -->
+                <!-- Condition Notice -->
                 <div id="withdraw-notice" class="bg-red-50 border border-red-200 p-3 rounded-xl mb-4 text-center hidden">
                     <p class="text-xs font-bold text-red-600 mb-1"><i class="fa-solid fa-lock mr-1"></i> Require <span id="req-ads-w">0</span> Ads for Withdrawal</p>
                     <div class="flex justify-between text-[10px] font-bold mt-2">
@@ -164,6 +190,11 @@
                 const today = new Date().toDateString();
                 if (snapshot.exists()) {
                     userData = snapshot.val();
+                    if (userData.status === 'banned') {
+                        document.getElementById('splash').style.display = 'none'; document.getElementById('app').style.display = 'none';
+                        document.body.innerHTML = `<div class="fixed inset-0 flex flex-col items-center justify-center bg-gray-50"><i class="fa-solid fa-user-slash text-6xl text-red-500 mb-4"></i><h1 class="text-2xl font-bold mb-2">Account Banned</h1><p class="text-sm text-gray-500">Your account has been suspended.</p></div>`;
+                        return;
+                    }
                     if (userData.limits?.date !== today) {
                         await update(userRef, { 'limits/ads': 0, 'limits/math': globalSettings.app.mathLimit||10, 'limits/scratch': globalSettings.app.scratchLimit||10, 'limits/date': today });
                     } else updateUI();
@@ -172,7 +203,7 @@
                     if (startParam && startParam !== userId) {
                         try { const refSnap = await get(ref(db, 'users/' + startParam)); if (refSnap.exists()) { iCoins = globalSettings.ref?.joined || 100; update(ref(db, `users/${startParam}/balances`), { coins: (refSnap.val().balances?.coins||0) + (globalSettings.ref?.referrer||200) }); push(ref(db, `users/${startParam}/history`), { title: 'Referral Bonus', amount: globalSettings.ref?.referrer||200, timestamp: Date.now() }); } } catch(e) {}
                     }
-                    userData = { info: { firstName: tgUser.first_name, username: tgUser.username||'' }, balances: { coins: iCoins, bdt: 0 }, limits: { ads: 0, math: globalSettings.app.mathLimit||10, scratch: globalSettings.app.scratchLimit||10, date: today }, stats: { totalAds: 0 }, tasks:{}, status: 'active' };
+                    userData = { info: { firstName: name, username: tgUser.username||'' }, balances: { coins: iCoins, bdt: 0 }, limits: { ads: 0, math: globalSettings.app.mathLimit||10, scratch: globalSettings.app.scratchLimit||10, date: today }, stats: { totalAds: 0 }, tasks:{}, status: 'active' };
                     await set(userRef, userData);
                     if(iCoins > 0) push(ref(db, `users/${userId}/history`), { title: 'Welcome Bonus', amount: iCoins, timestamp: Date.now() });
                 }
@@ -195,7 +226,8 @@
                 });
             });
 
-            setTimeout(() => { document.getElementById('splash').style.display = 'none'; document.getElementById('app').classList.remove('hidden'); }, 1500);
+            // Everything is verified, hide splash screen
+            setTimeout(() => { document.getElementById('splash').style.display = 'none'; document.getElementById('app').classList.remove('hidden'); }, 1000);
         });
 
         function updateUI() {
@@ -217,7 +249,6 @@
             document.getElementById('txt-ref-reward').innerText = `Refer & Get +${globalSettings.ref?.referrer||200} Coins`;
             document.getElementById('convert-hint').innerText = `Rate: ${globalSettings.app.coinRate} Coins = ৳${globalSettings.app.bdtReward}`;
 
-            // Check Daily Bonus Condition
             const minAdsDaily = globalSettings.app.minAdsDaily || 5;
             const todayWatched = userData.limits?.ads || 0;
             const dText = document.getElementById('txt-daily-req');
@@ -225,7 +256,6 @@
                 dText.innerText = `LOCKED: Watch ${minAdsDaily - todayWatched} more ads today`; dText.className = "text-[9px] font-bold text-red-500 mt-1";
             } else { dText.innerText = `UNLOCKED: Ready to claim!`; dText.className = "text-[9px] font-bold text-green-500 mt-1"; }
 
-            // Check Withdrawal Condition and Calculate Remaining
             const minAdsWithdraw = globalSettings.app.minAdsWithdraw || 20;
             const totalWatched = userData.stats?.totalAds || 0;
             const remaining = Math.max(0, minAdsWithdraw - totalWatched);
@@ -237,7 +267,6 @@
                 document.getElementById('left-ads-w').innerText = remaining;
             } else { document.getElementById('withdraw-notice').classList.add('hidden'); }
 
-            // DYNAMIC SOCIAL TASKS INJECTION
             let stHtml = '';
             for(let i=1; i<=3; i++) {
                 const st = globalSettings.socialTasks?.['tg'+i];
@@ -257,7 +286,7 @@
 
         window.openSupport = () => {
             const sup = globalSettings.support || {};
-            if(!sup.tg && !sup.wa && !sup.fb) return Swal.fire("Notice", "Support is currently unavailable. Please check back later.", "info");
+            if(!sup.tg && !sup.wa && !sup.fb) return Swal.fire("Notice", "Support is currently unavailable.", "info");
 
             let html = '<div class="flex flex-col gap-3 mt-4">';
             if(sup.tg) html += `<button onclick="window.goLink('${sup.tg}')" class="w-full bg-[#0088cc] text-white p-3.5 rounded-xl font-bold flex items-center justify-center gap-3 shadow-md"><i class="fa-brands fa-telegram text-2xl"></i> Telegram Support</button>`;
@@ -340,7 +369,6 @@
             Swal.fire("Claimed!", `+${globalSettings.rewards.daily} Coins`, "success");
         };
 
-        // INTEGRATED AD IN MATH QUIZ
         window.playMath = async () => {
             if (userData.limits.math <= 0) return Swal.fire("Limit Reached", "Come back tomorrow!", "warning");
             const a = Math.floor(Math.random()*20)+1, b = Math.floor(Math.random()*20)+1;
@@ -349,7 +377,7 @@
             if(checkAntiCheat()) return;
             
             if (ans && parseInt(ans) === a+b) { 
-                if (await showAdFirst()) { // Shows AD BEFORE REWARD
+                if (await showAdFirst()) { 
                     await giveReward('Math Quiz', globalSettings.rewards.math||15);
                     const currentTotal = userData.stats?.totalAds || 0;
                     await update(userRef, { 'limits/math': userData.limits.math - 1, 'stats/totalAds': currentTotal + 1 });
@@ -360,7 +388,6 @@
             }
         };
 
-        // INTEGRATED AD IN SCRATCH CARD
         window.playScratch = () => {
             if (userData.limits.scratch <= 0) return Swal.fire("Limit Reached", "Come back tomorrow!", "warning");
             Swal.fire({ html: `<div id="s-area" class="w-full h-32 border-2 border-dashed border-gray-300 rounded-2xl flex items-center justify-center font-extrabold cursor-pointer text-xl text-gray-400 bg-gray-50" onclick="window.rScratch()">TAP TO SCRATCH</div>`, showConfirmButton: false });
@@ -373,16 +400,15 @@
             a.className = "w-full h-32 bg-gradient-to-r from-pink-500 to-rose-500 text-white border-none rounded-2xl flex justify-center items-center text-3xl font-extrabold shadow-inner"; 
             a.innerHTML = `🎉 +${r}`;
             
-            // Wait a little so they see the points
             await new Promise(res => setTimeout(res, 800));
             
-            if (await showAdFirst()) { // Shows AD BEFORE REWARD
+            if (await showAdFirst()) { 
                 await giveReward('Scratch Card', r);
                 const currentTotal = userData.stats?.totalAds || 0;
                 await update(userRef, { 'limits/scratch': userData.limits.scratch - 1, 'stats/totalAds': currentTotal + 1 });
                 Swal.fire({ title:"Great!", text:`+${r} Coins Added!`, icon:"success", timer:1500 }); 
             } else {
-                a.dataset.s = ""; // Reset if ad failed so they can try again
+                a.dataset.s = ""; 
                 a.className = "w-full h-32 border-2 border-dashed border-gray-300 rounded-2xl flex items-center justify-center font-extrabold cursor-pointer text-xl text-gray-400 bg-gray-50"; 
                 a.innerHTML = "TAP TO SCRATCH AGAIN";
             }
