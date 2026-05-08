@@ -10,7 +10,15 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://libtl.com/sdk.js" data-zone="10981447" data-sdk="show_10981447"></script>
     <style>
-        :root { --bg-color: var(--tg-theme-bg-color, #f3f4f6); --text-color: var(--tg-theme-text-color, #111827); --hint-color: var(--tg-theme-hint-color, #6b7280); --button-color: var(--tg-theme-button-color, #3b82f6); --button-text-color: var(--tg-theme-button-text-color, #ffffff); --secondary-bg-color: var(--tg-theme-secondary-bg-color, #ffffff); }
+        /* ফিক্সড লাইট থিম: টেলিগ্রাম ডার্ক মোডেও লেখা সুন্দর দেখা যাবে */
+        :root { 
+            --bg-color: #f3f4f6; 
+            --text-color: #1f2937; 
+            --hint-color: #6b7280; 
+            --button-color: #4f46e5; 
+            --button-text-color: #ffffff; 
+            --secondary-bg-color: #ffffff; 
+        }
         body { background-color: var(--bg-color); color: var(--text-color); font-family: -apple-system, sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
         .tg-card { background-color: var(--secondary-bg-color); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .tg-btn { background-color: var(--button-color); color: var(--button-text-color); transition: transform 0.1s, opacity 0.2s; }
@@ -24,7 +32,7 @@
         .overlay-screen { position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: var(--bg-color); }
         .loader { border: 4px solid var(--secondary-bg-color); border-top: 4px solid var(--button-color); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .hero-card { background: linear-gradient(135deg, var(--button-color), #8b5cf6); color: white; }
+        .hero-card { background: linear-gradient(135deg, var(--button-color), #3b82f6); color: white; }
     </style>
 </head>
 <body class="overflow-x-hidden pb-20">
@@ -33,7 +41,7 @@
         <i class="fa-solid fa-bolt text-6xl mb-4" style="color: var(--button-color)"></i><div class="loader"></div><p class="text-xs mt-4 font-mono text-gray-500">Loading Secure Data...</p>
     </div>
 
-    <!-- VPN BLOCK SCREEN (NEW) -->
+    <!-- VPN BLOCK SCREEN -->
     <div id="vpn-screen" class="overlay-screen hidden z-[100] bg-red-50 text-center p-6">
         <i class="fa-solid fa-shield-virus text-6xl text-red-500 mb-4"></i>
         <h2 class="text-2xl font-bold text-red-600 mb-2">VPN Detected!</h2>
@@ -50,25 +58,25 @@
     <div id="app" class="hidden">
         <!-- HOME TAB -->
         <div id="tab-home" class="tab-content active p-4 space-y-4">
-            <div class="flex items-center space-x-4 tg-card p-4 rounded-2xl">
+            <div class="flex items-center space-x-4 tg-card p-4 rounded-2xl border border-gray-100">
                 <img id="user-avatar" src="" class="w-14 h-14 rounded-full border-2" style="border-color: var(--button-color)">
-                <div><h2 id="user-name" class="text-lg font-bold">Loading...</h2><p class="text-[10px] text-gray-500">Total Ads Watched: <span id="stat-total-ads" class="font-bold text-indigo-500">0</span></p></div>
+                <div><h2 id="user-name" class="text-lg font-bold text-gray-800">Loading...</h2><p class="text-[10px] text-gray-500">Total Ads Watched: <span id="stat-total-ads" class="font-bold text-indigo-500">0</span></p></div>
             </div>
             
             <div class="grid grid-cols-2 gap-4">
-                <div class="tg-card p-4 rounded-2xl flex flex-col items-center text-center"><i class="fa-solid fa-coins text-3xl text-yellow-500 mb-2"></i><h3 id="bal-coins" class="text-2xl font-extrabold">0</h3></div>
-                <div class="tg-card p-4 rounded-2xl flex flex-col items-center text-center"><i class="fa-solid fa-money-bill-wave text-3xl text-green-500 mb-2"></i><h3 class="text-2xl font-extrabold"><span class="text-sm">৳</span><span id="bal-bdt">0.00</span></h3></div>
+                <div class="tg-card p-4 rounded-2xl flex flex-col items-center text-center border border-gray-100"><i class="fa-solid fa-coins text-3xl text-yellow-500 mb-2"></i><h3 id="bal-coins" class="text-2xl font-extrabold text-gray-800">0</h3></div>
+                <div class="tg-card p-4 rounded-2xl flex flex-col items-center text-center border border-gray-100"><i class="fa-solid fa-money-bill-wave text-3xl text-green-500 mb-2"></i><h3 class="text-2xl font-extrabold text-gray-800"><span class="text-sm">৳</span><span id="bal-bdt">0.00</span></h3></div>
             </div>
 
             <div class="tg-card p-1 rounded-2xl bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500">
-                <div class="bg-white rounded-[14px] p-4 flex items-center justify-between" style="background-color: var(--secondary-bg-color);">
-                    <div class="flex items-center gap-3"><div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-500 text-2xl"><i class="fa-solid fa-gift"></i></div><div><h3 class="font-bold text-lg">Daily Bonus</h3><p id="txt-daily-req" class="text-[9px] font-bold text-red-500 mt-1">Requires 0 Ads Today</p></div></div>
+                <div class="bg-white rounded-[14px] p-4 flex items-center justify-between">
+                    <div class="flex items-center gap-3"><div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-500 text-2xl"><i class="fa-solid fa-gift"></i></div><div><h3 class="font-bold text-lg text-gray-800">Daily Bonus</h3><p id="txt-daily-req" class="text-[9px] font-bold text-red-500 mt-1">Requires 0 Ads Today</p></div></div>
                     <button id="btn-daily" onclick="window.claimDaily()" class="tg-btn px-5 py-2.5 rounded-xl font-bold text-sm shadow-md">Claim</button>
                 </div>
             </div>
 
-            <div class="tg-card p-5 rounded-2xl text-center mt-2">
-                <h3 class="font-bold text-lg mb-1">Convert to Cash</h3><p id="convert-hint" class="text-xs mb-4 text-gray-500">Rate: Loading...</p>
+            <div class="tg-card p-5 rounded-2xl text-center mt-2 border border-gray-100">
+                <h3 class="font-bold text-lg mb-1 text-gray-800">Convert to Cash</h3><p id="convert-hint" class="text-xs mb-4 text-gray-500">Rate: Loading...</p>
                 <button onclick="window.convertCoins()" class="tg-btn w-full py-3.5 rounded-xl font-bold shadow-md"><i class="fa-solid fa-money-bill-transfer"></i> Convert Coins</button>
             </div>
         </div>
@@ -81,53 +89,50 @@
             </div>
 
             <div class="grid grid-cols-2 gap-4">
-                <div class="tg-card p-4 rounded-2xl flex flex-col items-center text-center"><div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-500 text-xl mb-2"><i class="fa-solid fa-calculator"></i></div><h3 class="font-bold text-sm">Math Quiz</h3><p id="txt-math-reward" class="text-[10px] font-bold text-green-500 mb-1">Loading...</p><p class="text-[10px] mb-3" style="color: var(--hint-color)"><span id="limit-math">0</span> Left</p><button onclick="window.playMath()" class="tg-btn w-full py-2 rounded-lg font-bold text-xs shadow">Play Now</button></div>
-                <div class="tg-card p-4 rounded-2xl flex flex-col items-center text-center"><div class="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center text-pink-500 text-xl mb-2"><i class="fa-solid fa-ticket"></i></div><h3 class="font-bold text-sm">Scratch Card</h3><p id="txt-scratch-reward" class="text-[10px] font-bold text-green-500 mb-1">Loading...</p><p class="text-[10px] mb-3" style="color: var(--hint-color)"><span id="limit-scratch">0</span> Left</p><button onclick="window.playScratch()" class="tg-btn w-full py-2 rounded-lg font-bold text-xs shadow">Scratch</button></div>
+                <div class="tg-card p-4 rounded-2xl flex flex-col items-center text-center border border-gray-100"><div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-500 text-xl mb-2"><i class="fa-solid fa-calculator"></i></div><h3 class="font-bold text-sm text-gray-800">Math Quiz</h3><p id="txt-math-reward" class="text-[10px] font-bold text-green-500 mb-1">Loading...</p><p class="text-[10px] mb-3 text-gray-500"><span id="limit-math">0</span> Left</p><button onclick="window.playMath()" class="tg-btn w-full py-2 rounded-lg font-bold text-xs shadow">Play Now</button></div>
+                <div class="tg-card p-4 rounded-2xl flex flex-col items-center text-center border border-gray-100"><div class="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center text-pink-500 text-xl mb-2"><i class="fa-solid fa-ticket"></i></div><h3 class="font-bold text-sm text-gray-800">Scratch Card</h3><p id="txt-scratch-reward" class="text-[10px] font-bold text-green-500 mb-1">Loading...</p><p class="text-[10px] mb-3 text-gray-500"><span id="limit-scratch">0</span> Left</p><button onclick="window.playScratch()" class="tg-btn w-full py-2 rounded-lg font-bold text-xs shadow">Scratch</button></div>
             </div>
 
-            <!-- DYNAMIC SOCIAL TASKS CONTAINER (NEW) -->
-            <div id="social-tasks-container" class="space-y-3 mt-4">
-                <!-- Tasks will load here dynamically based on Admin settings -->
-            </div>
+            <div id="social-tasks-container" class="space-y-3 mt-4"></div>
         </div>
 
         <!-- WALLET TAB -->
         <div id="tab-wallet" class="tab-content p-4">
-            <h2 class="text-xl font-bold mb-4">Cashout</h2>
-            <div class="tg-card p-5 rounded-3xl mb-6">
+            <h2 class="text-xl font-bold mb-4 text-gray-800">Cashout</h2>
+            <div class="tg-card p-5 rounded-3xl mb-6 border border-gray-100">
                 <!-- Condition Notice -->
                 <div id="withdraw-notice" class="bg-red-50 border border-red-200 text-red-600 p-3 rounded-xl text-xs font-bold mb-4 text-center hidden">
                     <i class="fa-solid fa-lock mr-1"></i> You must watch <span id="req-ads-w">0</span> Ads to unlock withdrawal. (Watched: <span id="done-ads-w">0</span>)
                 </div>
 
                 <form id="withdraw-form" onsubmit="window.withdraw(event)">
-                    <div class="mb-4"><label class="block text-sm font-bold mb-2">Method</label><select id="w-method" class="tg-input w-full p-3.5 rounded-xl font-bold"><option value="bKash">bKash</option><option value="Nagad">Nagad</option></select></div>
-                    <div class="mb-4"><label class="block text-sm font-bold mb-2">Account Number</label><input type="tel" id="w-phone" class="tg-input w-full p-3.5 rounded-xl font-bold" required></div>
-                    <div class="mb-5"><label class="block text-sm font-bold mb-2">Amount (BDT)</label><input type="number" id="w-amount" class="tg-input w-full p-3.5 rounded-xl font-bold" required></div>
+                    <div class="mb-4"><label class="block text-sm font-bold mb-2 text-gray-700">Method</label><select id="w-method" class="tg-input w-full p-3.5 rounded-xl font-bold"><option value="bKash">bKash</option><option value="Nagad">Nagad</option></select></div>
+                    <div class="mb-4"><label class="block text-sm font-bold mb-2 text-gray-700">Account Number</label><input type="tel" id="w-phone" class="tg-input w-full p-3.5 rounded-xl font-bold" required></div>
+                    <div class="mb-5"><label class="block text-sm font-bold mb-2 text-gray-700">Amount (BDT)</label><input type="number" id="w-amount" class="tg-input w-full p-3.5 rounded-xl font-bold" required></div>
                     <button id="btn-withdraw" type="submit" class="tg-btn w-full py-4 rounded-xl font-extrabold shadow-md text-lg">Withdraw Request</button>
                 </form>
             </div>
-            <h3 class="font-bold mb-3 px-2">Withdraw History</h3><div id="withdraw-history" class="space-y-3"></div>
+            <h3 class="font-bold mb-3 px-2 text-gray-800">Withdraw History</h3><div id="withdraw-history" class="space-y-3"></div>
         </div>
 
         <!-- PROFILE TAB -->
         <div id="tab-profile" class="tab-content p-4">
-            <div class="tg-card p-6 rounded-3xl mb-6 flex flex-col items-center text-center">
+            <div class="tg-card p-6 rounded-3xl mb-6 flex flex-col items-center text-center border border-gray-100">
                 <img id="profile-avatar" src="" class="w-24 h-24 rounded-full border-4 mb-3" style="border-color: var(--button-color)">
-                <h2 id="profile-name" class="text-2xl font-extrabold">Name</h2>
-                <p id="profile-username" class="text-sm mb-4" style="color: var(--hint-color)">@username</p>
-                <div class="bg-gray-100 px-4 py-2 rounded-lg inline-block shadow-inner" style="background-color: var(--bg-color);"><span class="text-xs font-bold text-gray-500">UID:</span><span id="profile-id" class="text-sm font-mono tracking-wider ml-2 font-bold">...</span></div>
+                <h2 id="profile-name" class="text-2xl font-extrabold text-gray-800">Name</h2>
+                <p id="profile-username" class="text-sm mb-4 text-gray-500">@username</p>
+                <div class="bg-gray-100 px-4 py-2 rounded-lg inline-block shadow-inner"><span class="text-xs font-bold text-gray-500">UID:</span><span id="profile-id" class="text-sm font-mono tracking-wider ml-2 font-bold text-gray-800">...</span></div>
             </div>
 
             <!-- Earning History -->
-            <div class="tg-card p-5 rounded-3xl mb-6">
-                <h3 class="font-bold text-lg mb-3 flex items-center gap-2 border-b pb-2"><i class="fa-solid fa-clock-rotate-left text-indigo-500"></i> Recent Earnings</h3>
+            <div class="tg-card p-5 rounded-3xl mb-6 border border-gray-100">
+                <h3 class="font-bold text-lg mb-3 flex items-center gap-2 border-b pb-2 text-gray-800"><i class="fa-solid fa-clock-rotate-left text-indigo-500"></i> Recent Earnings</h3>
                 <div id="earning-history" class="space-y-2 max-h-60 overflow-y-auto"><p class="text-center text-xs text-gray-400 py-4">Loading history...</p></div>
             </div>
 
             <!-- Referral Section -->
-            <div class="tg-card p-5 rounded-3xl text-center mb-6">
-                <h3 class="font-bold text-lg mb-1">Refer & Earn</h3><p id="txt-ref-reward" class="text-xs font-bold text-green-500 mb-3">Share link and earn extra coins!</p>
+            <div class="tg-card p-5 rounded-3xl text-center mb-6 border border-gray-100">
+                <h3 class="font-bold text-lg mb-1 text-gray-800">Refer & Earn</h3><p id="txt-ref-reward" class="text-xs font-bold text-green-500 mb-3">Share link and earn extra coins!</p>
                 <input type="text" id="ref-link" readonly class="tg-input p-3 rounded-xl w-full text-center text-xs font-mono mb-4 bg-gray-50">
                 <div class="flex gap-3"><button onclick="window.copyRef()" class="tg-btn flex-1 py-3.5 rounded-xl font-bold shadow flex justify-center items-center gap-2"><i class="fa-solid fa-copy"></i> Copy</button><button onclick="window.shareRef()" class="bg-green-500 text-white flex-1 py-3.5 rounded-xl font-bold shadow flex justify-center items-center gap-2"><i class="fa-solid fa-share-nodes"></i> Share</button></div>
             </div>
@@ -135,7 +140,7 @@
     </div>
 
     <!-- Navigation -->
-    <nav class="fixed bottom-0 w-full tg-card border-t border-gray-200/10 flex justify-around items-center py-3 z-40 px-2 pb-safe">
+    <nav class="fixed bottom-0 w-full tg-card border-t border-gray-200 flex justify-around items-center py-3 z-40 px-2 pb-safe">
         <div class="nav-item active flex flex-col items-center w-1/5 cursor-pointer" onclick="window.switchTab('home')"><i class="fa-solid fa-house text-xl mb-1"></i><span class="text-[9px] font-bold">HOME</span></div>
         <div class="nav-item flex flex-col items-center w-1/5 cursor-pointer" onclick="window.switchTab('tasks')"><i class="fa-solid fa-list-check text-xl mb-1"></i><span class="text-[9px] font-bold">TASKS</span></div>
         <div class="nav-item flex flex-col items-center w-1/5 cursor-pointer" onclick="window.switchTab('wallet')"><i class="fa-solid fa-wallet text-xl mb-1"></i><span class="text-[9px] font-bold">WALLET</span></div>
@@ -151,7 +156,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app, "https://arng-805db-default-rtdb.firebaseio.com");
         const tg = window.Telegram.WebApp;
-        tg.expand(); tg.ready(); if(tg.setHeaderColor) tg.setHeaderColor('secondary_bg_color');
+        tg.expand(); tg.ready(); 
 
         const tgUser = tg.initDataUnsafe?.user || { id: 123456789, first_name: "Guest", last_name: "", username: "guest" };
         const userId = tgUser.id.toString();
@@ -161,20 +166,23 @@
         let globalSettings = { app:{ adLimit:10, mathLimit:10, scratchLimit:10, minW:10, coinRate:1000, bdtReward:10, minAdsWithdraw: 20, minAdsDaily: 5, adsPerClick: 3 }, rewards:{ video:50, daily:100, math:15, scratchMax:20 }, socialTasks:{}, support:{tg:'', wa:'', fb:''}, ref:{}, security:{vpnBlock:false, taskCooldown:5, spamLimit:3} };
         const userRef = ref(db, 'users/' + userId);
 
-        let lastClickTime = 0; let spamWarnings = 0; let onCooldown = false;
+        let lastClickTime = 0; let spamWarnings = 0; let onCooldown = false; let vpnDetected = false;
 
-        // NEW: VPN Checker
-        async function checkVPN() {
+        // STRONG VPN CHECKER (Checks API & Caches Result)
+        async function verifyVPN() {
+            if (vpnDetected) return true;
             if (globalSettings.security?.vpnBlock) {
                 try {
                     let res = await fetch('https://ipwho.is/');
                     let data = await res.json();
                     if (data.security && (data.security.vpn || data.security.proxy || data.security.tor)) {
+                        vpnDetected = true;
                         document.getElementById('splash').style.display = 'none';
+                        document.getElementById('app').classList.add('hidden');
                         document.getElementById('vpn-screen').classList.remove('hidden');
                         return true; 
                     }
-                } catch(e) { console.log("VPN Check API failed", e); }
+                } catch(e) { console.log("VPN API Check Failed"); }
             }
             return false;
         }
@@ -190,7 +198,7 @@
             onValue(ref(db, 'settings'), async (snap) => { 
                 if(snap.exists()) { 
                     globalSettings = { ...globalSettings, ...snap.val() }; 
-                    if(await checkVPN()) return; // Block access if VPN
+                    if(await verifyVPN()) return; 
                     updateUI(); 
                 } 
             });
@@ -222,21 +230,24 @@
                 const hList = document.getElementById('earning-history'); hList.innerHTML = '';
                 if(!snap.exists()) { hList.innerHTML = `<p class="text-center text-xs text-gray-400 py-4">No earnings yet. Start playing!</p>`; return; }
                 Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp).slice(0, 15).forEach(item => {
-                    hList.innerHTML += `<div class="bg-gray-50 p-3 rounded-xl border flex justify-between items-center"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-yellow-100 flex justify-center items-center text-yellow-500"><i class="fa-solid fa-coins"></i></div><div><p class="text-sm font-bold text-gray-800">${item.title}</p><p class="text-[10px] text-gray-400">${new Date(item.timestamp).toLocaleString()}</p></div></div><span class="text-sm font-extrabold text-green-500">+${item.amount}</span></div>`;
+                    hList.innerHTML += `<div class="bg-gray-50 p-3 rounded-xl border border-gray-100 flex justify-between items-center"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-yellow-100 flex justify-center items-center text-yellow-500"><i class="fa-solid fa-coins"></i></div><div><p class="text-sm font-bold text-gray-800">${item.title}</p><p class="text-[10px] text-gray-400">${new Date(item.timestamp).toLocaleString()}</p></div></div><span class="text-sm font-extrabold text-green-500">+${item.amount}</span></div>`;
                 });
             });
 
-            // LOAD WITHDRAWALS
+            // LOAD WITHDRAWALS (PHONE NUMBER MASKING)
             onValue(ref(db, 'withdrawals/' + userId), (snap) => {
                 const list = document.getElementById('withdraw-history'); list.innerHTML = '';
                 if (!snap.exists()) { list.innerHTML = `<p class="text-center text-xs text-gray-400 py-4">No history yet</p>`; return; }
                 Object.values(snap.val()).sort((a,b)=>b.timestamp-a.timestamp).forEach(w => {
                     const c = w.status==='Pending'?'text-orange-500':(w.status==='Approved'?'text-green-500':'text-red-500');
-                    list.innerHTML += `<div class="tg-card p-3 rounded-xl flex justify-between items-center mb-2"><div><p class="font-bold text-sm">${w.method}</p><p class="text-[10px] text-gray-400">${new Date(w.timestamp).toLocaleDateString()}</p></div><div class="text-right"><p class="font-extrabold text-gray-800">৳${w.amount.toFixed(2)}</p><p class="text-xs font-bold ${c}">${w.status}</p></div></div>`;
+                    // MASK PHONE NUMBER (Show first 3 and last 3)
+                    const maskedPhone = w.phone && w.phone.length >= 6 ? w.phone.substring(0, 3) + '***' + w.phone.slice(-3) : '***';
+                    
+                    list.innerHTML += `<div class="tg-card p-3 rounded-xl flex justify-between items-center mb-2 border border-gray-100"><div><p class="font-bold text-sm text-gray-800">${w.method}</p><p class="text-[10px] text-gray-500 font-mono tracking-widest">${maskedPhone}</p><p class="text-[9px] text-gray-400 mt-0.5">${new Date(w.timestamp).toLocaleDateString()}</p></div><div class="text-right"><p class="font-extrabold text-gray-800">৳${w.amount.toFixed(2)}</p><p class="text-xs font-bold ${c}">${w.status}</p></div></div>`;
                 });
             });
 
-            setTimeout(() => { if(!document.getElementById('vpn-screen').classList.contains('hidden')) return; document.getElementById('splash').style.display = 'none'; document.getElementById('app').classList.remove('hidden'); }, 1500);
+            setTimeout(() => { if(!vpnDetected) { document.getElementById('splash').style.display = 'none'; document.getElementById('app').classList.remove('hidden'); } }, 1500);
         });
 
         function updateUI() {
@@ -272,7 +283,6 @@
                 document.getElementById('req-ads-w').innerText = minAdsWithdraw; document.getElementById('done-ads-w').innerText = totalWatched;
             } else { document.getElementById('withdraw-notice').classList.add('hidden'); }
 
-            // NEW: DYNAMIC SOCIAL TASKS RENDER
             const stContainer = document.getElementById('social-tasks-container');
             stContainer.innerHTML = '';
             ['tg1', 'tg2', 'tg3'].forEach((taskId, index) => {
@@ -280,14 +290,14 @@
                 if (task && task.active) {
                     const isDone = userData.tasks?.[taskId];
                     const btnHtml = isDone 
-                        ? `<button class="tg-btn bg-gray-200 text-gray-500 px-4 py-2 rounded-lg font-bold text-xs shadow-inner" disabled>Completed</button>`
+                        ? `<button class="tg-btn bg-gray-200 text-gray-500 px-4 py-2 rounded-lg font-bold text-xs shadow-inner border border-gray-200" disabled>Completed</button>`
                         : `<button id="btn-${taskId}" onclick="window.doSocialTask('${taskId}', '${task.link}', ${task.reward})" class="tg-btn px-4 py-2 rounded-lg font-bold text-xs shadow">Join</button>`;
                     
                     stContainer.innerHTML += `
                         <div class="tg-card p-4 rounded-2xl flex items-center justify-between border border-gray-100">
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 text-lg"><i class="fa-brands fa-telegram"></i></div>
-                                <div><h3 class="font-bold text-sm">Join Channel ${index+1}</h3><p class="text-[11px] font-bold text-green-500">Reward: +${task.reward} Coins</p></div>
+                                <div><h3 class="font-bold text-sm text-gray-800">Join Channel ${index+1}</h3><p class="text-[11px] font-bold text-green-500">Reward: +${task.reward} Coins</p></div>
                             </div>
                             ${btnHtml}
                         </div>
@@ -319,7 +329,6 @@
         window.copyRef = () => { document.getElementById('ref-link').select(); document.execCommand("copy"); tg.HapticFeedback.impactOccurred('light'); Swal.fire({toast:true, position:'top-end', icon:'success', title:'Link Copied!', showConfirmButton:false, timer:1500}); };
         window.shareRef = () => { tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(document.getElementById('ref-link').value)}&text=Join%20and%20earn%20free%20money%20with%20me!`); };
 
-        // NEW: ANTI-CHEAT Cooldown Timer
         function startTaskCooldown() {
             const cdSeconds = globalSettings.security?.taskCooldown || 5;
             onCooldown = true;
@@ -329,7 +338,7 @@
         function checkAntiCheat() {
             if (onCooldown) {
                 const waitSec = globalSettings.security?.taskCooldown || 5;
-                Swal.fire("Wait!", `Please wait ${waitSec} seconds between tasks to prevent spam.`, "warning");
+                Swal.fire("Wait!", `Please wait ${waitSec} seconds between tasks.`, "warning");
                 return true;
             }
 
@@ -339,7 +348,7 @@
                 const maxSpam = globalSettings.security?.spamLimit || 3;
                 if(spamWarnings >= maxSpam) { 
                     update(userRef, { status: 'banned' }); 
-                    Swal.fire({ title: "Banned!", text: "Account suspended for using Auto-Clicker or Scripts.", icon: "error", allowOutsideClick: false }); 
+                    Swal.fire({ title: "Banned!", text: "Account suspended for fast clicking/auto-clicker.", icon: "error", allowOutsideClick: false }); 
                     setTimeout(() => location.reload(), 2000); 
                     return true; 
                 }
@@ -365,6 +374,7 @@
         };
 
         window.watchAd = async () => {
+            if (await verifyVPN()) return;
             if(checkAntiCheat()) return;
             const watched = userData.limits.ads || 0;
             if (watched >= (globalSettings.app.adLimit||10)) return Swal.fire("Limit Reached", "No more tasks today!", "warning");
@@ -389,6 +399,7 @@
         };
 
         window.claimDaily = async () => {
+            if (await verifyVPN()) return;
             const minAdsDaily = globalSettings.app.minAdsDaily || 5;
             if((userData.limits?.ads || 0) < minAdsDaily) return Swal.fire("Locked!", `You need to watch at least ${minAdsDaily} ads today to unlock the daily bonus.`, "error");
             if(checkAntiCheat()) return;
@@ -400,17 +411,33 @@
             Swal.fire("Claimed!", `+${globalSettings.rewards.daily} Coins`, "success");
         };
 
+        // UPDATED MATH LOGIC WITH ADS
         window.playMath = async () => {
+            if (await verifyVPN()) return;
             if (userData.limits.math <= 0) return Swal.fire("Limit Reached", "Come back tomorrow!", "warning");
+            
             const a = Math.floor(Math.random()*20)+1, b = Math.floor(Math.random()*20)+1;
             const { value: ans } = await Swal.fire({ title: 'Math Quiz', text: `${a} + ${b} = ?`, input: 'number', showCancelButton: true });
-            if(checkAntiCheat()) return;
+            
             if (ans && parseInt(ans) === a+b) { 
-                await giveReward('Math Quiz', globalSettings.rewards.math||15);
-                await update(userRef, { 'limits/math': userData.limits.math - 1 });
-                Swal.fire({ title:"Correct!", text:`+${globalSettings.rewards.math} Coins`, icon:"success", timer:1500 }); 
-                startTaskCooldown();
-            } else if(ans) { await update(userRef, { 'limits/math': userData.limits.math - 1 }); Swal.fire("Wrong!", "Try again.", "error"); startTaskCooldown(); }
+                if(checkAntiCheat()) return;
+                if (typeof show_10981447 !== 'function') return Swal.fire("Error", "Ad network not ready.", "error");
+
+                Swal.fire({ title: 'Playing Ad...', text: 'Watch full ad to get reward', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                try {
+                    await show_10981447(); // Play Ad
+                    await giveReward('Math Quiz', globalSettings.rewards.math||15);
+                    await update(userRef, { 'limits/math': userData.limits.math - 1 });
+                    Swal.fire({ title:"Correct!", text:`+${globalSettings.rewards.math} Coins`, icon:"success", timer:1500 }); 
+                    startTaskCooldown();
+                } catch(e) {
+                    Swal.fire("Cancelled", "You must watch the full ad to get the reward.", "error");
+                }
+            } else if(ans) { 
+                await update(userRef, { 'limits/math': userData.limits.math - 1 }); 
+                Swal.fire("Wrong!", "Try again.", "error"); 
+                startTaskCooldown(); 
+            }
         };
 
         window.playScratch = () => {
@@ -418,23 +445,35 @@
             Swal.fire({ html: `<div id="s-area" class="w-full h-32 border-2 border-dashed border-gray-300 rounded-2xl flex items-center justify-center font-extrabold cursor-pointer text-xl text-gray-400 bg-gray-50" onclick="window.rScratch()">TAP TO SCRATCH</div>`, showConfirmButton: false });
         };
         
+        // UPDATED SCRATCH LOGIC WITH ADS
         window.rScratch = async () => {
+            if (await verifyVPN()) return;
             if(checkAntiCheat()) return;
-            const a = document.getElementById('s-area'); if(a.dataset.s) return; a.dataset.s = "1";
-            const r = Math.floor(Math.random() * ((globalSettings.rewards.scratchMax||20) - 5 + 1)) + 5; 
-            a.className = "w-full h-32 bg-gradient-to-r from-pink-500 to-rose-500 text-white border-none rounded-2xl flex justify-center items-center text-3xl font-extrabold shadow-inner"; 
-            a.innerHTML = `🎉 +${r}`;
-            await giveReward('Scratch Card', r);
-            await update(userRef, { 'limits/scratch': userData.limits.scratch - 1 });
-            setTimeout(() => Swal.close(), 1500);
-            startTaskCooldown();
+            
+            const a = document.getElementById('s-area'); if(a.dataset.s) return; 
+            if (typeof show_10981447 !== 'function') return Swal.fire("Error", "Ad network not ready.", "error");
+            
+            Swal.fire({ title: 'Playing Ad...', text: 'Watch full ad to reveal scratch card', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            try {
+                await show_10981447(); // Play Ad
+                a.dataset.s = "1";
+                const r = Math.floor(Math.random() * ((globalSettings.rewards.scratchMax||20) - 5 + 1)) + 5; 
+                a.className = "w-full h-32 bg-gradient-to-r from-pink-500 to-rose-500 text-white border-none rounded-2xl flex justify-center items-center text-3xl font-extrabold shadow-inner"; 
+                a.innerHTML = `🎉 +${r}`;
+                await giveReward('Scratch Card', r);
+                await update(userRef, { 'limits/scratch': userData.limits.scratch - 1 });
+                setTimeout(() => Swal.close(), 1200);
+                startTaskCooldown();
+            } catch(e) {
+                Swal.fire("Cancelled", "You must watch the full ad to reveal the scratch card.", "error");
+            }
         };
 
         window.doSocialTask = async (taskId, link, reward) => {
             const btn = document.getElementById(`btn-${taskId}`); btn.disabled = true; btn.innerText = "Verifying...";
             window.goLink(link);
             setTimeout(async () => {
-                await giveReward(`Social Task (${taskId})`, reward);
+                await giveReward(`Social Task`, reward);
                 await update(userRef, { [`tasks/${taskId}`]: true });
                 Swal.fire("Verified!", `Received +${reward} Coins.`, "success");
             }, 5000);
