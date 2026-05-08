@@ -13,6 +13,7 @@
     <script src="https://js.adsgram.ai/adsgram.js"></script>
 
     <style>
+        /* Telegram Dynamic Theme Variables */
         :root {
             --bg-color: var(--tg-theme-bg-color, #f3f4f6);
             --text-color: var(--tg-theme-text-color, #111827);
@@ -21,11 +22,41 @@
             --button-text-color: var(--tg-theme-button-text-color, #ffffff);
             --secondary-bg-color: var(--tg-theme-secondary-bg-color, #ffffff);
         }
-        body { background-color: var(--bg-color); color: var(--text-color); font-family: -apple-system, sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
-        .tg-card { background-color: var(--secondary-bg-color); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .tg-btn { background-color: var(--button-color); color: var(--button-text-color); transition: opacity 0.2s; }
+        
+        body { 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            font-family: -apple-system, sans-serif; 
+            user-select: none; 
+            -webkit-tap-highlight-color: transparent; 
+        }
+
+        .tg-card { 
+            background-color: var(--secondary-bg-color); 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+        }
+
+        .tg-btn { 
+            background-color: var(--button-color); 
+            color: var(--button-text-color); 
+            transition: opacity 0.2s; 
+        }
         .tg-btn:active { opacity: 0.8; }
         .tg-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Theme responsive Inputs */
+        .tg-input {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            border: 1px solid var(--hint-color);
+            transition: all 0.2s ease;
+        }
+        .tg-input:focus {
+            border-color: var(--button-color);
+            outline: none;
+            box-shadow: 0 0 0 2px var(--button-color)33; /* 33 is 20% opacity */
+        }
+
         .nav-item { color: var(--hint-color); transition: color 0.2s; }
         .nav-item.active { color: var(--button-color); }
         
@@ -45,21 +76,21 @@
         <i class="fa-solid fa-bolt text-6xl mb-4" style="color: var(--button-color)"></i>
         <h1 class="text-2xl font-bold mb-6">Reward App</h1>
         <div class="loader"></div>
-        <p class="text-xs mt-4 text-gray-500 font-mono">Checking Security & Loading Data...</p>
+        <p class="text-xs mt-4 font-mono" style="color: var(--hint-color)">Loading App Data...</p>
     </div>
 
     <!-- VPN/Banned Screens -->
     <div id="vpn-screen" class="overlay-screen hidden px-6 text-center">
         <i class="fa-solid fa-shield-virus text-6xl text-red-500 mb-4"></i>
         <h1 class="text-2xl font-bold mb-2">Access Denied!</h1>
-        <p class="text-gray-500 text-sm mb-6">VPN or Proxy detected. Please turn it off.</p>
+        <p class="text-sm mb-6" style="color: var(--hint-color)">VPN or Proxy detected. Please turn it off.</p>
         <button onclick="tg.close()" class="tg-btn px-6 py-3 rounded-xl font-bold">Close App</button>
     </div>
     <div id="banned-screen" class="overlay-screen hidden px-6 text-center">
         <i class="fa-solid fa-user-slash text-6xl text-red-500 mb-4"></i>
         <h1 class="text-2xl font-bold mb-2">Account Banned</h1>
-        <p class="text-gray-500 text-sm mb-6">Your account has been suspended.</p>
-        <div class="text-xs text-gray-400 font-mono">UID: <span id="ban-uid"></span></div>
+        <p class="text-sm mb-6" style="color: var(--hint-color)">Your account has been suspended.</p>
+        <div class="text-xs font-mono" style="color: var(--hint-color)">UID: <span id="ban-uid"></span></div>
     </div>
 
     <!-- Main App -->
@@ -95,18 +126,22 @@
                     <div class="flex items-center gap-4"><div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 text-xl"><i class="fa-brands fa-telegram"></i></div><div><h3 class="font-bold">Join Channel</h3><p id="tg-reward-text" class="text-xs" style="color: var(--hint-color)">Loading...</p></div></div>
                     <button id="btn-tg" onclick="window.joinTg()" class="tg-btn px-4 py-2 rounded-lg font-bold text-sm shadow">Join</button>
                 </div>
+                
                 <div class="tg-card p-4 rounded-2xl flex items-center justify-between">
                     <div class="flex items-center gap-4"><div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-500 text-xl"><i class="fa-solid fa-video"></i></div><div><h3 class="font-bold">Watch Video</h3><p class="text-xs" style="color: var(--hint-color)"><span id="limit-ads">0</span> Ads Left Today</p></div></div>
-                    <button onclick="window.watchAd()" class="tg-btn px-4 py-2 rounded-lg font-bold text-sm shadow">Watch</button>
+                    <button id="btn-ad" onclick="window.watchAd()" class="tg-btn px-4 py-2 rounded-lg font-bold text-sm shadow">Watch</button>
                 </div>
+
                 <div class="tg-card p-4 rounded-2xl flex items-center justify-between">
                     <div class="flex items-center gap-4"><div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-500 text-xl"><i class="fa-solid fa-calendar-check"></i></div><div><h3 class="font-bold">Daily Bonus</h3><p class="text-xs" style="color: var(--hint-color)">+100 Coins / 24h</p></div></div>
                     <button id="btn-daily" onclick="window.claimDaily()" class="tg-btn px-4 py-2 rounded-lg font-bold text-sm shadow">Claim</button>
                 </div>
+                
                 <div class="tg-card p-4 rounded-2xl flex items-center justify-between">
                     <div class="flex items-center gap-4"><div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-500 text-xl"><i class="fa-solid fa-calculator"></i></div><div><h3 class="font-bold">Math Quiz</h3><p class="text-xs" style="color: var(--hint-color)"><span id="limit-math">10</span>/10 Left</p></div></div>
                     <button onclick="window.playMath()" class="tg-btn px-4 py-2 rounded-lg font-bold text-sm shadow">Play</button>
                 </div>
+                
                 <div class="tg-card p-4 rounded-2xl flex items-center justify-between">
                     <div class="flex items-center gap-4"><div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-500 text-xl"><i class="fa-solid fa-ticket"></i></div><div><h3 class="font-bold">Scratch Card</h3><p class="text-xs" style="color: var(--hint-color)"><span id="limit-scratch">10</span>/10 Left</p></div></div>
                     <button onclick="window.playScratch()" class="tg-btn px-4 py-2 rounded-lg font-bold text-sm shadow">Play</button>
@@ -119,13 +154,25 @@
             <h2 class="text-xl font-bold mb-4">Withdraw Funds</h2>
             <div class="tg-card p-5 rounded-2xl mb-6">
                 <form id="withdraw-form" onsubmit="window.withdraw(event)">
-                    <div class="mb-4"><label class="block text-sm font-bold mb-2">Method</label><select id="w-method" class="w-full p-3 rounded-lg border bg-gray-50 outline-none" required><option value="bKash">bKash</option><option value="Nagad">Nagad</option></select></div>
-                    <div class="mb-4"><label class="block text-sm font-bold mb-2">Account Number</label><input type="tel" id="w-phone" placeholder="017XXXXXXXX" class="w-full p-3 rounded-lg border bg-gray-50 outline-none" required></div>
-                    <div class="mb-4"><label class="block text-sm font-bold mb-2">Amount (BDT)</label><input type="number" id="w-amount" class="w-full p-3 rounded-lg border bg-gray-50 outline-none" required></div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-bold mb-2">Method</label>
+                        <select id="w-method" class="tg-input w-full p-3 rounded-lg" required>
+                            <option value="bKash">bKash</option><option value="Nagad">Nagad</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-bold mb-2">Account Number</label>
+                        <input type="tel" id="w-phone" placeholder="017XXXXXXXX" class="tg-input w-full p-3 rounded-lg" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-bold mb-2">Amount (BDT)</label>
+                        <input type="number" id="w-amount" class="tg-input w-full p-3 rounded-lg" required>
+                    </div>
                     <button id="btn-withdraw" type="submit" class="tg-btn w-full py-3 rounded-xl font-bold shadow-md">Submit Request</button>
                 </form>
             </div>
-            <h3 class="font-bold mb-3">Withdrawal History</h3><div id="withdraw-history" class="space-y-3"></div>
+            <h3 class="font-bold mb-3">Withdrawal History</h3>
+            <div id="withdraw-history" class="space-y-3"></div>
         </div>
 
         <!-- PROFILE TAB -->
@@ -134,21 +181,23 @@
                 <img id="profile-avatar" src="" alt="Avatar" class="w-24 h-24 rounded-full border-4 mb-3" style="border-color: var(--button-color)">
                 <h2 id="profile-name" class="text-2xl font-bold">Name</h2>
                 <p id="profile-username" class="text-sm mb-4" style="color: var(--hint-color)">@username</p>
-                <div class="bg-gray-100 px-4 py-2 rounded-lg inline-block"><span class="text-sm font-bold">UID:</span><span id="profile-id" class="text-sm font-mono tracking-wider ml-2">Loading...</span></div>
+                <div class="tg-input px-4 py-2 rounded-lg inline-block">
+                    <span class="text-sm font-bold">UID:</span><span id="profile-id" class="text-sm font-mono tracking-wider ml-2">Loading...</span>
+                </div>
             </div>
             <div class="tg-card p-5 rounded-2xl text-center">
                 <h3 class="font-bold text-lg mb-1">Invite Friends</h3>
-                <input type="text" id="ref-link" readonly class="p-3 rounded-lg border bg-gray-50 w-full text-center text-xs font-mono outline-none mb-3">
+                <input type="text" id="ref-link" readonly class="tg-input p-3 rounded-lg w-full text-center text-xs font-mono mb-3">
                 <div class="flex gap-2">
-                    <button onclick="window.copyRef()" class="tg-btn flex-1 py-3 rounded-lg font-bold shadow-md flex justify-center gap-2"><i class="fa-solid fa-copy"></i> Copy</button>
-                    <button onclick="window.shareRef()" class="bg-green-500 text-white flex-1 py-3 rounded-lg font-bold shadow-md flex justify-center gap-2"><i class="fa-solid fa-share-nodes"></i> Share</button>
+                    <button onclick="window.copyRef()" class="tg-btn flex-1 py-3 rounded-lg font-bold shadow-md flex justify-center items-center gap-2"><i class="fa-solid fa-copy"></i> Copy</button>
+                    <button onclick="window.shareRef()" class="bg-green-500 text-white flex-1 py-3 rounded-lg font-bold shadow-md flex justify-center items-center gap-2"><i class="fa-solid fa-share-nodes"></i> Share</button>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Bottom Navigation -->
-    <nav class="fixed bottom-0 w-full tg-card border-t flex justify-around items-center py-3 z-40">
+    <nav class="fixed bottom-0 w-full tg-card border-t border-gray-200/20 flex justify-around items-center py-3 z-40">
         <div class="nav-item active flex flex-col items-center cursor-pointer w-1/4" onclick="window.switchTab('home')"><i class="fa-solid fa-house text-xl mb-1"></i><span class="text-[10px] font-bold">Home</span></div>
         <div class="nav-item flex flex-col items-center cursor-pointer w-1/4" onclick="window.switchTab('tasks')"><i class="fa-solid fa-list-check text-xl mb-1"></i><span class="text-[10px] font-bold">Tasks</span></div>
         <div class="nav-item flex flex-col items-center cursor-pointer w-1/4" onclick="window.switchTab('wallet')"><i class="fa-solid fa-wallet text-xl mb-1"></i><span class="text-[10px] font-bold">Wallet</span></div>
@@ -170,7 +219,13 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const tg = window.Telegram.WebApp;
-        tg.expand(); tg.ready();
+        
+        // Tells Telegram app we are ready
+        tg.expand(); 
+        tg.ready();
+        
+        // Adapt header background color to theme
+        if(tg.setHeaderColor) tg.setHeaderColor('secondary_bg_color');
 
         const tgUser = tg.initDataUnsafe?.user || { id: 123456789, first_name: "Guest", last_name: "", username: "guest" };
         const userId = tgUser.id.toString();
@@ -179,6 +234,8 @@
         let userData = null;
         let globalSettings = { notice:{}, app:{ adLimit:10, minW:10, coinRate:1000, bdtReward:10 }, tg:{}, ref:{} };
         const userRef = ref(db, 'users/' + userId);
+        
+        // Adsgram Controller
         let AdController = null;
 
         async function checkVPN() {
@@ -196,7 +253,6 @@
             document.getElementById('profile-username').innerText = tgUser.username ? `@${tgUser.username}` : '';
             document.getElementById('profile-id').innerText = userId; document.getElementById('ban-uid').innerText = userId;
             
-            // Fixed Bot Ref Link
             document.getElementById('ref-link').value = `https://t.me/EarningJohn_bot/cash?startapp=${userId}`;
 
             if(await checkVPN()) { document.getElementById('splash').classList.add('hidden'); document.getElementById('vpn-screen').classList.remove('hidden'); return; }
@@ -209,6 +265,10 @@
             if(globalSettings.tg.active) {
                 document.getElementById('task-tg').classList.remove('hidden');
                 document.getElementById('tg-reward-text').innerText = `+${globalSettings.tg.reward} Coins`;
+            }
+
+            if (typeof window.Adsgram !== 'undefined') {
+                AdController = window.Adsgram.init({ blockId: "29687" }); 
             }
 
             onValue(userRef, async (snapshot) => {
@@ -237,10 +297,10 @@
 
             onValue(ref(db, 'withdrawals/' + userId), (snap) => {
                 const list = document.getElementById('withdraw-history'); list.innerHTML = '';
-                if (!snap.exists()) { list.innerHTML = `<p class="text-center text-xs">No history</p>`; return; }
+                if (!snap.exists()) { list.innerHTML = `<p class="text-center text-xs" style="color: var(--hint-color)">No history</p>`; return; }
                 Object.values(snap.val()).sort((a,b)=>b.timestamp-a.timestamp).forEach(w => {
                     const c = w.status==='Pending'?'text-orange-500':(w.status==='Approved'?'text-green-500':'text-red-500');
-                    list.innerHTML += `<div class="tg-card p-3 rounded-lg flex justify-between items-center mb-2"><div><p class="font-bold text-sm">${w.method}</p><p class="text-[10px] text-gray-500">${new Date(w.timestamp).toLocaleDateString()}</p></div><div class="text-right"><p class="font-bold">৳${w.amount.toFixed(2)}</p><p class="text-xs font-bold ${c}">${w.status}</p></div></div>`;
+                    list.innerHTML += `<div class="tg-card p-3 rounded-lg flex justify-between items-center mb-2 border border-gray-200/10"><div><p class="font-bold text-sm">${w.method}</p><p class="text-[10px]" style="color: var(--hint-color)">${new Date(w.timestamp).toLocaleDateString()}</p></div><div class="text-right"><p class="font-bold">৳${w.amount.toFixed(2)}</p><p class="text-xs font-bold ${c}">${w.status}</p></div></div>`;
                 });
             });
 
@@ -261,7 +321,7 @@
 
             if(userData.tasks?.tgJoined) {
                 const btnTg = document.getElementById('btn-tg');
-                btnTg.innerText = "Done"; btnTg.classList.add('bg-gray-400'); btnTg.disabled = true;
+                btnTg.innerText = "Done"; btnTg.disabled = true;
             }
         }
 
@@ -274,7 +334,7 @@
         window.shareRef = () => { tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(document.getElementById('ref-link').value)}&text=Join%20and%20earn%20free%20money%20with%20me!`); };
 
         window.convertCoins = async () => {
-            const btn = document.getElementById('btn-convert'); btn.disabled = true; // Spam protection
+            const btn = document.getElementById('btn-convert'); btn.disabled = true;
             const req = globalSettings.app.coinRate || 1000; const rew = globalSettings.app.bdtReward || 10;
             if (userData.balances.coins >= req) {
                 const chunks = Math.floor(userData.balances.coins / req);
@@ -284,28 +344,41 @@
             btn.disabled = false;
         };
 
-        window.watchAd = () => {
+        window.watchAd = async () => {
+            const btn = document.getElementById('btn-ad');
+            btn.disabled = true;
+
             const watched = userData.limits.ads || 0;
-            if (watched >= globalSettings.app.adLimit) return Swal.fire("Limit Reached", "Come back tomorrow!", "warning");
-            if (!AdController && typeof window.Adsgram !== 'undefined') AdController = window.Adsgram.init({ blockId: "29687" }); 
-            if (AdController) {
-                Swal.fire({ title: 'Loading Ad...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-                AdController.show().then(() => {
-                    Swal.close(); update(userRef, { 'balances/coins': userData.balances.coins + 50, 'limits/ads': watched + 1 });
-                    Swal.fire({ title:"Reward Added", text:"+50 Coins", icon:"success", timer:1500 });
-                }).catch(() => { Swal.close(); Swal.fire("Failed", "Ad skipped or unavailable.", "warning"); });
+            if (watched >= globalSettings.app.adLimit) {
+                btn.disabled = false;
+                return Swal.fire("Limit Reached", "You have watched all available ads for today!", "warning");
             }
+
+            if (typeof window.Adsgram === 'undefined') {
+                btn.disabled = false;
+                return Swal.fire("Error", "Ad system blocked! Please turn off Ad-blockers.", "error");
+            }
+
+            if (!AdController) { AdController = window.Adsgram.init({ blockId: "29687" }); }
+
+            Swal.fire({ title: 'Loading Ad...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+            try {
+                await AdController.show();
+                Swal.close();
+                await update(userRef, { 'balances/coins': userData.balances.coins + 50, 'limits/ads': watched + 1 });
+                Swal.fire({ title: "Reward Added", text: "+50 Coins", icon: "success", timer: 1500 });
+                tg.HapticFeedback.notificationOccurred('success');
+            } catch (error) {
+                Swal.close();
+                Swal.fire("Failed", "No ad available right now. Try again later.", "warning");
+            }
+            btn.disabled = false;
         };
 
         window.joinTg = async () => {
             const btn = document.getElementById('btn-tg'); btn.disabled = true; btn.innerText = "Checking...";
             tg.openTelegramLink(globalSettings.tg.link);
-            
-            // রিয়েল প্রোজেক্টে এখানে ব্যাকএন্ড API কল করতে হবে: 
-            // const res = await fetch(`https://your-api.com/checkMember?userId=${userId}`);
-            // const data = await res.json(); if(data.isMember) { ... }
-            
-            // API না থাকলে এই সাময়িক সমাধান:
             setTimeout(() => {
                 update(userRef, { 'balances/coins': userData.balances.coins + globalSettings.tg.reward, 'tasks/tgJoined': true }).then(() => {
                     Swal.fire("Verified!", `Received +${globalSettings.tg.reward} Coins.`, "success");
@@ -326,7 +399,10 @@
         window.playMath = async () => {
             if (userData.limits.math <= 0) return Swal.fire("Limit Reached", "Come back tomorrow!", "warning");
             const a = Math.floor(Math.random()*50)+1, b = Math.floor(Math.random()*50)+1;
-            const { value: ans } = await Swal.fire({ title: 'Math Quiz', text: `What is ${a} + ${b}?`, input: 'number', showCancelButton: true });
+            const { value: ans } = await Swal.fire({ 
+                title: 'Math Quiz', text: `What is ${a} + ${b}?`, input: 'number', showCancelButton: true,
+                customClass: { input: 'tg-input border-2 p-3 rounded-lg w-full outline-none' }
+            });
             if (ans && parseInt(ans) === a+b) { 
                 await update(userRef, { 'balances/coins': userData.balances.coins + 10, 'limits/math': userData.limits.math - 1 });
                 Swal.fire({ title:"Correct!", text:"+10 Coins", icon:"success", timer:1000 }); 
@@ -338,13 +414,18 @@
 
         window.playScratch = () => {
             if (userData.limits.scratch <= 0) return Swal.fire("Limit Reached", "Come back tomorrow!", "warning");
-            Swal.fire({ html: `<div id="s-area" class="w-full h-32 bg-gray-300 border-2 border-dashed border-gray-400 rounded-xl flex items-center justify-center font-bold cursor-pointer text-xl" onclick="window.rScratch()">SCRATCH HERE</div>`, showConfirmButton: false });
+            Swal.fire({ 
+                html: `<div id="s-area" class="w-full h-32 border-2 border-dashed rounded-xl flex items-center justify-center font-bold cursor-pointer text-xl transition-all" style="background-color: var(--secondary-bg-color); border-color: var(--hint-color); color: var(--text-color);" onclick="window.rScratch()">SCRATCH HERE</div>`, 
+                showConfirmButton: false 
+            });
         };
         
         window.rScratch = async () => {
             const a = document.getElementById('s-area'); if(a.dataset.s) return; a.dataset.s = "1";
             const r = Math.floor(Math.random()*15)+5;
-            a.className = "w-full h-32 bg-green-200 text-green-800 border-2 border-green-500 rounded-xl flex justify-center items-center text-2xl font-bold"; a.innerHTML = `🎉 +${r} Coins!`;
+            a.className = "w-full h-32 bg-green-200 text-green-800 border-2 border-green-500 rounded-xl flex justify-center items-center text-2xl font-bold"; 
+            a.style = ""; // clear inline theme styles
+            a.innerHTML = `🎉 +${r} Coins!`;
             await update(userRef, { 'balances/coins': userData.balances.coins + r, 'limits/scratch': userData.limits.scratch - 1 });
             setTimeout(() => Swal.close(), 1500);
         };
