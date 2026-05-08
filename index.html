@@ -5,205 +5,131 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Reward App</title>
     
-    <!-- CSS & Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
-    <!-- Updated Adsgram Script (অ্যাড ব্লক হবে না) -->
-    <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+    <!-- New Ad Network (libtl.com) SDK added here -->
+    <script src="https://libtl.com/sdk.js" data-zone="10981447" data-sdk="show_10981447"></script>
 
     <style>
-        /* Telegram Dynamic Theme Variables */
-        :root {
-            --bg-color: var(--tg-theme-bg-color, #f3f4f6);
-            --text-color: var(--tg-theme-text-color, #111827);
-            --hint-color: var(--tg-theme-hint-color, #6b7280);
-            --button-color: var(--tg-theme-button-color, #3b82f6);
-            --button-text-color: var(--tg-theme-button-text-color, #ffffff);
-            --secondary-bg-color: var(--tg-theme-secondary-bg-color, #ffffff);
-        }
-        
-        body { 
-            background-color: var(--bg-color); 
-            color: var(--text-color); 
-            font-family: -apple-system, sans-serif; 
-            user-select: none; 
-            -webkit-tap-highlight-color: transparent; 
-        }
-
-        .tg-card { 
-            background-color: var(--secondary-bg-color); 
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
-        }
-
-        .tg-btn { 
-            background-color: var(--button-color); 
-            color: var(--button-text-color); 
-            transition: opacity 0.2s; 
-        }
-        .tg-btn:active { opacity: 0.8; }
+        :root { --bg-color: var(--tg-theme-bg-color, #f3f4f6); --text-color: var(--tg-theme-text-color, #111827); --hint-color: var(--tg-theme-hint-color, #6b7280); --button-color: var(--tg-theme-button-color, #3b82f6); --button-text-color: var(--tg-theme-button-text-color, #ffffff); --secondary-bg-color: var(--tg-theme-secondary-bg-color, #ffffff); }
+        body { background-color: var(--bg-color); color: var(--text-color); font-family: -apple-system, sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
+        .tg-card { background-color: var(--secondary-bg-color); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .tg-btn { background-color: var(--button-color); color: var(--button-text-color); transition: transform 0.1s, opacity 0.2s; }
+        .tg-btn:active { transform: scale(0.96); opacity: 0.8; }
         .tg-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        /* Theme responsive Inputs */
-        .tg-input {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            border: 1px solid var(--hint-color);
-            transition: all 0.2s ease;
-        }
-        .tg-input:focus {
-            border-color: var(--button-color);
-            outline: none;
-            box-shadow: 0 0 0 2px var(--button-color)33; /* 33 is 20% opacity */
-        }
-
-        .nav-item { color: var(--hint-color); transition: color 0.2s; }
-        .nav-item.active { color: var(--button-color); }
-        
-        .tab-content { display: none; animation: fadeIn 0.3s ease; }
-        .tab-content.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        
+        .tg-input { background-color: var(--bg-color); color: var(--text-color); border: 1px solid var(--hint-color); }
+        .tg-input:focus { border-color: var(--button-color); outline: none; }
+        .nav-item { color: var(--hint-color); transition: all 0.2s; } .nav-item.active { color: var(--button-color); transform: translateY(-2px); }
+        .tab-content { display: none; animation: fadeIn 0.3s ease; } .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .overlay-screen { position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: var(--bg-color); }
         .loader { border: 4px solid var(--secondary-bg-color); border-top: 4px solid var(--button-color); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .hero-card { background: linear-gradient(135deg, var(--button-color), #8b5cf6); color: white; }
     </style>
 </head>
 <body class="overflow-x-hidden pb-20">
 
-    <!-- Splash Screen -->
     <div id="splash" class="overlay-screen transition-opacity duration-500">
-        <i class="fa-solid fa-bolt text-6xl mb-4" style="color: var(--button-color)"></i>
-        <h1 class="text-2xl font-bold mb-6">Reward App</h1>
-        <div class="loader"></div>
-        <p class="text-xs mt-4 font-mono" style="color: var(--hint-color)">Loading App Data...</p>
+        <i class="fa-solid fa-bolt text-6xl mb-4" style="color: var(--button-color)"></i><h1 class="text-2xl font-bold mb-6">Reward App</h1><div class="loader"></div><p class="text-xs mt-4 font-mono" style="color: var(--hint-color)">Loading Data...</p>
     </div>
 
-    <!-- VPN/Banned Screens -->
-    <div id="vpn-screen" class="overlay-screen hidden px-6 text-center">
-        <i class="fa-solid fa-shield-virus text-6xl text-red-500 mb-4"></i>
-        <h1 class="text-2xl font-bold mb-2">Access Denied!</h1>
-        <p class="text-sm mb-6" style="color: var(--hint-color)">VPN or Proxy detected. Please turn it off.</p>
-        <button onclick="tg.close()" class="tg-btn px-6 py-3 rounded-xl font-bold">Close App</button>
-    </div>
     <div id="banned-screen" class="overlay-screen hidden px-6 text-center">
-        <i class="fa-solid fa-user-slash text-6xl text-red-500 mb-4"></i>
-        <h1 class="text-2xl font-bold mb-2">Account Banned</h1>
-        <p class="text-sm mb-6" style="color: var(--hint-color)">Your account has been suspended.</p>
-        <div class="text-xs font-mono" style="color: var(--hint-color)">UID: <span id="ban-uid"></span></div>
+        <i class="fa-solid fa-user-slash text-6xl text-red-500 mb-4"></i><h1 class="text-2xl font-bold mb-2">Account Banned</h1><p class="text-sm mb-6" style="color: var(--hint-color)">Your account has been suspended for unusual activity.</p><div class="text-xs font-mono" style="color: var(--hint-color)">UID: <span id="ban-uid"></span></div>
     </div>
 
-    <!-- Main App -->
     <div id="app" class="hidden">
         <!-- HOME TAB -->
-        <div id="tab-home" class="tab-content active p-4">
-            <div class="flex items-center space-x-4 mb-6 tg-card p-4 rounded-2xl">
-                <img id="user-avatar" src="" alt="Avatar" class="w-16 h-16 rounded-full border-2" style="border-color: var(--button-color)">
-                <div><h2 id="user-name" class="text-lg font-bold">Loading...</h2><p class="text-sm" style="color: var(--hint-color)">Welcome back!</p></div>
+        <div id="tab-home" class="tab-content active p-4 space-y-4">
+            <div class="flex items-center space-x-4 tg-card p-4 rounded-2xl">
+                <img id="user-avatar" src="" class="w-14 h-14 rounded-full border-2" style="border-color: var(--button-color)">
+                <div><h2 id="user-name" class="text-lg font-bold">Loading...</h2><p class="text-xs" style="color: var(--hint-color)">Dashboard</p></div>
             </div>
-            <div class="grid grid-cols-2 gap-4 mb-6">
-                <div class="tg-card p-4 rounded-2xl flex flex-col items-center justify-center text-center">
-                    <i class="fa-solid fa-coins text-3xl text-yellow-500 mb-2"></i><p class="text-sm mt-1" style="color: var(--hint-color)">Coins</p>
-                    <h3 id="bal-coins" class="text-2xl font-bold">0</h3>
-                </div>
-                <div class="tg-card p-4 rounded-2xl flex flex-col items-center justify-center text-center">
-                    <i class="fa-solid fa-money-bill-wave text-3xl text-green-500 mb-2"></i><p class="text-sm mt-1" style="color: var(--hint-color)">Balance</p>
-                    <h3 class="text-2xl font-bold"><span class="text-sm">৳</span><span id="bal-bdt">0.00</span></h3>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div class="tg-card p-4 rounded-2xl flex flex-col items-center justify-center text-center"><i class="fa-solid fa-coins text-3xl text-yellow-500 mb-2"></i><p class="text-xs mt-1" style="color: var(--hint-color)">My Coins</p><h3 id="bal-coins" class="text-2xl font-extrabold">0</h3></div>
+                <div class="tg-card p-4 rounded-2xl flex flex-col items-center justify-center text-center"><i class="fa-solid fa-money-bill-wave text-3xl text-green-500 mb-2"></i><p class="text-xs mt-1" style="color: var(--hint-color)">Balance</p><h3 class="text-2xl font-extrabold"><span class="text-sm">৳</span><span id="bal-bdt">0.00</span></h3></div>
+            </div>
+
+            <div class="tg-card p-1 rounded-2xl bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500">
+                <div class="bg-white rounded-[14px] p-4 flex items-center justify-between" style="background-color: var(--secondary-bg-color);">
+                    <div class="flex items-center gap-3"><div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-500 text-2xl"><i class="fa-solid fa-gift"></i></div><div><h3 class="font-bold text-lg">Daily Bonus</h3><p id="txt-daily-reward" class="text-[11px] font-bold text-green-500">Loading...</p></div></div>
+                    <button id="btn-daily" onclick="window.claimDaily()" class="tg-btn px-5 py-2.5 rounded-xl font-bold text-sm shadow-md">Claim</button>
                 </div>
             </div>
-            <div class="tg-card p-5 rounded-2xl text-center">
-                <h3 class="font-bold text-lg mb-1">Convert Coins</h3>
-                <p id="convert-hint" class="text-sm mb-4" style="color: var(--hint-color)">Rate: Loading...</p>
-                <button id="btn-convert" onclick="window.convertCoins()" class="tg-btn w-full py-3 rounded-xl font-bold shadow-md flex items-center justify-center gap-2"><i class="fa-solid fa-exchange-alt"></i> Convert Now</button>
+
+            <div class="tg-card p-5 rounded-2xl text-center mt-2">
+                <h3 class="font-bold text-lg mb-1">Convert to Cash</h3><p id="convert-hint" class="text-xs mb-4" style="color: var(--hint-color)">Rate: Loading...</p>
+                <button id="btn-convert" onclick="window.convertCoins()" class="tg-btn w-full py-3.5 rounded-xl font-bold shadow-md flex items-center justify-center gap-2"><i class="fa-solid fa-money-bill-transfer"></i> Convert Coins</button>
             </div>
         </div>
 
         <!-- TASKS TAB -->
-        <div id="tab-tasks" class="tab-content p-4">
-            <h2 class="text-xl font-bold mb-4">Earn Coins</h2>
-            <div class="space-y-4">
-                <div id="task-tg" class="tg-card p-4 rounded-2xl flex items-center justify-between hidden">
-                    <div class="flex items-center gap-4"><div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 text-xl"><i class="fa-brands fa-telegram"></i></div><div><h3 class="font-bold">Join Channel</h3><p id="tg-reward-text" class="text-xs" style="color: var(--hint-color)">Loading...</p></div></div>
-                    <button id="btn-tg" onclick="window.joinTg()" class="tg-btn px-4 py-2 rounded-lg font-bold text-sm shadow">Join</button>
-                </div>
-                
-                <div class="tg-card p-4 rounded-2xl flex items-center justify-between">
-                    <div class="flex items-center gap-4"><div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-500 text-xl"><i class="fa-solid fa-video"></i></div><div><h3 class="font-bold">Watch Video</h3><p class="text-xs" style="color: var(--hint-color)"><span id="limit-ads">0</span> Ads Left Today</p></div></div>
-                    <button id="btn-ad" onclick="window.watchAd()" class="tg-btn px-4 py-2 rounded-lg font-bold text-sm shadow">Watch</button>
-                </div>
+        <div id="tab-tasks" class="tab-content p-4 space-y-4">
+            <div class="hero-card p-6 rounded-3xl shadow-lg relative text-center mb-2">
+                <i class="fa-solid fa-circle-play text-5xl mb-3 drop-shadow-md"></i><h2 class="text-2xl font-extrabold mb-1">Watch & Earn</h2><p id="txt-video-reward" class="text-sm font-bold text-yellow-300 mb-1">Loading...</p><p class="text-xs opacity-90 mb-4 font-medium"><span id="limit-ads" class="font-bold">0</span> Ads Available</p>
+                <button onclick="window.watchAd()" class="w-full bg-white text-indigo-600 hover:bg-gray-50 py-3.5 rounded-2xl font-extrabold shadow-md text-lg transition"><i class="fa-solid fa-video mr-2"></i> Watch Video</button>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div class="tg-card p-4 rounded-2xl flex flex-col items-center text-center"><div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-500 text-xl mb-2"><i class="fa-solid fa-calculator"></i></div><h3 class="font-bold text-sm">Math Quiz</h3><p id="txt-math-reward" class="text-[10px] font-bold text-green-500 mb-1">Loading...</p><p class="text-[10px] mb-3" style="color: var(--hint-color)"><span id="limit-math">0</span> Left</p><button onclick="window.playMath()" class="tg-btn w-full py-2 rounded-lg font-bold text-xs shadow">Play Now</button></div>
+                <div class="tg-card p-4 rounded-2xl flex flex-col items-center text-center"><div class="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center text-pink-500 text-xl mb-2"><i class="fa-solid fa-ticket"></i></div><h3 class="font-bold text-sm">Scratch Card</h3><p id="txt-scratch-reward" class="text-[10px] font-bold text-green-500 mb-1">Loading...</p><p class="text-[10px] mb-3" style="color: var(--hint-color)"><span id="limit-scratch">0</span> Left</p><button onclick="window.playScratch()" class="tg-btn w-full py-2 rounded-lg font-bold text-xs shadow">Scratch</button></div>
+            </div>
 
-                <div class="tg-card p-4 rounded-2xl flex items-center justify-between">
-                    <div class="flex items-center gap-4"><div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-500 text-xl"><i class="fa-solid fa-calendar-check"></i></div><div><h3 class="font-bold">Daily Bonus</h3><p class="text-xs" style="color: var(--hint-color)">+100 Coins / 24h</p></div></div>
-                    <button id="btn-daily" onclick="window.claimDaily()" class="tg-btn px-4 py-2 rounded-lg font-bold text-sm shadow">Claim</button>
-                </div>
-                
-                <div class="tg-card p-4 rounded-2xl flex items-center justify-between">
-                    <div class="flex items-center gap-4"><div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-500 text-xl"><i class="fa-solid fa-calculator"></i></div><div><h3 class="font-bold">Math Quiz</h3><p class="text-xs" style="color: var(--hint-color)"><span id="limit-math">10</span>/10 Left</p></div></div>
-                    <button onclick="window.playMath()" class="tg-btn px-4 py-2 rounded-lg font-bold text-sm shadow">Play</button>
-                </div>
-                
-                <div class="tg-card p-4 rounded-2xl flex items-center justify-between">
-                    <div class="flex items-center gap-4"><div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-500 text-xl"><i class="fa-solid fa-ticket"></i></div><div><h3 class="font-bold">Scratch Card</h3><p class="text-xs" style="color: var(--hint-color)"><span id="limit-scratch">10</span>/10 Left</p></div></div>
-                    <button onclick="window.playScratch()" class="tg-btn px-4 py-2 rounded-lg font-bold text-sm shadow">Play</button>
-                </div>
+            <div id="task-tg" class="tg-card p-4 rounded-2xl flex items-center justify-between hidden">
+                <div class="flex items-center gap-3"><div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 text-xl"><i class="fa-brands fa-telegram"></i></div><div><h3 class="font-bold text-sm">Join Channel</h3><p id="tg-reward-text" class="text-[11px] font-bold text-green-500">Reward: Loading...</p></div></div>
+                <button id="btn-tg" onclick="window.joinTg()" class="tg-btn px-4 py-2 rounded-lg font-bold text-xs shadow">Join</button>
             </div>
         </div>
 
         <!-- WALLET TAB -->
         <div id="tab-wallet" class="tab-content p-4">
-            <h2 class="text-xl font-bold mb-4">Withdraw Funds</h2>
-            <div class="tg-card p-5 rounded-2xl mb-6">
+            <h2 class="text-xl font-bold mb-4">Cashout</h2>
+            <div class="tg-card p-5 rounded-3xl mb-6">
                 <form id="withdraw-form" onsubmit="window.withdraw(event)">
-                    <div class="mb-4">
-                        <label class="block text-sm font-bold mb-2">Method</label>
-                        <select id="w-method" class="tg-input w-full p-3 rounded-lg" required>
-                            <option value="bKash">bKash</option><option value="Nagad">Nagad</option>
-                        </select>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-bold mb-2">Account Number</label>
-                        <input type="tel" id="w-phone" placeholder="017XXXXXXXX" class="tg-input w-full p-3 rounded-lg" required>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-bold mb-2">Amount (BDT)</label>
-                        <input type="number" id="w-amount" class="tg-input w-full p-3 rounded-lg" required>
-                    </div>
-                    <button id="btn-withdraw" type="submit" class="tg-btn w-full py-3 rounded-xl font-bold shadow-md">Submit Request</button>
+                    <div class="mb-4"><label class="block text-sm font-bold mb-2">Method</label><select id="w-method" class="tg-input w-full p-3.5 rounded-xl font-bold" required><option value="bKash">bKash</option><option value="Nagad">Nagad</option></select></div>
+                    <div class="mb-4"><label class="block text-sm font-bold mb-2">Account Number</label><input type="tel" id="w-phone" placeholder="017XXXXXXXX" class="tg-input w-full p-3.5 rounded-xl font-bold" required></div>
+                    <div class="mb-5"><label class="block text-sm font-bold mb-2">Amount (BDT)</label><input type="number" id="w-amount" class="tg-input w-full p-3.5 rounded-xl font-bold" required></div>
+                    <button id="btn-withdraw" type="submit" class="tg-btn w-full py-4 rounded-xl font-extrabold shadow-md text-lg">Withdraw Request</button>
                 </form>
             </div>
-            <h3 class="font-bold mb-3">Withdrawal History</h3>
-            <div id="withdraw-history" class="space-y-3"></div>
+            <h3 class="font-bold mb-3 px-2">Withdraw History</h3><div id="withdraw-history" class="space-y-3"></div>
         </div>
 
-        <!-- PROFILE TAB -->
+        <!-- PROFILE & HISTORY TAB -->
         <div id="tab-profile" class="tab-content p-4">
-            <div class="tg-card p-5 rounded-2xl mb-6 flex flex-col items-center text-center">
-                <img id="profile-avatar" src="" alt="Avatar" class="w-24 h-24 rounded-full border-4 mb-3" style="border-color: var(--button-color)">
-                <h2 id="profile-name" class="text-2xl font-bold">Name</h2>
-                <p id="profile-username" class="text-sm mb-4" style="color: var(--hint-color)">@username</p>
-                <div class="tg-input px-4 py-2 rounded-lg inline-block">
-                    <span class="text-sm font-bold">UID:</span><span id="profile-id" class="text-sm font-mono tracking-wider ml-2">Loading...</span>
+            <div class="tg-card p-6 rounded-3xl mb-6 flex flex-col items-center text-center">
+                <img id="profile-avatar" src="" class="w-24 h-24 rounded-full border-4 mb-3" style="border-color: var(--button-color)">
+                <h2 id="profile-name" class="text-2xl font-extrabold">Name</h2><p id="profile-username" class="text-sm mb-4" style="color: var(--hint-color)">@username</p>
+                <div class="bg-gray-100 px-4 py-2 rounded-lg inline-block shadow-inner" style="background-color: var(--bg-color);"><span class="text-xs font-bold text-gray-500">UID:</span><span id="profile-id" class="text-sm font-mono tracking-wider ml-2 font-bold">...</span></div>
+            </div>
+
+            <!-- EARNING HISTORY SECTION -->
+            <div class="tg-card p-5 rounded-3xl mb-6">
+                <h3 class="font-bold text-lg mb-3 flex items-center gap-2 border-b pb-2"><i class="fa-solid fa-clock-rotate-left text-indigo-500"></i> Recent Earnings</h3>
+                <div id="earning-history" class="space-y-2 max-h-60 overflow-y-auto">
+                    <p class="text-center text-xs text-gray-400 py-4">Loading history...</p>
                 </div>
             </div>
-            <div class="tg-card p-5 rounded-2xl text-center">
-                <h3 class="font-bold text-lg mb-1">Invite Friends</h3>
-                <input type="text" id="ref-link" readonly class="tg-input p-3 rounded-lg w-full text-center text-xs font-mono mb-3">
-                <div class="flex gap-2">
-                    <button onclick="window.copyRef()" class="tg-btn flex-1 py-3 rounded-lg font-bold shadow-md flex justify-center items-center gap-2"><i class="fa-solid fa-copy"></i> Copy</button>
-                    <button onclick="window.shareRef()" class="bg-green-500 text-white flex-1 py-3 rounded-lg font-bold shadow-md flex justify-center items-center gap-2"><i class="fa-solid fa-share-nodes"></i> Share</button>
-                </div>
+
+            <div class="tg-card p-5 rounded-3xl text-center mb-6">
+                <h3 class="font-bold text-lg mb-1">Refer & Earn</h3><p id="txt-ref-reward" class="text-xs font-bold text-green-500 mb-3">Share link and earn extra coins!</p>
+                <input type="text" id="ref-link" readonly class="tg-input p-3 rounded-xl w-full text-center text-xs font-mono mb-4 bg-gray-50">
+                <div class="flex gap-3"><button onclick="window.copyRef()" class="tg-btn flex-1 py-3.5 rounded-xl font-bold shadow flex justify-center items-center gap-2"><i class="fa-solid fa-copy"></i> Copy</button><button onclick="window.shareRef()" class="bg-green-500 text-white flex-1 py-3.5 rounded-xl font-bold shadow flex justify-center items-center gap-2"><i class="fa-solid fa-share-nodes"></i> Share</button></div>
             </div>
         </div>
     </div>
 
-    <!-- Bottom Navigation -->
-    <nav class="fixed bottom-0 w-full tg-card border-t border-gray-200/20 flex justify-around items-center py-3 z-40">
-        <div class="nav-item active flex flex-col items-center cursor-pointer w-1/4" onclick="window.switchTab('home')"><i class="fa-solid fa-house text-xl mb-1"></i><span class="text-[10px] font-bold">Home</span></div>
-        <div class="nav-item flex flex-col items-center cursor-pointer w-1/4" onclick="window.switchTab('tasks')"><i class="fa-solid fa-list-check text-xl mb-1"></i><span class="text-[10px] font-bold">Tasks</span></div>
-        <div class="nav-item flex flex-col items-center cursor-pointer w-1/4" onclick="window.switchTab('wallet')"><i class="fa-solid fa-wallet text-xl mb-1"></i><span class="text-[10px] font-bold">Wallet</span></div>
-        <div class="nav-item flex flex-col items-center cursor-pointer w-1/4" onclick="window.switchTab('profile')"><i class="fa-solid fa-user text-xl mb-1"></i><span class="text-[10px] font-bold">Profile</span></div>
+    <!-- Navigation -->
+    <nav class="fixed bottom-0 w-full tg-card border-t border-gray-200/10 flex justify-around items-center py-3 z-40 px-2 pb-safe">
+        <div class="nav-item active flex flex-col items-center cursor-pointer w-1/5" onclick="window.switchTab('home')"><i class="fa-solid fa-house text-xl mb-1"></i><span class="text-[9px] font-bold uppercase">Home</span></div>
+        <div class="nav-item flex flex-col items-center cursor-pointer w-1/5" onclick="window.switchTab('tasks')"><i class="fa-solid fa-list-check text-xl mb-1"></i><span class="text-[9px] font-bold uppercase">Tasks</span></div>
+        <div class="nav-item flex flex-col items-center cursor-pointer w-1/5" onclick="window.switchTab('wallet')"><i class="fa-solid fa-wallet text-xl mb-1"></i><span class="text-[9px] font-bold uppercase">Wallet</span></div>
+        <div class="nav-item flex flex-col items-center cursor-pointer w-1/5" onclick="window.openSupport()"><i id="sup-icon" class="fa-brands fa-telegram text-xl mb-1 drop-shadow-sm text-blue-500"></i><span class="text-[9px] font-bold uppercase text-gray-500">Support</span></div>
+        <div class="nav-item flex flex-col items-center cursor-pointer w-1/5" onclick="window.switchTab('profile')"><i class="fa-solid fa-user text-xl mb-1"></i><span class="text-[9px] font-bold uppercase">Profile</span></div>
     </nav>
 
     <script type="module">
@@ -219,98 +145,77 @@
             appId: "1:363993462640:web:22247bdf806f062a3b01b5"
         };
         const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+        const db = getDatabase(app, "https://arng-805db-default-rtdb.firebaseio.com");
         const tg = window.Telegram.WebApp;
         
-        // Tells Telegram app we are ready
-        tg.expand(); 
-        tg.ready();
-        
-        // Adapt header background color to theme
-        if(tg.setHeaderColor) tg.setHeaderColor('secondary_bg_color');
+        tg.expand(); tg.ready(); if(tg.setHeaderColor) tg.setHeaderColor('secondary_bg_color');
 
         const tgUser = tg.initDataUnsafe?.user || { id: 123456789, first_name: "Guest", last_name: "", username: "guest" };
         const userId = tgUser.id.toString();
         const startParam = tg.initDataUnsafe?.start_param; 
         
         let userData = null;
-        let globalSettings = { notice:{}, app:{ adLimit:10, minW:10, coinRate:1000, bdtReward:10 }, tg:{}, ref:{} };
+        let globalSettings = { app:{ adLimit:10, mathLimit:10, scratchLimit:10, minW:10, coinRate:1000, bdtReward:10 }, rewards:{ video:50, math:15, scratchMax:20, daily:100 }, tg:{}, support:{platform:'telegram', link:''}, ref:{} };
         const userRef = ref(db, 'users/' + userId);
-        
-        // Adsgram Controller
-        let AdController = null;
 
-        async function checkVPN() {
-            try {
-                const res = await fetch('https://ipwho.is/'); const data = await res.json();
-                if (data.security && (data.security.vpn || data.security.proxy)) return true;
-            } catch(e) {} return false;
-        }
+        // ANTI-CHEAT VARIABLES
+        let lastClickTime = 0;
+        let spamWarnings = 0;
 
         window.addEventListener('DOMContentLoaded', async () => {
             const name = `${tgUser.first_name} ${tgUser.last_name || ''}`.trim();
-            const avatar = tgUser.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
-            document.getElementById('user-avatar').src = avatar; document.getElementById('profile-avatar').src = avatar;
+            document.getElementById('user-avatar').src = tgUser.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
+            document.getElementById('profile-avatar').src = tgUser.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
             document.getElementById('user-name').innerText = name; document.getElementById('profile-name').innerText = name;
             document.getElementById('profile-username').innerText = tgUser.username ? `@${tgUser.username}` : '';
             document.getElementById('profile-id').innerText = userId; document.getElementById('ban-uid').innerText = userId;
-            
             document.getElementById('ref-link').value = `https://t.me/EarningJohn_bot/cash?startapp=${userId}`;
 
-            if(await checkVPN()) { document.getElementById('splash').classList.add('hidden'); document.getElementById('vpn-screen').classList.remove('hidden'); return; }
-
-            const setSnap = await get(ref(db, 'settings'));
-            if(setSnap.exists()) globalSettings = { ...globalSettings, ...setSnap.val() };
-            
-            document.getElementById('w-amount').placeholder = `Min ${globalSettings.app.minW} BDT`;
-            document.getElementById('convert-hint').innerText = `Rate: ${globalSettings.app.coinRate} Coins = ৳${globalSettings.app.bdtReward}`;
-            if(globalSettings.tg.active) {
-                document.getElementById('task-tg').classList.remove('hidden');
-                document.getElementById('tg-reward-text').innerText = `+${globalSettings.tg.reward} Coins`;
-            }
-
-            if (typeof window.Adsgram !== 'undefined') {
-                AdController = window.Adsgram.init({ blockId: "29687" }); 
-            }
+            onValue(ref(db, 'settings'), (snap) => { if(snap.exists()) { globalSettings = { ...globalSettings, ...snap.val() }; updateUI(); } });
 
             onValue(userRef, async (snapshot) => {
                 const today = new Date().toDateString();
                 if (snapshot.exists()) {
                     userData = snapshot.val();
                     if (userData.status === 'banned') {
-                        document.getElementById('splash').classList.add('hidden'); document.getElementById('app').classList.add('hidden');
+                        document.getElementById('splash').style.display = 'none'; document.getElementById('app').style.display = 'none';
                         document.getElementById('banned-screen').classList.remove('hidden'); return;
                     }
-                    if (userData.limits?.date !== today) update(userRef, { 'limits/math': 10, 'limits/scratch': 10, 'limits/ads': 0, 'limits/date': today });
-                    else updateUI();
+                    if (userData.limits?.date !== today) {
+                        await update(userRef, { 'limits/math': globalSettings.app.mathLimit||10, 'limits/scratch': globalSettings.app.scratchLimit||10, 'limits/ads': 0, 'limits/date': today });
+                    } else updateUI();
                 } else {
                     let iCoins = 0;
                     if (startParam && startParam !== userId) {
-                        try {
-                            const refSnap = await get(ref(db, 'users/' + startParam));
-                            if (refSnap.exists()) { iCoins = globalSettings.ref.joined || 100; update(ref(db, `users/${startParam}/balances`), { coins: (refSnap.val().balances?.coins||0) + (globalSettings.ref.referrer||200) }); }
-                        } catch(e) {}
+                        try { const refSnap = await get(ref(db, 'users/' + startParam)); if (refSnap.exists()) { iCoins = globalSettings.ref?.joined || 100; update(ref(db, `users/${startParam}/balances`), { coins: (refSnap.val().balances?.coins||0) + (globalSettings.ref?.referrer||200) }); push(ref(db, `users/${startParam}/history`), { title: 'Referral Bonus', amount: globalSettings.ref?.referrer||200, timestamp: Date.now() }); } } catch(e) {}
                     }
-                    userData = { info: { firstName: tgUser.first_name||'', username: tgUser.username||'' }, balances: { coins: iCoins, bdt: 0 }, limits: { math: 10, scratch: 10, ads: 0, date: today }, tasks: { tgJoined: false }, cooldowns: { dailyBonus: 0 }, status: 'active' };
+                    userData = { info: { firstName: tgUser.first_name||'', username: tgUser.username||'' }, balances: { coins: iCoins, bdt: 0 }, limits: { math: globalSettings.app.mathLimit||10, scratch: globalSettings.app.scratchLimit||10, ads: 0, date: today }, tasks: { tgJoined: false }, cooldowns: { dailyBonus: 0 }, status: 'active' };
                     await set(userRef, userData);
-                    if(iCoins > 0) Swal.fire('Bonus!', `Received ${iCoins} Coins from referral!`, 'success');
+                    if(iCoins > 0) push(ref(db, `users/${userId}/history`), { title: 'Welcome Bonus', amount: iCoins, timestamp: Date.now() });
                 }
+            });
+
+            // LOAD EARNING HISTORY
+            onValue(ref(db, `users/${userId}/history`), (snap) => {
+                const hList = document.getElementById('earning-history'); hList.innerHTML = '';
+                if(!snap.exists()) { hList.innerHTML = `<p class="text-center text-xs text-gray-400 py-4">No earnings yet. Start playing!</p>`; return; }
+                const data = snap.val();
+                const arr = Object.values(data).sort((a,b) => b.timestamp - a.timestamp).slice(0, 15);
+                arr.forEach(item => {
+                    hList.innerHTML += `<div class="bg-gray-50 p-3 rounded-xl border flex justify-between items-center"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-yellow-100 flex justify-center items-center text-yellow-500"><i class="fa-solid fa-coins"></i></div><div><p class="text-sm font-bold text-gray-800">${item.title}</p><p class="text-[10px] text-gray-400">${new Date(item.timestamp).toLocaleString()}</p></div></div><span class="text-sm font-extrabold text-green-500">+${item.amount}</span></div>`;
+                });
             });
 
             onValue(ref(db, 'withdrawals/' + userId), (snap) => {
                 const list = document.getElementById('withdraw-history'); list.innerHTML = '';
-                if (!snap.exists()) { list.innerHTML = `<p class="text-center text-xs" style="color: var(--hint-color)">No history</p>`; return; }
+                if (!snap.exists()) { list.innerHTML = `<p class="text-center text-xs" style="color: var(--hint-color)">No history yet</p>`; return; }
                 Object.values(snap.val()).sort((a,b)=>b.timestamp-a.timestamp).forEach(w => {
                     const c = w.status==='Pending'?'text-orange-500':(w.status==='Approved'?'text-green-500':'text-red-500');
-                    list.innerHTML += `<div class="tg-card p-3 rounded-lg flex justify-between items-center mb-2 border border-gray-200/10"><div><p class="font-bold text-sm">${w.method}</p><p class="text-[10px]" style="color: var(--hint-color)">${new Date(w.timestamp).toLocaleDateString()}</p></div><div class="text-right"><p class="font-bold">৳${w.amount.toFixed(2)}</p><p class="text-xs font-bold ${c}">${w.status}</p></div></div>`;
+                    list.innerHTML += `<div class="tg-card p-3 rounded-xl flex justify-between items-center mb-2"><div><p class="font-bold text-sm">${w.method}</p><p class="text-[10px]" style="color: var(--hint-color)">${new Date(w.timestamp).toLocaleDateString()}</p></div><div class="text-right"><p class="font-extrabold text-gray-800">৳${w.amount.toFixed(2)}</p><p class="text-xs font-bold ${c}">${w.status}</p></div></div>`;
                 });
             });
 
-            setTimeout(() => {
-                if(userData && userData.status === 'banned') return;
-                document.getElementById('splash').style.display = 'none'; 
-                document.getElementById('app').classList.remove('hidden');
-            }, 1500);
+            setTimeout(() => { if(userData && userData.status === 'banned') return; document.getElementById('splash').style.display = 'none'; document.getElementById('app').classList.remove('hidden'); }, 1500);
         });
 
         function updateUI() {
@@ -319,123 +224,163 @@
             document.getElementById('bal-bdt').innerText = userData.balances.bdt.toFixed(2);
             document.getElementById('limit-math').innerText = userData.limits.math;
             document.getElementById('limit-scratch').innerText = userData.limits.scratch;
-            document.getElementById('limit-ads').innerText = Math.max(0, globalSettings.app.adLimit - (userData.limits.ads || 0));
+            document.getElementById('limit-ads').innerText = Math.max(0, (globalSettings.app.adLimit||10) - (userData.limits.ads || 0));
+            
+            document.getElementById('txt-daily-reward').innerText = `+${globalSettings.rewards.daily} Coins`;
+            document.getElementById('txt-video-reward').innerText = `+${globalSettings.rewards.video} Coins`;
+            document.getElementById('txt-math-reward').innerText = `+${globalSettings.rewards.math} Coins`;
+            document.getElementById('txt-scratch-reward').innerText = `Up to +${globalSettings.rewards.scratchMax} Coins`;
+            document.getElementById('txt-ref-reward').innerText = `Refer & Get +${globalSettings.ref?.referrer||200} Coins`;
+            document.getElementById('convert-hint').innerText = `Rate: ${globalSettings.app.coinRate} Coins = ৳${globalSettings.app.bdtReward}`;
 
-            if(userData.tasks?.tgJoined) {
+            const sIcon = document.getElementById('sup-icon');
+            const plat = globalSettings.support?.platform || 'telegram';
+            if(plat==='whatsapp') sIcon.className = 'fa-brands fa-whatsapp text-xl mb-1 drop-shadow-sm text-green-500';
+            else if(plat==='facebook') sIcon.className = 'fa-brands fa-facebook-messenger text-xl mb-1 drop-shadow-sm text-blue-600';
+            else sIcon.className = 'fa-brands fa-telegram text-xl mb-1 drop-shadow-sm text-blue-500';
+
+            if(globalSettings.tg?.active && !userData.tasks?.tgJoined) {
+                document.getElementById('task-tg').classList.remove('hidden');
+                document.getElementById('tg-reward-text').innerText = `+${globalSettings.tg.reward} Coins`;
+            } else if(userData.tasks?.tgJoined) {
+                document.getElementById('task-tg').classList.remove('hidden');
                 const btnTg = document.getElementById('btn-tg');
-                btnTg.innerText = "Done"; btnTg.disabled = true;
-            }
+                btnTg.innerText = "Completed"; btnTg.disabled = true;
+                btnTg.className = "bg-gray-200 text-gray-500 px-4 py-2 rounded-lg font-bold text-xs shadow-inner";
+            } else document.getElementById('task-tg').classList.add('hidden');
         }
 
-        window.switchTab = (tabId) => {
-            document.querySelectorAll('.tab-content, .nav-item').forEach(el => el.classList.remove('active'));
-            document.getElementById(`tab-${tabId}`).classList.add('active'); event.currentTarget.classList.add('active');
+        window.switchTab = (tabId) => { document.querySelectorAll('.tab-content, .nav-item').forEach(el => el.classList.remove('active')); document.getElementById(`tab-${tabId}`).classList.add('active'); event.currentTarget.classList.add('active'); };
+        
+        window.openSupport = () => { 
+            let link = globalSettings.support?.link;
+            if(!link || link.trim() === "") return Swal.fire("Notice", "Support is currently unavailable.", "info"); 
+            if (!link.startsWith('http://') && !link.startsWith('https://')) link = 'https://' + link;
+            try { if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData) { if(link.includes('t.me')) tg.openTelegramLink(link); else tg.openLink(link); } else { window.open(link, '_blank'); } } catch (e) { window.open(link, '_blank'); }
         };
-
-        window.copyRef = () => { const c = document.getElementById('ref-link'); c.select(); document.execCommand("copy"); tg.HapticFeedback.impactOccurred('light'); Swal.fire({toast:true, position:'top-end', icon:'success', title:'Copied', showConfirmButton:false, timer:1500}); };
+        
+        window.copyRef = () => { document.getElementById('ref-link').select(); document.execCommand("copy"); tg.HapticFeedback.impactOccurred('light'); Swal.fire({toast:true, position:'top-end', icon:'success', title:'Link Copied!', showConfirmButton:false, timer:1500}); };
         window.shareRef = () => { tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(document.getElementById('ref-link').value)}&text=Join%20and%20earn%20free%20money%20with%20me!`); };
 
+        // ANTI CHEAT SYSTEM
+        function checkAntiCheat() {
+            const now = Date.now();
+            if (now - lastClickTime < 1500) { 
+                spamWarnings++;
+                if(spamWarnings >= 3) {
+                    update(userRef, { status: 'banned' });
+                    Swal.fire({ title: "Banned!", text: "Account suspended for using Auto-Clicker.", icon: "error", allowOutsideClick: false });
+                    setTimeout(() => location.reload(), 2000);
+                    return true;
+                }
+                Swal.fire("Warning", "You are clicking too fast! Slow down or your account will be banned.", "warning");
+                return true;
+            }
+            lastClickTime = now;
+            spamWarnings = 0;
+            return false;
+        }
+
+        // UNIFIED REWARD ADDER WITH HISTORY
+        async function giveReward(title, amount) {
+            const updates = {};
+            updates['balances/coins'] = userData.balances.coins + amount;
+            const historyRefKey = push(ref(db, `users/${userId}/history`)).key;
+            updates[`history/${historyRefKey}`] = { title, amount, timestamp: Date.now() };
+            await update(userRef, updates);
+        }
+
         window.convertCoins = async () => {
-            const btn = document.getElementById('btn-convert'); btn.disabled = true;
             const req = globalSettings.app.coinRate || 1000; const rew = globalSettings.app.bdtReward || 10;
             if (userData.balances.coins >= req) {
                 const chunks = Math.floor(userData.balances.coins / req);
                 await update(userRef, { 'balances/coins': userData.balances.coins - (chunks*req), 'balances/bdt': userData.balances.bdt + (chunks*rew) });
                 Swal.fire("Success!", `Converted to ৳${chunks*rew}`, "success"); tg.HapticFeedback.notificationOccurred('success');
-            } else { Swal.fire("Oops!", `Minimum ${req} coins required.`, "error"); }
-            btn.disabled = false;
+            } else Swal.fire("Oops!", `Minimum ${req} coins required.`, "warning");
+        };
+
+        // NEW AD NETWORK LOGIC (libtl.com)
+        const showAdFirst = async () => {
+            // Check if the libtl.com SDK is loaded successfully
+            if (typeof show_10981447 !== 'function') {
+                Swal.fire("Ad Error", "Ad network is blocked by your browser or internet connection. Try again later.", "error");
+                return false;
+            }
+
+            Swal.fire({ title: 'Loading Advertisement...', text: 'Please wait...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            
+            try {
+                // Show Ad: Resolves ONLY when the user watches the rewarded video completely
+                await show_10981447(); 
+                Swal.close();
+                return true; // Success
+            } catch (error) {
+                // Fails if skipped, closed early, or no fill
+                Swal.close();
+                Swal.fire("Reward Cancelled", "You must watch the full video to get the reward.", "error");
+                return false;
+            }
         };
 
         window.watchAd = async () => {
-            const btn = document.getElementById('btn-ad');
-            btn.disabled = true;
-
+            if(checkAntiCheat()) return;
             const watched = userData.limits.ads || 0;
-            if (watched >= globalSettings.app.adLimit) {
-                btn.disabled = false;
-                return Swal.fire("Limit Reached", "You have watched all available ads for today!", "warning");
-            }
-
-            if (typeof window.Adsgram === 'undefined') {
-                btn.disabled = false;
-                return Swal.fire("Error", "Ad system blocked! Please turn off Ad-blockers.", "error");
-            }
-
-            if (!AdController) { AdController = window.Adsgram.init({ blockId: "29687" }); }
-
-            Swal.fire({ title: 'Loading Ad...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
-            try {
-                await AdController.show();
-                Swal.close();
-                await update(userRef, { 'balances/coins': userData.balances.coins + 50, 'limits/ads': watched + 1 });
-                Swal.fire({ title: "Reward Added", text: "+50 Coins", icon: "success", timer: 1500 });
+            if (watched >= (globalSettings.app.adLimit||10)) return Swal.fire("Limit Reached", "You have watched all available ads for today!", "warning");
+            
+            // Execute the new ad logic
+            if(await showAdFirst()) { 
+                await giveReward('Video Ad', globalSettings.rewards.video||50);
+                await update(userRef, { 'limits/ads': watched + 1 });
+                Swal.fire({ title: "Excellent!", text: `+${globalSettings.rewards.video} Coins Added`, icon: "success", timer: 1500 });
                 tg.HapticFeedback.notificationOccurred('success');
-            } catch (error) {
-                Swal.close();
-                Swal.fire("Failed", "No ad available right now. Try again later.", "warning");
             }
-            btn.disabled = false;
-        };
-
-        window.joinTg = async () => {
-            const btn = document.getElementById('btn-tg'); btn.disabled = true; btn.innerText = "Checking...";
-            tg.openTelegramLink(globalSettings.tg.link);
-            setTimeout(() => {
-                update(userRef, { 'balances/coins': userData.balances.coins + globalSettings.tg.reward, 'tasks/tgJoined': true }).then(() => {
-                    Swal.fire("Verified!", `Received +${globalSettings.tg.reward} Coins.`, "success");
-                });
-            }, 10000);
         };
 
         window.claimDaily = async () => {
-            const btn = document.getElementById('btn-daily'); btn.disabled = true;
+            if(checkAntiCheat()) return;
             const now = Date.now();
-            if (now - (userData.cooldowns?.dailyBonus || 0) > 86400000) {
-                await update(userRef, { 'balances/coins': userData.balances.coins + 100, 'cooldowns/dailyBonus': now });
-                Swal.fire("Claimed!", "+100 Coins", "success");
-            } else { Swal.fire("Wait", "Come back tomorrow.", "info"); }
-            btn.disabled = false;
+            if (now - (userData.cooldowns?.dailyBonus || 0) < 86400000) return Swal.fire("Already Claimed", "Come back tomorrow.", "info");
+            await giveReward('Daily Bonus', globalSettings.rewards.daily||100);
+            await update(userRef, { 'cooldowns/dailyBonus': now });
+            Swal.fire("Claimed!", `+${globalSettings.rewards.daily} Coins`, "success"); tg.HapticFeedback.notificationOccurred('success');
         };
 
         window.playMath = async () => {
             if (userData.limits.math <= 0) return Swal.fire("Limit Reached", "Come back tomorrow!", "warning");
-            const a = Math.floor(Math.random()*50)+1, b = Math.floor(Math.random()*50)+1;
-            const { value: ans } = await Swal.fire({ 
-                title: 'Math Quiz', text: `What is ${a} + ${b}?`, input: 'number', showCancelButton: true,
-                customClass: { input: 'tg-input border-2 p-3 rounded-lg w-full outline-none' }
-            });
+            const a = Math.floor(Math.random()*20)+1, b = Math.floor(Math.random()*20)+1;
+            const { value: ans } = await Swal.fire({ title: 'Math Quiz', text: `${a} + ${b} = ?`, input: 'number', showCancelButton: true });
+            
+            if(checkAntiCheat()) return;
+
             if (ans && parseInt(ans) === a+b) { 
-                await update(userRef, { 'balances/coins': userData.balances.coins + 10, 'limits/math': userData.limits.math - 1 });
-                Swal.fire({ title:"Correct!", text:"+10 Coins", icon:"success", timer:1000 }); 
-            } else if(ans) { 
+                await giveReward('Math Quiz', globalSettings.rewards.math||15);
                 await update(userRef, { 'limits/math': userData.limits.math - 1 });
-                Swal.fire("Wrong!", "", "error"); 
+                Swal.fire({ title:"Correct!", text:`+${globalSettings.rewards.math} Coins`, icon:"success", timer:1500 }); 
+            } else if(ans) { 
+                await update(userRef, { 'limits/math': userData.limits.math - 1 }); Swal.fire("Wrong!", "Try again.", "error"); 
             }
         };
 
         window.playScratch = () => {
             if (userData.limits.scratch <= 0) return Swal.fire("Limit Reached", "Come back tomorrow!", "warning");
-            Swal.fire({ 
-                html: `<div id="s-area" class="w-full h-32 border-2 border-dashed rounded-xl flex items-center justify-center font-bold cursor-pointer text-xl transition-all" style="background-color: var(--secondary-bg-color); border-color: var(--hint-color); color: var(--text-color);" onclick="window.rScratch()">SCRATCH HERE</div>`, 
-                showConfirmButton: false 
-            });
+            Swal.fire({ html: `<div id="s-area" class="w-full h-32 border-2 border-dashed border-gray-300 rounded-2xl flex items-center justify-center font-extrabold cursor-pointer text-xl text-gray-400 bg-gray-50" onclick="window.rScratch()">TAP TO SCRATCH</div>`, showConfirmButton: false });
         };
         
         window.rScratch = async () => {
+            if(checkAntiCheat()) return;
             const a = document.getElementById('s-area'); if(a.dataset.s) return; a.dataset.s = "1";
-            const r = Math.floor(Math.random()*15)+5;
-            a.className = "w-full h-32 bg-green-200 text-green-800 border-2 border-green-500 rounded-xl flex justify-center items-center text-2xl font-bold"; 
-            a.style = ""; // clear inline theme styles
-            a.innerHTML = `🎉 +${r} Coins!`;
-            await update(userRef, { 'balances/coins': userData.balances.coins + r, 'limits/scratch': userData.limits.scratch - 1 });
+            const r = Math.floor(Math.random() * ((globalSettings.rewards.scratchMax||20) - 5 + 1)) + 5; 
+            a.className = "w-full h-32 bg-gradient-to-r from-pink-500 to-rose-500 text-white border-none rounded-2xl flex justify-center items-center text-3xl font-extrabold shadow-inner"; 
+            a.innerHTML = `🎉 +${r}`;
+            
+            await giveReward('Scratch Card', r);
+            await update(userRef, { 'limits/scratch': userData.limits.scratch - 1 });
             setTimeout(() => Swal.close(), 1500);
         };
 
         window.withdraw = async (e) => {
             e.preventDefault(); const btn = document.getElementById('btn-withdraw'); btn.disabled = true;
             const method = document.getElementById('w-method').value, phone = document.getElementById('w-phone').value, amount = parseFloat(document.getElementById('w-amount').value);
-            
             if (amount < globalSettings.app.minW) { btn.disabled = false; return Swal.fire("Error", `Min withdraw is ${globalSettings.app.minW} BDT`, "error"); }
             if (amount > userData.balances.bdt) { btn.disabled = false; return Swal.fire("Error", "Insufficient balance", "error"); }
             
@@ -443,8 +388,8 @@
             try {
                 await update(userRef, { 'balances/bdt': userData.balances.bdt - amount });
                 await push(ref(db, 'withdrawals/' + userId), { method, phone, amount, status: 'Pending', timestamp: Date.now() });
-                Swal.fire("Success", "Request submitted!", "success"); e.target.reset();
-            } catch(e) { Swal.fire("Error", "Failed to submit request.", "error"); }
+                Swal.fire("Success", "Cashout Request Sent!", "success"); e.target.reset();
+            } catch(error) { Swal.fire("Error", "Failed to submit request.", "error"); }
             btn.disabled = false;
         };
     </script>
