@@ -136,7 +136,14 @@
                             <div>
                                 <h3 class="text-sm font-extrabold text-indigo-600 mb-3 uppercase mt-6">App Notice & Announcements</h3>
                                 <div class="bg-indigo-50 p-5 rounded-2xl border border-indigo-100">
-                                    <label class="block text-xs font-bold text-indigo-700 mb-2">Global Alert Message (Leave empty to hide)</label>
+                                    <div class="flex items-center justify-between mb-3">
+                                        <label class="text-xs font-bold text-indigo-700">Notice Status</label>
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" id="s-noticeActive" class="sr-only peer">
+                                            <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                                        </label>
+                                    </div>
+                                    <label class="block text-xs font-bold text-indigo-700 mb-2">Global Alert Message</label>
                                     <textarea id="s-appNotice" rows="2" class="w-full p-3 border border-white rounded-xl font-bold text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. Server maintenance will start at 10 PM."></textarea>
                                 </div>
                             </div>
@@ -308,6 +315,7 @@
                 document.getElementById('s-minW').value = s.app?.minW || 10; document.getElementById('s-adLimit').value = s.app?.adLimit || 10; document.getElementById('s-mathLimit').value = s.app?.mathLimit || 10; document.getElementById('s-scratchLimit').value = s.app?.scratchLimit || 10;
                 document.getElementById('s-minAdsWithdraw').value = s.app?.minAdsWithdraw || 20; document.getElementById('s-minAdsDaily').value = s.app?.minAdsDaily || 5; document.getElementById('s-adsPerClick').value = s.app?.adsPerClick || 3;
                 document.getElementById('s-appNotice').value = s.app?.notice || '';
+                document.getElementById('s-noticeActive').checked = s.app?.noticeActive || false;
                 document.getElementById('r-video').value = s.rewards?.video || 0.5; document.getElementById('r-daily').value = s.rewards?.daily || 1; document.getElementById('r-math').value = s.rewards?.math || 0.2; document.getElementById('r-scratchMax').value = s.rewards?.scratchMax || 0.5; document.getElementById('s-refBonus').value = s.ref?.referrer || 5; 
                 
                 // MULTI TG TASKS
@@ -428,7 +436,8 @@
                     minW: parseFloat(document.getElementById('s-minW').value)||10, 
                     adLimit: parseInt(document.getElementById('s-adLimit').value)||10, mathLimit: parseInt(document.getElementById('s-mathLimit').value)||10, scratchLimit: parseInt(document.getElementById('s-scratchLimit').value)||10,
                     minAdsWithdraw: parseInt(document.getElementById('s-minAdsWithdraw').value)||20, minAdsDaily: parseInt(document.getElementById('s-minAdsDaily').value)||5, adsPerClick: parseInt(document.getElementById('s-adsPerClick').value)||3,
-                    notice: document.getElementById('s-appNotice').value
+                    notice: document.getElementById('s-appNotice').value,
+                    noticeActive: document.getElementById('s-noticeActive').checked
                 },
                 rewards: { video: parseFloat(document.getElementById('r-video').value)||0.5, daily: parseFloat(document.getElementById('r-daily').value)||1, math: parseFloat(document.getElementById('r-math').value)||0.2, scratchMax: parseFloat(document.getElementById('r-scratchMax').value)||0.5 },
                 ref: { referrer: parseFloat(document.getElementById('s-refBonus').value)||5 },
