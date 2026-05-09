@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RewardX - Advanced Admin Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f3f4f6; }
+        .tab-content { display: none; animation: slideUp 0.4s ease; } .tab-content.active { display: block; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .desktop-nav.active { background: linear-gradient(135deg, #4f46e5, #3b82f6); color: white; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.2); }
+        .desktop-nav.active i { color: white; }
+        .set-tab { border-bottom: 2px solid transparent; } .set-tab.active { border-bottom: 2px solid #4f46e5; color: #4f46e5; }
+        .set-content { display: none; } .set-content.active { display: block; }
+        ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .floating-btn { box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3); }
+    </style>
+</head>
+<body class="text-gray-800 h-screen overflow-hidden flex bg-gray-50">
+
+    <div id="login-screen" class="fixed inset-0 z-[100] flex items-center justify-center bg-indigo-50/90 backdrop-blur-sm transition-opacity">
+        <div class="bg-white p-8 rounded-[2rem] shadow-2xl border border-gray-100 w-[90%] max-w-sm text-center">
+            <div class="w-16 h-16 bg-gradient-to-tr from-indigo-600 to-blue-500 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-lg"><i class="fa-solid fa-shield-halved"></i></div>
+            <h2 class="text-2xl font-extrabold mb-6">Admin Login</h2>
+            <input type="email" id="admin-email" placeholder="Email Address" class="w-full p-4 rounded-xl border bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-3 font-bold text-sm">
+            <input type="password" id="admin-pass" placeholder="Password" class="w-full p-4 rounded-xl border bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-6 font-bold text-sm" onkeypress="if(event.key === 'Enter') window.login()">
+            <button onclick="window.login()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl transition shadow-lg flex justify-center items-center gap-2"><i class="fa-solid fa-right-to-bracket"></i> Access Panel</button>
+        </div>
+    </div>
+
+    <aside class="w-64 bg-white border-r border-gray-100 flex flex-col h-full hidden md:flex z-40">
+        <div class="p-6 font-extrabold text-2xl text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500 flex items-center gap-2"><i class="fa-solid fa-bolt text-indigo-600"></i> RewardX</div>
+        <nav class="flex-1 px-4 space-y-2 mt-2">
+            <div data-tab="dashboard" class="desktop-nav active px-4 py-3.5 rounded-2xl cursor-pointer font-bold flex items-center gap-3 transition hover:bg-gray-50" onclick="window.switchTab('dashboard')"><i class="fa-solid fa-chart-pie w-5 text-gray-400"></i> Dashboard</div>
+            <div data-tab="users" class="desktop-nav px-4 py-3.5 rounded-2xl cursor-pointer font-bold flex items-center gap-3 transition hover:bg-gray-50" onclick="window.switchTab('users')"><i class="fa-solid fa-users w-5 text-gray-400"></i> Users</div>
+            <div data-tab="withdrawals" class="desktop-nav px-4 py-3.5 rounded-2xl cursor-pointer font-bold flex items-center gap-3 transition hover:bg-gray-50" onclick="window.switchTab('withdrawals')"><i class="fa-solid fa-wallet w-5 text-gray-400"></i> Withdrawals <span id="badge-desktop" class="ml-auto bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full hidden">0</span></div>
+            <div data-tab="settings" class="desktop-nav px-4 py-3.5 rounded-2xl cursor-pointer font-bold flex items-center gap-3 transition hover:bg-gray-50" onclick="window.switchTab('settings')"><i class="fa-solid fa-gear w-5 text-gray-400"></i> Settings</div>
+        </nav>
+        <div class="p-4"><button onclick="window.logoutAdmin()" class="w-full text-red-500 bg-red-50 font-bold py-3 rounded-xl hover:bg-red-100 transition"><i class="fa-solid fa-power-off mr-1"></i> Logout</button></div>
+    </aside>
+
+    <main class="flex-1 h-full overflow-y-auto pb-24 md:pb-0 relative">
+        <header class="md:hidden bg-white shadow-sm p-4 sticky top-0 z-30 font-extrabold text-indigo-600 text-xl flex justify-between items-center">
+            <div class="flex items-center gap-2"><i class="fa-solid fa-bolt"></i> RewardX Admin</div>
+            <button onclick="window.logoutAdmin()" class="text-red-500 text-sm bg-red-50 px-3 py-1.5 rounded-lg font-bold"><i class="fa-solid fa-power-off"></i></button>
+        </header>
+
+        <div class="p-4 md:p-8 max-w-7xl mx-auto space-y-6">
+            <div id="tab-dashboard" class="tab-content active">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-white p-5 rounded-3xl shadow-sm border"><p class="text-xs text-gray-500 font-bold uppercase">Total Users</p><h3 id="stat-users" class="text-2xl md:text-3xl font-extrabold text-indigo-600 mt-1">0</h3></div>
+                    <div class="bg-white p-5 rounded-3xl shadow-sm border"><p class="text-xs text-gray-500 font-bold uppercase">Banned</p><h3 id="stat-banned" class="text-2xl md:text-3xl font-extrabold text-red-600 mt-1">0</h3></div>
+                    <div class="bg-white p-5 rounded-3xl shadow-sm border"><p class="text-xs text-gray-500 font-bold uppercase">Pending</p><h3 id="stat-pending" class="text-2xl md:text-3xl font-extrabold text-orange-500 mt-1">0</h3></div>
+                    <div class="bg-white p-5 rounded-3xl shadow-sm border"><p class="text-xs text-gray-500 font-bold uppercase">Total Paid</p><h3 class="text-2xl md:text-3xl font-extrabold text-green-500 mt-1">৳<span id="stat-paid">0</span></h3></div>
+                </div>
+                <div class="bg-white p-6 rounded-3xl shadow-sm border mb-6">
+                    <h3 class="font-bold text-gray-700 mb-4 uppercase text-xs"><i class="fa-solid fa-chart-line mr-1 text-indigo-500"></i> Activity (Last 7 Days)</h3>
+                    <div class="relative h-64 w-full"><canvas id="activityChart"></canvas></div>
+                </div>
+            </div>
+
+            <div id="tab-users" class="tab-content">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-3">
+                    <h2 class="text-xl font-extrabold text-gray-800">User Management <span id="today-users-badge" class="bg-indigo-100 text-indigo-600 text-xs px-2 py-1 rounded-lg ml-2">0 Today</span></h2>
+                    <div class="flex gap-2 w-full md:w-auto">
+                        <input type="date" id="filter-user-date" onchange="window.renderUsers()" class="flex-1 p-2 border rounded-xl text-sm font-bold text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <div class="relative flex-1">
+                            <i class="fa-solid fa-search absolute left-3 top-3.5 text-gray-400"></i>
+                            <input type="text" id="search-user" onkeyup="window.renderUsers()" placeholder="Search Name/UID..." class="pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-white shadow-sm font-bold text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full">
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-3xl shadow-sm border overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-sm whitespace-nowrap">
+                        <thead class="bg-gray-50/80 border-b"><tr class="text-gray-500 text-xs uppercase"><th class="p-4 font-bold">User</th><th class="p-4 font-bold">Joined</th><th class="p-4 font-bold">Ads Watched</th><th class="p-4 font-bold">Balances</th><th class="p-4 font-bold">Status</th><th class="p-4 font-bold text-right">Actions</th></tr></thead>
+                        <tbody id="users-table-body" class="divide-y divide-gray-50"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="tab-withdrawals" class="tab-content">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-3">
+                    <h2 class="text-xl font-extrabold text-gray-800">Withdrawals <span id="today-req-badge" class="bg-indigo-100 text-indigo-600 text-xs px-2 py-1 rounded-lg ml-2">0 Today</span></h2>
+                    <div class="flex gap-2 w-full md:w-auto">
+                        <input type="date" id="filter-date" onchange="window.renderWithdrawals()" class="flex-1 p-2 border rounded-xl text-sm font-bold text-gray-600">
+                        <select id="filter-status" onchange="window.renderWithdrawals()" class="flex-1 p-2 border rounded-xl text-sm font-bold text-gray-600">
+                            <option value="All">All Status</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Approved">Approved</option>
+                            <option value="Rejected">Rejected</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="bg-white rounded-3xl shadow-sm border overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-sm whitespace-nowrap">
+                        <thead class="bg-gray-50/80 border-b"><tr class="text-gray-500 text-xs uppercase"><th class="p-4 font-bold">Date</th><th class="p-4 font-bold">Details</th><th class="p-4 font-bold">Amount</th><th class="p-4 font-bold">Status</th><th class="p-4 font-bold text-right">Actions</th></tr></thead>
+                        <tbody id="withdrawals-table-body" class="divide-y divide-gray-50"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="tab-settings" class="tab-content">
+                <div class="bg-white rounded-3xl shadow-sm border overflow-hidden">
+                    
+                    <!-- Settings Navigation -->
+                    <div class="flex overflow-x-auto border-b bg-gray-50/50">
+                        <button onclick="switchSettings('general')" id="st-general" class="set-tab active px-6 py-4 font-bold text-sm text-gray-500 whitespace-nowrap"><i class="fa-solid fa-sliders mr-2"></i> General</button>
+                        <button onclick="switchSettings('rewards')" id="st-rewards" class="set-tab px-6 py-4 font-bold text-sm text-gray-500 whitespace-nowrap"><i class="fa-solid fa-coins mr-2"></i> Rewards & Limits</button>
+                        <button onclick="switchSettings('social')" id="st-social" class="set-tab px-6 py-4 font-bold text-sm text-gray-500 whitespace-nowrap"><i class="fa-brands fa-telegram mr-2"></i> Social Tasks</button>
+                        <button onclick="switchSettings('support')" id="st-support" class="set-tab px-6 py-4 font-bold text-sm text-gray-500 whitespace-nowrap"><i class="fa-solid fa-headset mr-2"></i> Support</button>
+                        <button onclick="switchSettings('security')" id="st-security" class="set-tab px-6 py-4 font-bold text-sm text-gray-500 whitespace-nowrap"><i class="fa-solid fa-shield-halved mr-2"></i> Anti-Cheat</button>
+                    </div>
+
+                    <div class="p-6">
+                        <!-- General App Settings -->
+                        <div id="sc-general" class="set-content active space-y-6">
+                            <div>
+                                <h3 class="text-sm font-extrabold text-indigo-600 mb-3 uppercase">Exchange Setup</h3>
+                                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                    <div><label class="block text-xs font-bold text-gray-700 mb-1">Coin Rate</label><input type="number" id="s-coinRate" class="w-full p-3 border rounded-xl bg-gray-50 font-bold"></div>
+                                    <div><label class="block text-xs font-bold text-gray-700 mb-1">Reward (BDT)</label><input type="number" id="s-bdtReward" class="w-full p-3 border rounded-xl bg-gray-50 font-bold"></div>
+                                    <div><label class="block text-xs font-bold text-gray-700 mb-1">Min Withdraw (BDT)</label><input type="number" id="s-minW" class="w-full p-3 border rounded-xl bg-gray-50 font-bold"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-extrabold text-indigo-600 mb-3 uppercase">App Conditions (Unlock Rules)</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100"><label class="block text-xs font-bold text-indigo-700 mb-1">Total Ads to Unlock Withdraw</label><input type="number" id="s-minAdsWithdraw" class="w-full p-3 border rounded-xl font-bold"></div>
+                                    <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100"><label class="block text-xs font-bold text-indigo-700 mb-1">Daily Ads to Unlock Daily Bonus</label><input type="number" id="s-minAdsDaily" class="w-full p-3 border rounded-xl font-bold"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-extrabold text-indigo-600 mb-3 uppercase mt-6">App Notice & Announcements</h3>
+                                <div class="bg-indigo-50 p-5 rounded-2xl border border-indigo-100">
+                                    <label class="block text-xs font-bold text-indigo-700 mb-2">Global Alert Message (Leave empty to hide)</label>
+                                    <textarea id="s-appNotice" rows="2" class="w-full p-3 border border-white rounded-xl font-bold text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. Server maintenance will start at 10 PM."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tasks Rewards & Limits -->
+                        <div id="sc-rewards" class="set-content space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <h3 class="text-sm font-extrabold text-orange-500 mb-3 uppercase">Task Points / Coins</h3>
+                                    <div class="space-y-3">
+                                        <div class="flex justify-between items-center bg-gray-50 p-2 rounded-xl border"><label class="text-sm font-bold text-gray-700 px-2">Video Ad</label><input type="number" id="r-video" class="w-24 p-2 border rounded-xl font-bold text-center"></div>
+                                        <div class="flex justify-between items-center bg-gray-50 p-2 rounded-xl border"><label class="text-sm font-bold text-gray-700 px-2">Math Quiz</label><input type="number" id="r-math" class="w-24 p-2 border rounded-xl font-bold text-center"></div>
+                                        <div class="flex justify-between items-center bg-gray-50 p-2 rounded-xl border"><label class="text-sm font-bold text-gray-700 px-2">Scratch (Max)</label><input type="number" id="r-scratchMax" class="w-24 p-2 border rounded-xl font-bold text-center"></div>
+                                        <div class="flex justify-between items-center bg-gray-50 p-2 rounded-xl border"><label class="text-sm font-bold text-gray-700 px-2">Daily Bonus</label><input type="number" id="r-daily" class="w-24 p-2 border rounded-xl font-bold text-center"></div>
+                                        <div class="flex justify-between items-center bg-gray-50 p-2 rounded-xl border"><label class="text-sm font-bold text-gray-700 px-2">Refer Bonus</label><input type="number" id="s-refBonus" class="w-24 p-2 border rounded-xl font-bold text-center"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 class="text-sm font-extrabold text-rose-500 mb-3 uppercase">Daily Limits (Per User)</h3>
+                                    <div class="space-y-3">
+                                        <div class="flex justify-between items-center bg-gray-50 p-2 rounded-xl border"><label class="text-sm font-bold text-gray-700 px-2">Total Ad Clicks/Day</label><input type="number" id="s-adLimit" class="w-24 p-2 border rounded-xl font-bold text-center"></div>
+                                        <div class="flex justify-between items-center bg-gray-50 p-2 rounded-xl border"><label class="text-sm font-bold text-gray-700 px-2">Ads Played Per Click</label><input type="number" id="s-adsPerClick" class="w-24 p-2 border rounded-xl font-bold text-center text-rose-500"></div>
+                                        <div class="flex justify-between items-center bg-gray-50 p-2 rounded-xl border"><label class="text-sm font-bold text-gray-700 px-2">Math Quizzes/Day</label><input type="number" id="s-mathLimit" class="w-24 p-2 border rounded-xl font-bold text-center"></div>
+                                        <div class="flex justify-between items-center bg-gray-50 p-2 rounded-xl border"><label class="text-sm font-bold text-gray-700 px-2">Scratch Cards/Day</label><input type="number" id="s-scratchLimit" class="w-24 p-2 border rounded-xl font-bold text-center"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Multi Social Tasks -->
+                        <div id="sc-social" class="set-content space-y-4">
+                            <p class="text-xs text-gray-500 font-bold mb-4">You can enable up to 3 Telegram channel join tasks.</p>
+                            <!-- Task 1 -->
+                            <div class="border p-4 rounded-2xl bg-gray-50/50">
+                                <div class="flex justify-between items-center mb-3"><span class="font-extrabold text-blue-500 text-sm"><i class="fa-brands fa-telegram"></i> Task 1</span> <label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="s-st-tg1-active" class="sr-only peer"><div class="w-9 h-5 bg-gray-300 rounded-full peer peer-checked:bg-blue-500 peer-checked:after:translate-x-full after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div></label></div>
+                                <div class="flex gap-2"><input type="url" id="s-st-tg1-link" placeholder="Channel Link..." class="w-2/3 p-2 border rounded-xl font-bold text-sm"><input type="number" id="s-st-tg1-reward" placeholder="Coins" class="w-1/3 p-2 border rounded-xl font-bold text-sm text-center"></div>
+                            </div>
+                            <!-- Task 2 -->
+                            <div class="border p-4 rounded-2xl bg-gray-50/50">
+                                <div class="flex justify-between items-center mb-3"><span class="font-extrabold text-blue-500 text-sm"><i class="fa-brands fa-telegram"></i> Task 2</span> <label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="s-st-tg2-active" class="sr-only peer"><div class="w-9 h-5 bg-gray-300 rounded-full peer peer-checked:bg-blue-500 peer-checked:after:translate-x-full after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div></label></div>
+                                <div class="flex gap-2"><input type="url" id="s-st-tg2-link" placeholder="Channel Link..." class="w-2/3 p-2 border rounded-xl font-bold text-sm"><input type="number" id="s-st-tg2-reward" placeholder="Coins" class="w-1/3 p-2 border rounded-xl font-bold text-sm text-center"></div>
+                            </div>
+                            <!-- Task 3 -->
+                            <div class="border p-4 rounded-2xl bg-gray-50/50">
+                                <div class="flex justify-between items-center mb-3"><span class="font-extrabold text-blue-500 text-sm"><i class="fa-brands fa-telegram"></i> Task 3</span> <label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="s-st-tg3-active" class="sr-only peer"><div class="w-9 h-5 bg-gray-300 rounded-full peer peer-checked:bg-blue-500 peer-checked:after:translate-x-full after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div></label></div>
+                                <div class="flex gap-2"><input type="url" id="s-st-tg3-link" placeholder="Channel Link..." class="w-2/3 p-2 border rounded-xl font-bold text-sm"><input type="number" id="s-st-tg3-reward" placeholder="Coins" class="w-1/3 p-2 border rounded-xl font-bold text-sm text-center"></div>
+                            </div>
+                        </div>
+
+                        <!-- Support Settings -->
+                        <div id="sc-support" class="set-content space-y-4">
+                            <p class="text-xs text-gray-500 font-bold mb-4">Leave empty if you don't want to show a platform on user app support menu.</p>
+                            <div class="flex items-center gap-3"><i class="fa-brands fa-telegram text-blue-500 text-2xl w-8"></i><input type="url" id="s-supTg" placeholder="Telegram Contact/Group Link..." class="w-full p-3 border rounded-xl bg-gray-50 font-bold text-sm"></div>
+                            <div class="flex items-center gap-3"><i class="fa-brands fa-whatsapp text-green-500 text-2xl w-8"></i><input type="url" id="s-supWa" placeholder="WhatsApp Link..." class="w-full p-3 border rounded-xl bg-gray-50 font-bold text-sm"></div>
+                            <div class="flex items-center gap-3"><i class="fa-brands fa-facebook text-blue-700 text-2xl w-8"></i><input type="url" id="s-supFb" placeholder="Facebook Link..." class="w-full p-3 border rounded-xl bg-gray-50 font-bold text-sm"></div>
+                        </div>
+
+                        <!-- NEW: Security & Anti-Cheat -->
+                        <div id="sc-security" class="set-content space-y-6">
+                            <div class="bg-red-50 border border-red-100 p-5 rounded-2xl">
+                                <div class="flex justify-between items-center mb-2">
+                                    <div><h3 class="font-bold text-red-600 text-sm"><i class="fa-solid fa-shield-virus"></i> VPN/Proxy Blocker</h3><p class="text-xs text-red-500 mt-1">Block users using VPNs to prevent fake clicks.</p></div>
+                                    <label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="s-vpnBlock" class="sr-only peer"><div class="w-11 h-6 bg-red-200 rounded-full peer peer-checked:bg-red-600 peer-checked:after:translate-x-full after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div></label>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h3 class="text-sm font-extrabold text-gray-700 mb-3 uppercase">Cheat Protection Rules</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="bg-gray-50 p-4 rounded-xl border">
+                                        <label class="block text-xs font-bold text-gray-700 mb-1">Task Cooldown (Seconds)</label>
+                                        <p class="text-[10px] text-gray-500 mb-2">Wait time between tasks (Math, Scratch, etc)</p>
+                                        <input type="number" id="s-taskCooldown" placeholder="e.g. 5" class="w-full p-3 border rounded-xl font-bold text-center">
+                                    </div>
+                                    <div class="bg-gray-50 p-4 rounded-xl border">
+                                        <label class="block text-xs font-bold text-gray-700 mb-1">Max Spam Clicks (Auto-Ban)</label>
+                                        <p class="text-[10px] text-gray-500 mb-2">Ban user after X fast clicks (Auto-clicker limit)</p>
+                                        <input type="number" id="s-spamLimit" placeholder="e.g. 3" class="w-full p-3 border rounded-xl font-bold text-center text-red-500">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="fixed md:static bottom-[85px] md:bottom-auto left-0 right-0 flex justify-center md:justify-end px-4 md:px-0 md:mt-6 z-40">
+                    <button onclick="window.saveSettings()" class="floating-btn bg-gradient-to-r from-indigo-600 to-blue-500 text-white font-bold py-3 px-8 rounded-full transition shadow-lg border border-indigo-400/30">
+                        <i class="fa-solid fa-floppy-disk mr-2"></i> Save Settings
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <nav class="md:hidden bg-white border-t fixed bottom-0 w-full z-50 flex justify-around p-2 pb-safe shadow-lg rounded-t-3xl">
+        <button data-tab="dashboard" class="mobile-nav text-indigo-600 bg-indigo-50 w-1/4 flex flex-col items-center gap-1 py-2 rounded-xl" onclick="window.switchTab('dashboard')"><i class="fa-solid fa-chart-pie text-xl"></i></button>
+        <button data-tab="users" class="mobile-nav text-gray-400 w-1/4 flex flex-col items-center gap-1 py-2 rounded-xl" onclick="window.switchTab('users')"><i class="fa-solid fa-users text-xl"></i></button>
+        <button data-tab="withdrawals" class="mobile-nav text-gray-400 w-1/4 flex flex-col items-center gap-1 py-2 rounded-xl relative" onclick="window.switchTab('withdrawals')"><i class="fa-solid fa-wallet text-xl"></i><span id="badge-mobile" class="absolute top-1 right-2 bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full hidden shadow-sm">0</span></button>
+        <button data-tab="settings" class="mobile-nav text-gray-400 w-1/4 flex flex-col items-center gap-1 py-2 rounded-xl" onclick="window.switchTab('settings')"><i class="fa-solid fa-gear text-xl"></i></button>
+    </nav>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getDatabase, ref, onValue, update, get, set } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyAoQw5dhwS5JJZIWSPQTgKdMtB5ZEsoxLk", authDomain: "arng-805db.firebaseapp.com", projectId: "arng-805db", storageBucket: "arng-805db.firebasestorage.app", messagingSenderId: "363993462640", appId: "1:363993462640:web:22247bdf806f062a3b01b5" };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app, "https://arng-805db-default-rtdb.firebaseio.com");
+        const auth = getAuth(app);
+
+        onAuthStateChanged(auth, (user) => {
+            if (user && user.email === 'admin@123gmail.com') {
+                document.getElementById('login-screen').classList.add('opacity-0'); setTimeout(()=> { document.getElementById('login-screen').style.display = 'none'; initAdminData(); }, 300);
+            } else { document.getElementById('login-screen').style.display = 'flex'; document.getElementById('login-screen').classList.remove('opacity-0'); }
+        });
+
+        window.login = () => {
+            const email = document.getElementById('admin-email').value, pass = document.getElementById('admin-pass').value;
+            if(!email || !pass) return Swal.fire('Error', 'Please enter email and password!', 'error');
+            Swal.fire({ title: 'Authenticating...', didOpen: () => Swal.showLoading() });
+            signInWithEmailAndPassword(auth, email, pass).then(() => Swal.close()).catch(() => { Swal.close(); Swal.fire('Failed', 'Incorrect Details.', 'error'); });
+        };
+        window.logoutAdmin = () => signOut(auth).then(() => location.reload());
+
+        window.switchTab = (tabId) => {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            document.querySelectorAll('.desktop-nav').forEach(el => { el.classList.remove('active'); if(el.dataset.tab === tabId) el.classList.add('active'); });
+            document.querySelectorAll('.mobile-nav').forEach(el => { el.classList.remove('text-indigo-600', 'bg-indigo-50'); el.classList.add('text-gray-400'); if(el.dataset.tab === tabId) { el.classList.remove('text-gray-400'); el.classList.add('text-indigo-600', 'bg-indigo-50'); } });
+        };
+
+        window.switchSettings = (setId) => {
+            document.querySelectorAll('.set-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.set-tab').forEach(el => { el.classList.remove('active'); el.classList.replace('text-indigo-600', 'text-gray-500'); });
+            document.getElementById(`sc-${setId}`).classList.add('active');
+            const btn = document.getElementById(`st-${setId}`);
+            btn.classList.add('active'); btn.classList.replace('text-gray-500', 'text-indigo-600');
+        };
+
+        let chartInstance = null;
+        const chartData = { users: {}, withdrawals: {} };
+
+        function updateChart() {
+            const ctx = document.getElementById('activityChart');
+            if (!ctx) return;
+            const labels = [];
+            for(let i=6; i>=0; i--) { const d = new Date(); d.setDate(d.getDate() - i); labels.push(d.toLocaleDateString()); }
+            const uData = labels.map(l => chartData.users[l] || 0);
+            const wData = labels.map(l => chartData.withdrawals[l] || 0);
+
+            if(chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: { labels: labels, datasets: [ { label: 'New Users', data: uData, borderColor: '#4f46e5', backgroundColor: '#4f46e5', tension: 0.4 }, { label: 'Withdrawal Reqs', data: wData, borderColor: '#f97316', backgroundColor: '#f97316', tension: 0.4 } ] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+            });
+        }
+
+        function initAdminData() {
+            onValue(ref(db, 'settings'), (snap) => {
+                const s = snap.val() || {};
+                document.getElementById('s-minW').value = s.app?.minW || 10; document.getElementById('s-coinRate').value = s.app?.coinRate || 1000; document.getElementById('s-bdtReward').value = s.app?.bdtReward || 10; document.getElementById('s-adLimit').value = s.app?.adLimit || 10; document.getElementById('s-mathLimit').value = s.app?.mathLimit || 10; document.getElementById('s-scratchLimit').value = s.app?.scratchLimit || 10;
+                document.getElementById('s-minAdsWithdraw').value = s.app?.minAdsWithdraw || 20; document.getElementById('s-minAdsDaily').value = s.app?.minAdsDaily || 5; document.getElementById('s-adsPerClick').value = s.app?.adsPerClick || 3;
+                document.getElementById('s-appNotice').value = s.app?.notice || '';
+                document.getElementById('r-video').value = s.rewards?.video || 50; document.getElementById('r-daily').value = s.rewards?.daily || 100; document.getElementById('r-math').value = s.rewards?.math || 15; document.getElementById('r-scratchMax').value = s.rewards?.scratchMax || 20; document.getElementById('s-refBonus').value = s.ref?.referrer || 200; 
+                
+                // MULTI TG TASKS
+                document.getElementById('s-st-tg1-active').checked = s.socialTasks?.tg1?.active || false; document.getElementById('s-st-tg1-link').value = s.socialTasks?.tg1?.link || ''; document.getElementById('s-st-tg1-reward').value = s.socialTasks?.tg1?.reward || 100;
+                document.getElementById('s-st-tg2-active').checked = s.socialTasks?.tg2?.active || false; document.getElementById('s-st-tg2-link').value = s.socialTasks?.tg2?.link || ''; document.getElementById('s-st-tg2-reward').value = s.socialTasks?.tg2?.reward || 100;
+                document.getElementById('s-st-tg3-active').checked = s.socialTasks?.tg3?.active || false; document.getElementById('s-st-tg3-link').value = s.socialTasks?.tg3?.link || ''; document.getElementById('s-st-tg3-reward').value = s.socialTasks?.tg3?.reward || 100;
+
+                // SUPPORT & SECURITY
+                document.getElementById('s-supTg').value = s.support?.tg || ''; document.getElementById('s-supWa').value = s.support?.wa || ''; document.getElementById('s-supFb').value = s.support?.fb || '';
+                document.getElementById('s-vpnBlock').checked = s.security?.vpnBlock || false;
+                document.getElementById('s-taskCooldown').value = s.security?.taskCooldown || 5;
+                document.getElementById('s-spamLimit').value = s.security?.spamLimit || 3;
+            });
+
+            onValue(ref(db, 'users'), (snapshot) => {
+                const data = snapshot.val() || {}; let total = 0, banned = 0, todayJoined = 0; 
+                const todayStr = new Date().toLocaleDateString();
+                let arr = [];
+                for (const[uid, u] of Object.entries(data)) {
+                    total++; 
+                    if(u?.status === 'banned') banned++;
+                    if(u?.info?.joined && new Date(u.info.joined).toLocaleDateString() === todayStr) todayJoined++;
+                    if(u?.info?.joined) { const dStr = new Date(u.info.joined).toLocaleDateString(); chartData.users[dStr] = (chartData.users[dStr] || 0) + 1; }
+                    arr.push({...u, uid});
+                }
+                document.getElementById('stat-users').innerText = total; document.getElementById('stat-banned').innerText = banned;
+                if(document.getElementById('today-users-badge')) document.getElementById('today-users-badge').innerText = `${todayJoined} Today`;
+                
+                window.allUsers = arr.sort((a,b) => (b?.info?.joined || 0) - (a?.info?.joined || 0));
+                window.renderUsers();
+                updateChart();
+            });
+
+            window.allUsers = [];
+            window.renderUsers = () => {
+                const tbody = document.getElementById('users-table-body'); tbody.innerHTML = '';
+                const fDate = document.getElementById('filter-user-date')?.value;
+                const term = document.getElementById('search-user')?.value.toLowerCase() || '';
+
+                window.allUsers.forEach(u => {
+                    const jDate = u?.info?.joined ? new Date(u.info.joined) : null;
+                    const jDateStr = jDate ? (jDate.getFullYear() + '-' + String(jDate.getMonth() + 1).padStart(2, '0') + '-' + String(jDate.getDate()).padStart(2, '0')) : null;
+                    
+                    if(fDate && jDateStr !== fDate) return;
+                    
+                    const isBan = u?.status === 'banned';
+                    const totalAds = u?.stats?.totalAds || 0;
+                    const name = u?.info?.firstName || 'Unknown';
+                    const joinedText = jDate ? `${jDate.toLocaleDateString()} <br> <span class="text-[9px]">${jDate.toLocaleTimeString()}</span>` : '<span class="text-[10px] text-gray-400">Old User</span>';
+
+                    if (term && !name.toLowerCase().includes(term) && !u.uid.toLowerCase().includes(term)) return;
+
+                    tbody.innerHTML += `<tr class="user-row"><td class="p-4 font-bold"><div class="flex flex-col"><span>${name}</span><span class="text-[10px] text-gray-400 font-mono">UID: ${u.uid}</span></div></td><td class="p-4 text-xs font-bold text-gray-500">${joinedText}</td><td class="p-4 font-bold text-indigo-500">${totalAds} Ads</td><td class="p-4 font-bold text-gray-700">Coins: ${u?.balances?.coins||0} <br> ৳${(u?.balances?.bdt||0).toFixed(2)}</td><td class="p-4">${isBan ? '<span class="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-bold">Banned</span>' : '<span class="bg-green-100 text-green-600 px-2 py-1 rounded text-xs font-bold">Active</span>'}</td><td class="p-4 text-right"><button onclick="window.editBalance('${u.uid}', ${u?.balances?.coins||0})" class="bg-blue-100 text-blue-600 hover:bg-blue-500 hover:text-white transition px-3 py-1.5 rounded-lg font-bold shadow-sm mr-2 text-xs"><i class="fa-solid fa-pen"></i> Coins</button><button onclick="window.toggleBan('${u.uid}', ${isBan})" class="${isBan ? 'bg-green-500' : 'bg-red-500'} text-white px-3 py-1.5 rounded-lg font-bold shadow-sm text-xs w-20">${isBan?'Unban':'Ban User'}</button></td></tr>`;
+                });
+            };
+
+            onValue(ref(db, 'withdrawals'), (snapshot) => {
+                const data = snapshot.val() || {}; 
+                let arr =[], pCount = 0, tPaid = 0, todayReqs = 0;
+                const todayStr = new Date().toLocaleDateString();
+                
+                for (const uid in data) { for (const pid in data[uid]) { 
+                    const w = data[uid][pid]; arr.push({...w, uid, pid}); 
+                    if (w.status==='Pending') pCount++; 
+                    if (w.status==='Approved') tPaid += parseFloat(w.amount); 
+                    if (new Date(w.timestamp).toLocaleDateString() === todayStr) todayReqs++;
+                    const dStr = new Date(w.timestamp).toLocaleDateString();
+                    chartData.withdrawals[dStr] = (chartData.withdrawals[dStr] || 0) + 1;
+                } }
+                
+                document.getElementById('stat-pending').innerText = pCount; document.getElementById('stat-paid').innerText = tPaid.toFixed(2);
+                if(document.getElementById('today-req-badge')) document.getElementById('today-req-badge').innerText = `${todayReqs} Today`;
+
+                if(pCount > 0) { document.getElementById('badge-desktop').innerText = pCount; document.getElementById('badge-desktop').classList.remove('hidden'); document.getElementById('badge-mobile').innerText = pCount; document.getElementById('badge-mobile').classList.remove('hidden'); } else { document.getElementById('badge-desktop').classList.add('hidden'); document.getElementById('badge-mobile').classList.add('hidden'); }
+
+                window.allWithdrawals = arr.sort((a,b) => b.timestamp - a.timestamp);
+                window.renderWithdrawals();
+                updateChart();
+            });
+
+            window.allWithdrawals = [];
+            window.renderWithdrawals = () => {
+                const tbody = document.getElementById('withdrawals-table-body'); tbody.innerHTML = '';
+                const fDate = document.getElementById('filter-date')?.value;
+                const fStatus = document.getElementById('filter-status')?.value || 'All';
+
+                window.allWithdrawals.forEach(w => {
+                    const wDate = new Date(w.timestamp);
+                    const wDateStr = wDate.getFullYear() + '-' + String(wDate.getMonth() + 1).padStart(2, '0') + '-' + String(wDate.getDate()).padStart(2, '0');
+                    
+                    if(fDate && wDateStr !== fDate) return;
+                    if(fStatus !== 'All' && w.status !== fStatus) return;
+
+                    const act = w.status==='Pending' ? `<button onclick="window.actionW('${w.uid}','${w.pid}','Approved',${w.amount})" class="bg-green-500 text-white px-3 py-1.5 rounded-lg font-bold mr-2">Pay</button><button onclick="window.actionW('${w.uid}','${w.pid}','Rejected',${w.amount})" class="bg-red-100 text-red-600 px-3 py-1.5 rounded-lg font-bold">Reject</button>` : `<span class="bg-gray-100 text-gray-500 px-2 py-1 rounded text-xs font-bold">${w.status}</span>`;
+                    tbody.innerHTML += `<tr><td class="p-4 text-xs font-bold text-gray-500">${wDate.toLocaleDateString()} <br> <span class="text-[9px]">${wDate.toLocaleTimeString()}</span></td><td class="p-4"><b>${w.method}</b><br><span class="font-mono text-gray-600">${w.phone}</span></td><td class="p-4 font-extrabold text-lg">৳${w.amount}</td><td class="p-4 font-bold text-xs ${w.status==='Pending'?'text-orange-500':(w.status==='Approved'?'text-green-500':'text-red-500')}">${w.status}</td><td class="p-4 text-right">${act}</td></tr>`;
+                });
+            };
+        }
+
+        window.toggleBan = (uid, isBan) => { update(ref(db, `users/${uid}`), { status: isBan ? 'active' : 'banned' }); };
+        
+        window.editBalance = async (uid, currentCoins) => {
+            const { value: newCoins } = await Swal.fire({ title: 'Edit User Coins', text: 'Enter new coin balance:', input: 'number', inputValue: currentCoins, showCancelButton: true });
+            if (newCoins !== undefined && newCoins !== null) {
+                await update(ref(db, `users/${uid}/balances`), { coins: parseInt(newCoins) });
+                Swal.fire({toast:true, position:'top-end', icon:'success', title:'Balance Updated!', showConfirmButton:false, timer:1500});
+            }
+        };
+
+        window.searchUsers = () => { window.renderUsers(); };
+
+        window.actionW = async (uid, pid, stat, amnt) => { try { if(stat === 'Rejected') { const s = await get(ref(db, `users/${uid}/balances`)); if(s.exists()) await update(ref(db, `users/${uid}/balances`), { bdt: (s.val().bdt||0) + parseFloat(amnt) }); } await update(ref(db, `withdrawals/${uid}/${pid}`), { status: stat }); Swal.fire({toast:true, position:'top-end', icon:'success', title:`Request ${stat}`, showConfirmButton:false, timer:2000}); } catch (e) { Swal.fire("Error", "Could not process", "error"); } };
+
+        window.saveSettings = () => {
+            const data = {
+                app: { 
+                    minW: parseFloat(document.getElementById('s-minW').value)||10, coinRate: parseInt(document.getElementById('s-coinRate').value)||1000, bdtReward: parseFloat(document.getElementById('s-bdtReward').value)||10, 
+                    adLimit: parseInt(document.getElementById('s-adLimit').value)||10, mathLimit: parseInt(document.getElementById('s-mathLimit').value)||10, scratchLimit: parseInt(document.getElementById('s-scratchLimit').value)||10,
+                    minAdsWithdraw: parseInt(document.getElementById('s-minAdsWithdraw').value)||20, minAdsDaily: parseInt(document.getElementById('s-minAdsDaily').value)||5, adsPerClick: parseInt(document.getElementById('s-adsPerClick').value)||3,
+                    notice: document.getElementById('s-appNotice').value
+                },
+                rewards: { video: parseInt(document.getElementById('r-video').value)||50, daily: parseInt(document.getElementById('r-daily').value)||100, math: parseInt(document.getElementById('r-math').value)||15, scratchMax: parseInt(document.getElementById('r-scratchMax').value)||20 },
+                ref: { referrer: parseInt(document.getElementById('s-refBonus').value)||200 },
+                socialTasks: {
+                    tg1: { active: document.getElementById('s-st-tg1-active').checked, link: document.getElementById('s-st-tg1-link').value, reward: parseInt(document.getElementById('s-st-tg1-reward').value)||100 },
+                    tg2: { active: document.getElementById('s-st-tg2-active').checked, link: document.getElementById('s-st-tg2-link').value, reward: parseInt(document.getElementById('s-st-tg2-reward').value)||100 },
+                    tg3: { active: document.getElementById('s-st-tg3-active').checked, link: document.getElementById('s-st-tg3-link').value, reward: parseInt(document.getElementById('s-st-tg3-reward').value)||100 }
+                },
+                support: { tg: document.getElementById('s-supTg').value, wa: document.getElementById('s-supWa').value, fb: document.getElementById('s-supFb').value },
+                security: { 
+                    vpnBlock: document.getElementById('s-vpnBlock').checked,
+                    taskCooldown: parseInt(document.getElementById('s-taskCooldown').value)||5,
+                    spamLimit: parseInt(document.getElementById('s-spamLimit').value)||3
+                }
+            };
+            Swal.fire({ title: 'Saving...', didOpen: () => Swal.showLoading() });
+            set(ref(db, 'settings'), data).then(() => { Swal.close(); Swal.fire({ title: 'Saved!', text: 'Changes live on User App.', icon: 'success' }); }).catch(e => { Swal.close(); Swal.fire('Error', 'Failed to save!', 'error'); });
+        };
+    </script>
+</body>
+</html>
