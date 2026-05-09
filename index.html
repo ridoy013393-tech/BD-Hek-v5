@@ -173,41 +173,38 @@
                         <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[#151C2C] rounded-full"></div>
                     </div>
                     <div>
-                        <p class="text-[10px] text-gray-400 uppercase tracking-wide">Welcome back,</p>
+                        <p id="lang-welcome" class="text-[10px] text-gray-400 uppercase tracking-wide">Welcome back,</p>
                         <h2 id="user-name" class="text-base font-bold text-white">Loading...</h2>
                     </div>
                 </div>
                 <div class="bg-white/5 px-3 py-1.5 rounded-xl border border-white/10 text-center">
-                    <p class="text-[9px] text-gray-400 uppercase">Total Ads</p>
+                    <p id="lang-total-ads" class="text-[9px] text-gray-400 uppercase">Total Ads</p>
                     <p id="stat-total-ads" class="text-sm font-bold text-primary">0</p>
                 </div>
             </div>
             
             <!-- Balances -->
-            <div class="grid grid-cols-2 gap-4">
-                <div class="glass-card p-5 rounded-3xl flex flex-col items-center text-center relative overflow-hidden">
-                    <div class="absolute -right-4 -top-4 w-16 h-16 bg-yellow-500/10 rounded-full blur-xl"></div>
-                    <i class="fa-solid fa-coins text-3xl text-yellow-400 mb-2 drop-shadow-[0_0_10px_rgba(250,204,21,0.4)] float-anim"></i>
-                    <p class="text-[10px] text-gray-400 uppercase tracking-widest mb-1">Coin Balance</p>
-                    <h3 id="bal-coins" class="text-2xl font-black text-white">0</h3>
-                </div>
-                <div class="glass-card p-5 rounded-3xl flex flex-col items-center text-center relative overflow-hidden">
-                    <div class="absolute -left-4 -top-4 w-16 h-16 bg-green-500/10 rounded-full blur-xl"></div>
-                    <i class="fa-solid fa-wallet text-3xl text-green-400 mb-2 drop-shadow-[0_0_10px_rgba(74,222,128,0.4)] float-anim"></i>
-                    <p class="text-[10px] text-gray-400 uppercase tracking-widest mb-1">Cash Balance</p>
-                    <h3 class="text-2xl font-black text-white"><span class="text-sm font-medium mr-1 text-gray-400">৳</span><span id="bal-bdt">0.00</span></h3>
-                </div>
+            <div class="glass-card p-5 rounded-[2rem] flex flex-col items-center text-center relative overflow-hidden border border-green-500/20">
+                <div class="absolute -left-10 -top-10 w-32 h-32 bg-green-500/20 rounded-full blur-3xl"></div>
+                <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl"></div>
+                <i class="fa-solid fa-wallet text-4xl text-green-400 mb-3 drop-shadow-[0_0_15px_rgba(74,222,128,0.5)] float-anim"></i>
+                <p id="lang-bal-title" class="text-xs text-gray-400 uppercase tracking-widest mb-1 font-bold">Total Taka</p>
+                <h3 class="text-4xl font-black text-white tracking-tight"><span class="text-lg font-medium mr-1 text-green-400">৳</span><span id="bal-bdt">0.00</span></h3>
             </div>
 
-            <!-- Convert Card -->
-            <div class="glass-card p-5 rounded-3xl text-center relative overflow-hidden group border border-primary/20">
-                <div class="absolute inset-0 bg-gradient-to-r from-primary/10 to-secondary/10 opacity-50 group-hover:opacity-100 transition-opacity"></div>
+            <!-- Ad View Target Progress -->
+            <div class="glass-card p-5 rounded-3xl border border-white/10 relative overflow-hidden">
                 <div class="relative z-10">
-                    <h3 class="font-bold text-lg text-white mb-1">Convert to Cash</h3>
-                    <p id="convert-hint" class="text-xs mb-4 text-gray-400">Rate: Loading...</p>
-                    <button onclick="window.convertCoins()" class="bg-gradient-btn w-full py-3.5 rounded-2xl font-bold text-white shadow-lg flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-money-bill-transfer"></i> Convert Now
-                    </button>
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 id="lang-ad-target-title" class="font-bold text-sm text-white flex items-center gap-2"><i class="fa-solid fa-bullseye text-blue-400"></i> Ad Target</h3>
+                        <span id="ad-target-text" class="text-xs font-bold text-blue-400 bg-blue-500/10 px-2 py-1 rounded-lg">0 / 20</span>
+                    </div>
+                    <div class="w-full bg-black/50 h-3 rounded-full overflow-hidden border border-white/5 relative">
+                        <div id="ad-target-bar" class="bg-gradient-to-r from-blue-600 to-blue-400 h-full rounded-full transition-all duration-700 w-0 relative">
+                            <div class="absolute inset-0 bg-white/20 animate-pulse"></div>
+                        </div>
+                    </div>
+                    <p id="lang-ad-target-desc" class="text-[10px] text-gray-400 mt-2 text-center">Complete the target to unlock withdrawal!</p>
                 </div>
             </div>
 
@@ -248,8 +245,8 @@
                     <div class="w-16 h-16 mx-auto bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center mb-3 border border-white/20">
                         <i class="fa-solid fa-play text-2xl text-white ml-1"></i>
                     </div>
-                    <h2 class="text-2xl font-black text-white mb-1 tracking-wide">Watch & Earn</h2>
-                    <p id="txt-video-reward" class="text-sm font-bold text-yellow-300 mb-1">+50 Coins</p>
+                    <h2 id="lang-watch-earn" class="text-2xl font-black text-white mb-1 tracking-wide">Watch & Earn</h2>
+                    <p id="txt-video-reward" class="text-sm font-bold text-green-400 mb-1">+0.5 Taka</p>
                     <div class="inline-block bg-black/30 px-3 py-1 rounded-full mb-5">
                         <p class="text-xs text-white/80"><span id="limit-ads" class="font-bold text-white">0</span> Ads Remaining Today</p>
                     </div>
@@ -263,7 +260,7 @@
             <div class="grid grid-cols-2 gap-4">
                 <div class="glass-card p-5 rounded-3xl flex flex-col items-center text-center">
                     <div class="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center text-blue-400 text-xl mb-3 shadow-[0_0_15px_rgba(59,130,246,0.3)]"><i class="fa-solid fa-calculator"></i></div>
-                    <h3 class="font-bold text-sm text-white">Math Quiz</h3>
+                    <h3 id="lang-math" class="font-bold text-sm text-white">Math Quiz</h3>
                     <p id="txt-math-reward" class="text-[10px] font-bold text-green-400 mb-1">Loading...</p>
                     <p class="text-[10px] mb-4 text-gray-500"><span id="limit-math" class="text-white">0</span> Left</p>
                     <button onclick="window.playMath()" class="bg-white/10 hover:bg-white/20 w-full py-2.5 rounded-xl font-bold text-xs text-white border border-white/5 transition">Play Now</button>
@@ -271,7 +268,7 @@
                 
                 <div class="glass-card p-5 rounded-3xl flex flex-col items-center text-center">
                     <div class="w-12 h-12 rounded-2xl bg-pink-500/20 flex items-center justify-center text-pink-400 text-xl mb-3 shadow-[0_0_15px_rgba(236,72,153,0.3)]"><i class="fa-solid fa-ticket"></i></div>
-                    <h3 class="font-bold text-sm text-white">Scratch Card</h3>
+                    <h3 id="lang-scratch" class="font-bold text-sm text-white">Scratch Card</h3>
                     <p id="txt-scratch-reward" class="text-[10px] font-bold text-green-400 mb-1">Loading...</p>
                     <p class="text-[10px] mb-4 text-gray-500"><span id="limit-scratch" class="text-white">0</span> Left</p>
                     <button onclick="window.playScratch()" class="bg-white/10 hover:bg-white/20 w-full py-2.5 rounded-xl font-bold text-xs text-white border border-white/5 transition">Scratch</button>
@@ -295,15 +292,20 @@
                 <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-tr from-yellow-600 to-yellow-300 mb-3 shadow-[0_0_20px_rgba(234,179,8,0.4)]">
                     <i class="fa-solid fa-trophy text-3xl text-white"></i>
                 </div>
-                <h2 class="text-2xl font-black text-white">Top Earners</h2>
-                <p class="text-xs text-gray-400 mt-1">Compete to be the richest player!</p>
+                <h2 id="lang-leaderboard" class="text-2xl font-black text-white">Top Earners</h2>
+                <p id="lang-leaderboard-desc" class="text-xs text-gray-400 mt-1">Compete to be the richest player!</p>
+            </div>
+
+            <div class="flex gap-2 mb-4 bg-black/20 p-1 rounded-2xl border border-white/5">
+                <button onclick="window.switchLb('top')" id="btn-lb-top" class="flex-1 py-2 bg-white/10 text-white rounded-xl text-sm font-bold transition">Top 10</button>
+                <button onclick="window.switchLb('bottom')" id="btn-lb-bottom" class="flex-1 py-2 text-gray-400 rounded-xl text-sm font-bold transition hover:text-white">Bottom 10</button>
             </div>
 
             <div class="glass-card rounded-[2rem] p-2 overflow-hidden border border-white/10">
                 <div id="leaderboard-list" class="space-y-1">
                     <div class="p-4 text-center text-gray-400 text-xs">
                         <div class="loader-ring w-6 h-6 mx-auto mb-2 border-t-yellow-400"></div>
-                        Loading Top Players...
+                        Loading Players...
                     </div>
                 </div>
             </div>
@@ -356,16 +358,23 @@
 
         <!-- PROFILE TAB -->
         <div id="tab-profile" class="tab-content p-4">
-            <div class="glass-card p-6 rounded-[2rem] mb-6 flex flex-col items-center text-center relative overflow-hidden">
+            <!-- Profile Header -->
+            <div class="glass-card p-6 rounded-[2rem] mb-6 relative overflow-hidden">
                 <div class="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent opacity-50"></div>
-                <div class="relative z-10 w-full flex flex-col items-center">
-                    <img id="profile-avatar" src="" class="w-24 h-24 rounded-full border-4 border-[#151C2C] shadow-[0_0_20px_rgba(99,102,241,0.3)] mb-4 object-cover">
-                    <h2 id="profile-name" class="text-2xl font-black text-white">Name</h2>
-                    <p id="profile-username" class="text-sm mb-4 text-primary font-medium">@username</p>
-                    <div class="bg-black/30 px-4 py-2.5 rounded-xl border border-white/5 flex items-center gap-2">
-                        <span class="text-xs font-bold text-gray-500 uppercase">UID</span>
-                        <span id="profile-id" class="text-sm font-mono text-white tracking-widest font-bold">...</span>
+                <div class="relative z-10 w-full flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <img id="profile-avatar" src="" class="w-20 h-20 rounded-full border-4 border-[#151C2C] shadow-[0_0_20px_rgba(99,102,241,0.3)] object-cover">
+                        <div>
+                            <h2 id="profile-name" class="text-xl font-black text-white">Name</h2>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="bg-black/30 px-2 py-1 rounded text-[10px] font-mono text-gray-400">UID: <span id="profile-id">...</span></span>
+                            </div>
+                        </div>
                     </div>
+                    <button onclick="window.toggleLanguage()" class="bg-white/10 hover:bg-white/20 p-3 rounded-xl border border-white/10 transition">
+                        <i class="fa-solid fa-language text-white text-xl"></i>
+                        <span id="lang-btn-text" class="block text-[8px] font-bold text-gray-300 mt-1">বাং / EN</span>
+                    </button>
                 </div>
             </div>
 
@@ -448,24 +457,31 @@
                     <p class="text-xs text-gray-400 mb-6">If you have any issues regarding payments, tasks, or your account, feel free to contact us.</p>
                     
                     <div class="grid grid-cols-1 gap-3">
+                        <a id="support-video" href="#" target="_blank" class="bg-[#FF0000]/10 hover:bg-[#FF0000]/20 border border-[#FF0000]/30 p-4 rounded-2xl flex items-center justify-between transition group" style="display: none;">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-[#FF0000]/20 flex items-center justify-center text-[#FF0000]"><i class="fa-brands fa-youtube text-xl"></i></div>
+                                <div class="text-left"><p id="lang-sup-video" class="text-sm font-bold text-white">Tutorial Video</p><p id="lang-sup-video-desc" class="text-[10px] text-gray-400">How to work correctly</p></div>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-gray-500 group-hover:text-white transition"></i>
+                        </a>
                         <a id="support-tg" href="#" target="_blank" class="bg-[#0088cc]/10 hover:bg-[#0088cc]/20 border border-[#0088cc]/30 p-4 rounded-2xl flex items-center justify-between transition group">
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 rounded-full bg-[#0088cc]/20 flex items-center justify-center text-[#0088cc]"><i class="fa-brands fa-telegram text-xl"></i></div>
-                                <div class="text-left"><p class="text-sm font-bold text-white">Telegram</p><p class="text-[10px] text-gray-400">Join our channel & group</p></div>
+                                <div class="text-left"><p class="text-sm font-bold text-white">Telegram</p><p id="lang-sup-tg-desc" class="text-[10px] text-gray-400">Join our channel & group</p></div>
                             </div>
                             <i class="fa-solid fa-chevron-right text-gray-500 group-hover:text-white transition"></i>
                         </a>
                         <a id="support-wa" href="#" target="_blank" class="bg-[#25D366]/10 hover:bg-[#25D366]/20 border border-[#25D366]/30 p-4 rounded-2xl flex items-center justify-between transition group">
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 rounded-full bg-[#25D366]/20 flex items-center justify-center text-[#25D366]"><i class="fa-brands fa-whatsapp text-xl"></i></div>
-                                <div class="text-left"><p class="text-sm font-bold text-white">WhatsApp</p><p class="text-[10px] text-gray-400">Direct message support</p></div>
+                                <div class="text-left"><p class="text-sm font-bold text-white">WhatsApp</p><p id="lang-sup-wa-desc" class="text-[10px] text-gray-400">Direct message support</p></div>
                             </div>
                             <i class="fa-solid fa-chevron-right text-gray-500 group-hover:text-white transition"></i>
                         </a>
                         <a id="support-fb" href="#" target="_blank" class="bg-[#1877F2]/10 hover:bg-[#1877F2]/20 border border-[#1877F2]/30 p-4 rounded-2xl flex items-center justify-between transition group">
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 rounded-full bg-[#1877F2]/20 flex items-center justify-center text-[#1877F2]"><i class="fa-brands fa-facebook text-xl"></i></div>
-                                <div class="text-left"><p class="text-sm font-bold text-white">Facebook</p><p class="text-[10px] text-gray-400">Follow our official page</p></div>
+                                <div class="text-left"><p class="text-sm font-bold text-white">Facebook</p><p id="lang-sup-fb-desc" class="text-[10px] text-gray-400">Follow our official page</p></div>
                             </div>
                             <i class="fa-solid fa-chevron-right text-gray-500 group-hover:text-white transition"></i>
                         </a>
@@ -555,13 +571,13 @@
             const name = `${tgUser.first_name} ${tgUser.last_name || ''}`.trim();
             const avatarUrl = tgUser.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=6366F1&color=fff`;
             
-            document.getElementById('user-avatar').src = avatarUrl;
-            document.getElementById('profile-avatar').src = avatarUrl;
-            document.getElementById('user-name').innerText = name; 
-            document.getElementById('profile-name').innerText = name;
-            document.getElementById('profile-username').innerText = tgUser.username ? `@${tgUser.username}` : '';
-            document.getElementById('profile-id').innerText = userId; 
-            document.getElementById('ref-link').value = `https://t.me/EarningJohn_bot/cash?startapp=${userId}`;
+            if(document.getElementById('user-avatar')) document.getElementById('user-avatar').src = avatarUrl;
+            if(document.getElementById('profile-avatar')) document.getElementById('profile-avatar').src = avatarUrl;
+            if(document.getElementById('user-name')) document.getElementById('user-name').innerText = name; 
+            if(document.getElementById('profile-name')) document.getElementById('profile-name').innerText = name;
+            if(document.getElementById('profile-username')) document.getElementById('profile-username').innerText = tgUser.username ? `@${tgUser.username}` : '';
+            if(document.getElementById('profile-id')) document.getElementById('profile-id').innerText = userId; 
+            if(document.getElementById('ref-link')) document.getElementById('ref-link').value = `https://t.me/EarningJohn_bot/cash?startapp=${userId}`;
 
             onValue(ref(db, 'settings'), async (snap) => { 
                 if(snap.exists()) { 
@@ -591,11 +607,11 @@
                             if (refSnap.exists()) { 
                                 const level1User = refSnap.val();
                                 referredBy = startParam;
-                                iCoins = globalSettings.ref?.joined || 100; 
+                                iCoins = globalSettings.ref?.joined || 1; 
                                 
                                 // LEVEL 1 REWARD
-                                const l1Reward = globalSettings.ref?.referrer || 200;
-                                update(ref(db, `users/${startParam}/balances`), { coins: (level1User.balances?.coins||0) + l1Reward }); 
+                                const l1Reward = globalSettings.ref?.referrer || 5;
+                                update(ref(db, `users/${startParam}/balances`), { bdt: (level1User.balances?.bdt||0) + l1Reward }); 
                                 push(ref(db, `users/${startParam}/history`), { title: 'L1 Referral Bonus', amount: l1Reward, timestamp: Date.now() }); 
                                 update(ref(db, `users/${startParam}/referrals/${userId}`), { name: tgUser.first_name, timestamp: Date.now(), level: 1 });
                                 
@@ -604,8 +620,8 @@
                                 if(level2Id) {
                                     const l2Snap = await get(ref(db, `users/${level2Id}`));
                                     if(l2Snap.exists()) {
-                                        const l2Reward = globalSettings.ref?.level2 || 50;
-                                        update(ref(db, `users/${level2Id}/balances`), { coins: (l2Snap.val().balances?.coins||0) + l2Reward });
+                                        const l2Reward = globalSettings.ref?.level2 || 2;
+                                        update(ref(db, `users/${level2Id}/balances`), { bdt: (l2Snap.val().balances?.bdt||0) + l2Reward });
                                         push(ref(db, `users/${level2Id}/history`), { title: 'L2 Team Bonus', amount: l2Reward, timestamp: Date.now() });
                                         update(ref(db, `users/${level2Id}/referrals/${userId}`), { name: tgUser.first_name, timestamp: Date.now(), level: 2 });
 
@@ -614,8 +630,8 @@
                                         if(level3Id) {
                                             const l3Snap = await get(ref(db, `users/${level3Id}`));
                                             if(l3Snap.exists()) {
-                                                const l3Reward = globalSettings.ref?.level3 || 20;
-                                                update(ref(db, `users/${level3Id}/balances`), { coins: (l3Snap.val().balances?.coins||0) + l3Reward });
+                                                const l3Reward = globalSettings.ref?.level3 || 1;
+                                                update(ref(db, `users/${level3Id}/balances`), { bdt: (l3Snap.val().balances?.bdt||0) + l3Reward });
                                                 push(ref(db, `users/${level3Id}/history`), { title: 'L3 Team Bonus', amount: l3Reward, timestamp: Date.now() });
                                                 update(ref(db, `users/${level3Id}/referrals/${userId}`), { name: tgUser.first_name, timestamp: Date.now(), level: 3 });
                                             }
@@ -625,7 +641,7 @@
                             } 
                         } catch(e) {}
                     }
-                    userData = { info: { firstName: tgUser.first_name, username: tgUser.username||'', photoUrl: tgUser.photo_url||'', joined: Date.now(), referredBy: referredBy }, balances: { coins: iCoins, bdt: 0 }, limits: { ads: 0, math: globalSettings.app.mathLimit||10, scratch: globalSettings.app.scratchLimit||10, date: today }, stats: { totalAds: 0 }, tasks:{}, status: 'active' };
+                    userData = { info: { firstName: tgUser.first_name, username: tgUser.username||'', photoUrl: tgUser.photo_url||'', joined: Date.now(), referredBy: referredBy }, balances: { bdt: iCoins }, limits: { ads: 0, math: globalSettings.app.mathLimit||10, scratch: globalSettings.app.scratchLimit||10, date: today }, stats: { totalAds: 0 }, tasks:{}, status: 'active' };
                     await set(userRef, userData);
                     if(iCoins > 0) push(ref(db, `users/${userId}/history`), { title: 'Welcome Bonus', amount: iCoins, timestamp: Date.now() });
                 }
@@ -639,15 +655,15 @@
                     hList.innerHTML += `
                         <div class="bg-black/20 p-3 rounded-2xl border border-white/5 flex justify-between items-center">
                             <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-full bg-yellow-500/10 border border-yellow-500/20 flex justify-center items-center text-yellow-400">
-                                    <i class="fa-solid fa-coins"></i>
+                                <div class="w-10 h-10 rounded-full bg-green-500/10 border border-green-500/20 flex justify-center items-center text-green-400">
+                                    <i class="fa-solid fa-money-bill-wave"></i>
                                 </div>
                                 <div>
                                     <p class="text-sm font-bold text-white">${item.title}</p>
                                     <p class="text-[10px] text-gray-500">${new Date(item.timestamp).toLocaleString()}</p>
                                 </div>
                             </div>
-                            <span class="text-sm font-black text-green-400">+${item.amount}</span>
+                            <span class="text-sm font-black text-green-400">+৳${item.amount}</span>
                         </div>`;
                 });
             });
@@ -696,43 +712,76 @@
                 });
             });
 
-            // LOAD LEADERBOARD
-            const lbRef = query(ref(db, 'users'), orderByChild('balances/coins'), limitToLast(10));
-            onValue(lbRef, (snap) => {
-                const lbContainer = document.getElementById('leaderboard-list');
-                if (!snap.exists()) return;
-                let users = [];
-                snap.forEach(s => { 
-                    const u = s.val(); 
-                    if(u.info && u.balances?.coins > 0) users.push({name: u.info.firstName, img: u.info.photoUrl, coins: u.balances.coins}); 
+            let currentLbType = 'top';
+            window.switchLb = (type) => {
+                currentLbType = type;
+                document.getElementById('btn-lb-top').className = type === 'top' ? 'flex-1 py-2 bg-white/10 text-white rounded-xl text-sm font-bold transition' : 'flex-1 py-2 text-gray-400 rounded-xl text-sm font-bold transition hover:text-white';
+                document.getElementById('btn-lb-bottom').className = type === 'bottom' ? 'flex-1 py-2 bg-white/10 text-white rounded-xl text-sm font-bold transition' : 'flex-1 py-2 text-gray-400 rounded-xl text-sm font-bold transition hover:text-white';
+                renderLeaderboard();
+            };
+
+            let allUsersList = [];
+            onValue(ref(db, 'users'), (snap) => {
+                if(!snap.exists()) return;
+                allUsersList = [];
+                snap.forEach(s => {
+                    const u = s.val();
+                    if(u.info && u.balances?.bdt !== undefined && u.status !== 'banned') {
+                        const totalAds = u.stats?.totalAds || 0;
+                        const vip = getVIPInfo(totalAds);
+                        allUsersList.push({name: u.info.firstName, img: u.info.photoUrl, bdt: u.balances.bdt, level: vip.name, vipColor: vip.color});
+                    }
                 });
-                users.sort((a, b) => b.coins - a.coins);
-                
+                renderLeaderboard();
+            });
+
+            function renderLeaderboard() {
+                const lbContainer = document.getElementById('leaderboard-list');
                 lbContainer.innerHTML = '';
-                users.forEach((u, idx) => {
+                
+                let sorted = [...allUsersList];
+                if(currentLbType === 'top') {
+                    sorted.sort((a,b) => b.bdt - a.bdt);
+                } else {
+                    sorted.sort((a,b) => a.bdt - b.bdt);
+                }
+                const displayList = sorted.slice(0, 10);
+
+                if(displayList.length === 0) {
+                    lbContainer.innerHTML = '<div class="p-4 text-center text-gray-400 text-xs">No users found.</div>';
+                    return;
+                }
+                
+                displayList.forEach((u, idx) => {
                     let rankHtml = '';
-                    if(idx === 0) rankHtml = `<div class="w-8 h-8 rounded-full bg-yellow-400 text-[#0B0F19] flex items-center justify-center font-black text-xs shadow-[0_0_10px_rgba(250,204,21,0.6)]"><i class="fa-solid fa-crown"></i></div>`;
-                    else if(idx === 1) rankHtml = `<div class="w-8 h-8 rounded-full bg-gray-300 text-[#0B0F19] flex items-center justify-center font-black text-xs"><i class="fa-solid fa-medal"></i></div>`;
-                    else if(idx === 2) rankHtml = `<div class="w-8 h-8 rounded-full bg-orange-400 text-[#0B0F19] flex items-center justify-center font-black text-xs"><i class="fa-solid fa-medal"></i></div>`;
-                    else rankHtml = `<div class="w-8 h-8 rounded-full bg-white/5 text-gray-400 flex items-center justify-center font-bold text-xs">${idx+1}</div>`;
+                    if(currentLbType === 'top') {
+                        if(idx === 0) rankHtml = `<div class="w-8 h-8 rounded-full bg-yellow-400 text-[#0B0F19] flex items-center justify-center font-black text-xs shadow-[0_0_10px_rgba(250,204,21,0.6)]"><i class="fa-solid fa-crown"></i></div>`;
+                        else if(idx === 1) rankHtml = `<div class="w-8 h-8 rounded-full bg-gray-300 text-[#0B0F19] flex items-center justify-center font-black text-xs"><i class="fa-solid fa-medal"></i></div>`;
+                        else if(idx === 2) rankHtml = `<div class="w-8 h-8 rounded-full bg-orange-400 text-[#0B0F19] flex items-center justify-center font-black text-xs"><i class="fa-solid fa-medal"></i></div>`;
+                        else rankHtml = `<div class="w-8 h-8 rounded-full bg-white/5 text-gray-400 flex items-center justify-center font-bold text-xs">${idx+1}</div>`;
+                    } else {
+                        rankHtml = `<div class="w-8 h-8 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center font-bold text-xs"><i class="fa-solid fa-arrow-down"></i></div>`;
+                    }
 
                     const avatar = u.img || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=6366F1&color=fff`;
 
                     lbContainer.innerHTML += `
-                        <div class="flex items-center justify-between p-3 rounded-2xl ${idx < 3 ? 'bg-white/5 border border-white/5' : ''}">
+                        <div class="flex items-center justify-between p-3 rounded-2xl ${idx < 3 && currentLbType === 'top' ? 'bg-white/5 border border-white/5' : ''}">
                             <div class="flex items-center gap-3">
                                 ${rankHtml}
                                 <img src="${avatar}" class="w-10 h-10 rounded-full object-cover border border-white/10">
-                                <p class="text-sm font-bold text-white max-w-[100px] truncate">${u.name}</p>
+                                <div>
+                                    <p class="text-sm font-bold text-white max-w-[100px] truncate">${u.name}</p>
+                                    <p class="text-[9px] font-bold ${u.vipColor} uppercase">${u.level}</p>
+                                </div>
                             </div>
                             <div class="text-right">
-                                <p class="text-sm font-black text-yellow-400">${u.coins.toLocaleString()}</p>
-                                <p class="text-[9px] text-gray-500 uppercase">Coins</p>
+                                <p class="text-sm font-black text-green-400">৳${u.bdt.toFixed(2)}</p>
                             </div>
                         </div>
                     `;
                 });
-            });
+            }
 
             setInterval(() => { if(globalSettings.security?.vpnBlock && !vpnDetected) verifyVPN(true); }, 120000); // Continuous background check
 
@@ -753,33 +802,36 @@
             
             document.getElementById('user-name').innerHTML = `${tgUser.first_name} <span class="${vip.color} text-[10px] ml-1"><i class="fa-solid ${vip.icon}"></i></span>`;
             
-            document.getElementById('bal-coins').innerText = userData.balances.coins.toLocaleString();
-            document.getElementById('bal-bdt').innerText = userData.balances.bdt.toFixed(2);
+            document.getElementById('bal-bdt').innerText = (userData.balances?.bdt || 0).toFixed(2);
             document.getElementById('limit-ads').innerText = Math.max(0, (globalSettings.app.adLimit||10) - (userData.limits.ads || 0));
             document.getElementById('limit-math').innerText = userData.limits.math;
             document.getElementById('limit-scratch').innerText = userData.limits.scratch;
             document.getElementById('stat-total-ads').innerText = totalWatched;
             
             const adsPerClick = globalSettings.app.adsPerClick || 3;
-            document.getElementById('btn-ad-text').innerText = `Watch ${adsPerClick} Ads`;
+            document.getElementById('btn-ad-text').innerText = window.currentLang === 'en' ? `Watch ${adsPerClick} Ads` : `${adsPerClick} অ্যাড দেখুন`;
             
-            document.getElementById('txt-daily-req').innerText = `+${globalSettings.rewards.daily} Coins`;
-            document.getElementById('txt-video-reward').innerText = `+${globalSettings.rewards.video} Coins`;
-            document.getElementById('txt-math-reward').innerText = `+${globalSettings.rewards.math} Coins`;
-            document.getElementById('txt-scratch-reward').innerText = `Up to +${globalSettings.rewards.scratchMax} Coins`;
+            document.getElementById('txt-daily-req').innerText = `+${globalSettings.rewards.daily} Taka`;
+            document.getElementById('txt-video-reward').innerText = `+${globalSettings.rewards.video} Taka`;
+            document.getElementById('txt-math-reward').innerText = `+${globalSettings.rewards.math} Taka`;
+            document.getElementById('txt-scratch-reward').innerText = `Up to +${globalSettings.rewards.scratchMax} Taka`;
             
-            const l1 = globalSettings.ref?.referrer || 200;
-            const l2 = globalSettings.ref?.level2 || 50;
-            const l3 = globalSettings.ref?.level3 || 20;
-            document.getElementById('txt-ref-reward').innerText = `L1: +${l1} | L2: +${l2} | L3: +${l3} Coins`;
-            
-            const rew = (globalSettings.app.bdtReward || 10) * vip.bonus;
-            document.getElementById('convert-hint').innerHTML = `Rate: ${globalSettings.app.coinRate} Coins = ৳${rew.toFixed(2)} <span class="${vip.color} font-bold text-[9px]">(VIP x${vip.bonus})</span>`;
+            const l1 = globalSettings.ref?.referrer || 5;
+            const l2 = globalSettings.ref?.level2 || 2;
+            const l3 = globalSettings.ref?.level3 || 1;
+            document.getElementById('txt-ref-reward').innerText = `L1: +${l1} | L2: +${l2} | L3: +${l3} Taka`;
+
+            const minAdsWithdraw = globalSettings.app.minAdsWithdraw || 20;
+            const targetProg = Math.min(100, Math.floor((totalWatched / minAdsWithdraw) * 100));
+            document.getElementById('ad-target-bar').style.width = `${targetProg}%`;
+            document.getElementById('ad-target-text').innerText = `${totalWatched} / ${minAdsWithdraw}`;
 
             // Support Links
+            const supVideo = document.getElementById('support-video');
             const supTg = document.getElementById('support-tg');
             const supWa = document.getElementById('support-wa');
             const supFb = document.getElementById('support-fb');
+            if(globalSettings.support?.video) { supVideo.href = globalSettings.support.video; supVideo.style.display = 'flex'; } else supVideo.style.display = 'none';
             if(globalSettings.support?.tg) { supTg.href = globalSettings.support.tg; supTg.style.display = 'flex'; } else supTg.style.display = 'none';
             if(globalSettings.support?.wa) { supWa.href = globalSettings.support.wa; supWa.style.display = 'flex'; } else supWa.style.display = 'none';
             if(globalSettings.support?.fb) { supFb.href = globalSettings.support.fb; supFb.style.display = 'flex'; } else supFb.style.display = 'none';
@@ -801,7 +853,6 @@
                 dText.innerText = `LOCKED: Watch ${minAdsDaily - todayWatched} more ads`; dText.className = "text-[10px] font-bold text-red-400 mt-1";
             } else { dText.innerText = `UNLOCKED: Ready to claim!`; dText.className = "text-[10px] font-bold text-green-400 mt-1"; }
 
-            const minAdsWithdraw = globalSettings.app.minAdsWithdraw || 20;
             if(totalWatched < minAdsWithdraw) {
                 document.getElementById('withdraw-notice').classList.remove('hidden');
                 document.getElementById('req-ads-w').innerText = minAdsWithdraw; document.getElementById('done-ads-w').innerText = totalWatched;
@@ -821,7 +872,7 @@
                         <div class="glass-card p-4 rounded-2xl flex items-center justify-between border border-white/5">
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 rounded-full bg-[#0088cc]/20 flex items-center justify-center text-[#0088cc] text-lg"><i class="fa-brands fa-telegram"></i></div>
-                                <div><h3 class="font-bold text-sm text-white">Join Channel ${index+1}</h3><p class="text-[10px] font-bold text-green-400 uppercase mt-0.5">+${task.reward} Coins</p></div>
+                                <div><h3 class="font-bold text-sm text-white">${task.title || `Join Channel ${index+1}`}</h3><p class="text-[10px] font-bold text-green-400 uppercase mt-0.5">+${task.reward} Taka</p></div>
                             </div>
                             ${btnHtml}
                         </div>
@@ -874,23 +925,11 @@
         }
 
         async function giveReward(title, amount) {
-            const updates = {}; updates['balances/coins'] = userData.balances.coins + amount;
+            const updates = {}; updates['balances/bdt'] = (userData.balances.bdt||0) + amount;
             const historyRefKey = push(ref(db, `users/${userId}/history`)).key;
             updates[`history/${historyRefKey}`] = { title, amount, timestamp: Date.now() };
             await update(userRef, updates);
         }
-
-        window.convertCoins = async () => {
-            const req = globalSettings.app.coinRate || 1000; 
-            const vip = getVIPInfo(userData.stats?.totalAds || 0);
-            const rew = (globalSettings.app.bdtReward || 10) * vip.bonus;
-            if (userData.balances.coins >= req) {
-                const chunks = Math.floor(userData.balances.coins / req);
-                await update(userRef, { 'balances/coins': userData.balances.coins - (chunks*req), 'balances/bdt': userData.balances.bdt + (chunks*rew) });
-                try { tg.HapticFeedback.notificationOccurred('success'); } catch(e){}
-                Swal.fire({icon: "success", title: "Converted!", text: `You got ৳${(chunks*rew).toFixed(2)}`});
-            } else Swal.fire({icon: "info", title: "Not Enough Coins", text: `Minimum ${req} coins required to convert.`});
-        };
 
         window.watchAd = async () => {
             if (await verifyVPN()) return;
@@ -909,12 +948,12 @@
             }
 
             const currentTotal = userData.stats?.totalAds || 0;
-            await update(userRef, { 'balances/coins': userData.balances.coins + (globalSettings.rewards.video||50), 'limits/ads': watched + 1, 'stats/totalAds': currentTotal + adsToWatch });
+            await update(userRef, { 'balances/bdt': (userData.balances.bdt||0) + (globalSettings.rewards.video||0.5), 'limits/ads': watched + 1, 'stats/totalAds': currentTotal + adsToWatch });
             const historyRefKey = push(ref(db, `users/${userId}/history`)).key;
-            await update(ref(db, `users/${userId}/history/${historyRefKey}`), { title: 'Video Task', amount: globalSettings.rewards.video||50, timestamp: Date.now() });
+            await update(ref(db, `users/${userId}/history/${historyRefKey}`), { title: 'Video Task', amount: globalSettings.rewards.video||0.5, timestamp: Date.now() });
             
             try { tg.HapticFeedback.notificationOccurred('success'); } catch(e){}
-            Swal.fire({ title: "Awesome!", text: `+${globalSettings.rewards.video} Coins Added!`, icon: "success" }); 
+            Swal.fire({ title: window.currentLang === 'en' ? "Awesome!" : "দারুণ!", text: `+${globalSettings.rewards.video} Taka Added!`, icon: "success" }); 
             startTaskCooldown();
         };
 
@@ -927,9 +966,9 @@
             if (now - (userData.cooldowns?.dailyBonus || 0) < 86400000) return Swal.fire({icon:"info", title:"Claimed", text:"Come back tomorrow."});
             
             try { tg.HapticFeedback.notificationOccurred('success'); } catch(e){}
-            await giveReward('Daily Bonus', globalSettings.rewards.daily||100);
+            await giveReward('Daily Bonus', globalSettings.rewards.daily||1);
             await update(userRef, { 'cooldowns/dailyBonus': now });
-            Swal.fire({icon:"success", title:"Claimed!", text:`+${globalSettings.rewards.daily} Coins`});
+            Swal.fire({icon:"success", title: window.currentLang === 'en' ? "Claimed!" : "পাওয়া গেছে!", text:`+${globalSettings.rewards.daily} Taka`});
         };
 
         window.playMath = async () => {
@@ -946,9 +985,9 @@
                 Swal.fire({ title: 'Loading Ad...', text: 'Watch to get reward', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
                 try {
                     await show_10981447(); 
-                    await giveReward('Math Quiz', globalSettings.rewards.math||15);
+                    await giveReward('Math Quiz', globalSettings.rewards.math||0.2);
                     await update(userRef, { 'limits/math': userData.limits.math - 1 });
-                    Swal.fire({ title:"Correct!", text:`+${globalSettings.rewards.math} Coins`, icon:"success", timer:1500 }); 
+                    Swal.fire({ title: window.currentLang === 'en' ? "Correct!" : "সঠিক!", text:`+${globalSettings.rewards.math} Taka`, icon:"success", timer:1500 }); 
                     startTaskCooldown();
                 } catch(e) { Swal.fire({icon:"error", title:"Cancelled", text:"You must watch the full ad."}); }
             } else if(ans) { 
@@ -995,10 +1034,10 @@
                 Swal.fire({ title: 'Loading Prize...', text: 'Watch full ad to collect it!', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
                 try {
                     await show_10981447(); 
-                    const r = Math.floor(Math.random() * ((globalSettings.rewards.scratchMax||20) - 5 + 1)) + 5; 
-                    await giveReward('Scratch Card', r);
+                    const r = (Math.random() * ((globalSettings.rewards.scratchMax||0.5) - 0.1) + 0.1).toFixed(2); 
+                    await giveReward('Scratch Card', parseFloat(r));
                     await update(userRef, { 'limits/scratch': userData.limits.scratch - 1 });
-                    Swal.fire({icon:"success", title:"You Won!", text:`+${r} Coins added to your balance.`});
+                    Swal.fire({icon:"success", title: window.currentLang === 'en' ? "You Won!" : "আপনি জিতেছেন!", text:`+${r} Taka added to your balance.`});
                     startTaskCooldown();
                 } catch(e) {
                     Swal.fire({icon:"error", title:"Cancelled", text:"You must watch the full ad to collect the prize."});
@@ -1012,7 +1051,7 @@
             setTimeout(async () => {
                 await giveReward(`Social Task`, reward);
                 await update(userRef, { [`tasks/${taskId}`]: true });
-                Swal.fire({icon:"success", title:"Verified!", text:`Received +${reward} Coins.`});
+                Swal.fire({icon:"success", title: window.currentLang === 'en' ? "Verified!" : "যাচাই করা হয়েছে!", text:`Received +${reward} Taka.`});
             }, 5000);
         };
 
@@ -1024,18 +1063,97 @@
             const btn = document.getElementById('btn-withdraw'); btn.disabled = true; btn.innerText = "Processing...";
             const method = document.getElementById('w-method').value, phone = document.getElementById('w-phone').value, amount = parseFloat(document.getElementById('w-amount').value);
             
+            const currentBdt = userData.balances?.bdt || 0;
             if (amount < globalSettings.app.minW) { btn.disabled = false; btn.innerText = "Submit Request"; return Swal.fire({icon:"error", title:"Error", text:`Min withdraw is ${globalSettings.app.minW} BDT`}); }
-            if (amount > userData.balances.bdt) { btn.disabled = false; btn.innerText = "Submit Request"; return Swal.fire({icon:"error", title:"Error", text:"Insufficient balance"}); }
+            if (amount > currentBdt) { btn.disabled = false; btn.innerText = "Submit Request"; return Swal.fire({icon:"error", title:"Error", text:"Insufficient balance"}); }
             
             Swal.fire({ title: 'Processing Request...', didOpen: () => Swal.showLoading() });
             try {
-                await update(userRef, { 'balances/bdt': userData.balances.bdt - amount });
+                await update(userRef, { 'balances/bdt': currentBdt - amount });
                 await push(ref(db, 'withdrawals/' + userId), { method, phone, amount, status: 'Pending', timestamp: Date.now() });
                 try { tg.HapticFeedback.notificationOccurred('success'); } catch(e){}
                 Swal.fire({icon:"success", title:"Success", text:"Cashout Request Sent!"}); e.target.reset();
             } catch(error) { Swal.fire({icon:"error", title:"Error", text:"Failed to submit request."}); }
             btn.disabled = false; btn.innerText = "Submit Request";
         };
+    </script>
+    <script>
+        const dict = {
+            en: {
+                welcome: "Welcome back,",
+                totalAds: "Total Ads",
+                balTitle: "Total Taka",
+                adTargetTitle: "Ad Target",
+                adTargetDesc: "Complete the target to unlock withdrawal!",
+                watchEarn: "Watch & Earn",
+                math: "Math Quiz",
+                scratch: "Scratch Card",
+                leaderboard: "Top Earners",
+                leaderboardDesc: "Compete to be the richest player!",
+                supVideo: "Tutorial Video",
+                supVideoDesc: "How to work correctly",
+                supTgDesc: "Join our channel & group",
+                supWaDesc: "Direct message support",
+                supFbDesc: "Follow our official page",
+                btnTop: "Top 10",
+                btnBottom: "Bottom 10"
+            },
+            bn: {
+                welcome: "স্বাগতম,",
+                totalAds: "মোট অ্যাড",
+                balTitle: "মোট টাকা",
+                adTargetTitle: "অ্যাড টার্গেট",
+                adTargetDesc: "টাকা তুলতে টার্গেট পূরণ করুন!",
+                watchEarn: "দেখুন ও আয় করুন",
+                math: "অংক কুইজ",
+                scratch: "স্ক্র্যাচ কার্ড",
+                leaderboard: "শীর্ষ উপার্জনকারী",
+                leaderboardDesc: "সবচেয়ে ধনী খেলোয়াড় হতে প্রতিযোগিতা করুন!",
+                supVideo: "কাজের ভিডিও",
+                supVideoDesc: "কিভাবে সঠিক কাজ করবেন",
+                supTgDesc: "আমাদের চ্যানেল ও গ্রুপে যুক্ত হোন",
+                supWaDesc: "সরাসরি মেসেজ করুন",
+                supFbDesc: "অফিসিয়াল পেজ ফলো করুন",
+                btnTop: "শীর্ষ ১০",
+                btnBottom: "সর্বনিম্ন ১০"
+            }
+        };
+
+        window.currentLang = localStorage.getItem('lang') || 'en';
+
+        window.toggleLanguage = () => {
+            window.currentLang = window.currentLang === 'en' ? 'bn' : 'en';
+            localStorage.setItem('lang', window.currentLang);
+            document.getElementById('lang-btn-text').innerText = window.currentLang === 'en' ? 'বাং / EN' : 'EN / বাং';
+            applyLanguage();
+            if(window.updateUI) window.updateUI();
+        };
+
+        function applyLanguage() {
+            const t = dict[window.currentLang];
+            if(document.getElementById('lang-welcome')) document.getElementById('lang-welcome').innerText = t.welcome;
+            if(document.getElementById('lang-total-ads')) document.getElementById('lang-total-ads').innerText = t.totalAds;
+            if(document.getElementById('lang-bal-title')) document.getElementById('lang-bal-title').innerText = t.balTitle;
+            if(document.getElementById('lang-ad-target-title')) document.getElementById('lang-ad-target-title').innerHTML = `<i class="fa-solid fa-bullseye text-blue-400"></i> ${t.adTargetTitle}`;
+            if(document.getElementById('lang-ad-target-desc')) document.getElementById('lang-ad-target-desc').innerText = t.adTargetDesc;
+            if(document.getElementById('lang-watch-earn')) document.getElementById('lang-watch-earn').innerText = t.watchEarn;
+            if(document.getElementById('lang-math')) document.getElementById('lang-math').innerText = t.math;
+            if(document.getElementById('lang-scratch')) document.getElementById('lang-scratch').innerText = t.scratch;
+            if(document.getElementById('lang-leaderboard')) document.getElementById('lang-leaderboard').innerText = t.leaderboard;
+            if(document.getElementById('lang-leaderboard-desc')) document.getElementById('lang-leaderboard-desc').innerText = t.leaderboardDesc;
+            if(document.getElementById('lang-sup-video')) document.getElementById('lang-sup-video').innerText = t.supVideo;
+            if(document.getElementById('lang-sup-video-desc')) document.getElementById('lang-sup-video-desc').innerText = t.supVideoDesc;
+            if(document.getElementById('lang-sup-tg-desc')) document.getElementById('lang-sup-tg-desc').innerText = t.supTgDesc;
+            if(document.getElementById('lang-sup-wa-desc')) document.getElementById('lang-sup-wa-desc').innerText = t.supWaDesc;
+            if(document.getElementById('lang-sup-fb-desc')) document.getElementById('lang-sup-fb-desc').innerText = t.supFbDesc;
+            if(document.getElementById('btn-lb-top')) document.getElementById('btn-lb-top').innerText = t.btnTop;
+            if(document.getElementById('btn-lb-bottom')) document.getElementById('btn-lb-bottom').innerText = t.btnBottom;
+        }
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('lang-btn-text').innerText = window.currentLang === 'en' ? 'বাং / EN' : 'EN / বাং';
+            applyLanguage();
+        });
     </script>
 </body>
 </html>
