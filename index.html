@@ -584,18 +584,48 @@
                     } else updateUI();
                 } else {
                     let iCoins = 0;
+                    let referredBy = null;
                     if (startParam && startParam !== userId) {
                         try { 
                             const refSnap = await get(ref(db, 'users/' + startParam)); 
                             if (refSnap.exists()) { 
+                                const level1User = refSnap.val();
+                                referredBy = startParam;
                                 iCoins = globalSettings.ref?.joined || 100; 
-                                update(ref(db, `users/${startParam}/balances`), { coins: (refSnap.val().balances?.coins||0) + (globalSettings.ref?.referrer||200) }); 
-                                push(ref(db, `users/${startParam}/history`), { title: 'Referral Bonus', amount: globalSettings.ref?.referrer||200, timestamp: Date.now() }); 
-                                update(ref(db, `users/${startParam}/referrals/${userId}`), { name: tgUser.first_name, timestamp: Date.now() });
+                                
+                                // LEVEL 1 REWARD
+                                const l1Reward = globalSettings.ref?.referrer || 200;
+                                update(ref(db, `users/${startParam}/balances`), { coins: (level1User.balances?.coins||0) + l1Reward }); 
+                                push(ref(db, `users/${startParam}/history`), { title: 'L1 Referral Bonus', amount: l1Reward, timestamp: Date.now() }); 
+                                update(ref(db, `users/${startParam}/referrals/${userId}`), { name: tgUser.first_name, timestamp: Date.now(), level: 1 });
+                                
+                                // LEVEL 2 REWARD
+                                const level2Id = level1User.info?.referredBy;
+                                if(level2Id) {
+                                    const l2Snap = await get(ref(db, `users/${level2Id}`));
+                                    if(l2Snap.exists()) {
+                                        const l2Reward = globalSettings.ref?.level2 || 50;
+                                        update(ref(db, `users/${level2Id}/balances`), { coins: (l2Snap.val().balances?.coins||0) + l2Reward });
+                                        push(ref(db, `users/${level2Id}/history`), { title: 'L2 Team Bonus', amount: l2Reward, timestamp: Date.now() });
+                                        update(ref(db, `users/${level2Id}/referrals/${userId}`), { name: tgUser.first_name, timestamp: Date.now(), level: 2 });
+
+                                        // LEVEL 3 REWARD
+                                        const level3Id = l2Snap.val().info?.referredBy;
+                                        if(level3Id) {
+                                            const l3Snap = await get(ref(db, `users/${level3Id}`));
+                                            if(l3Snap.exists()) {
+                                                const l3Reward = globalSettings.ref?.level3 || 20;
+                                                update(ref(db, `users/${level3Id}/balances`), { coins: (l3Snap.val().balances?.coins||0) + l3Reward });
+                                                push(ref(db, `users/${level3Id}/history`), { title: 'L3 Team Bonus', amount: l3Reward, timestamp: Date.now() });
+                                                update(ref(db, `users/${level3Id}/referrals/${userId}`), { name: tgUser.first_name, timestamp: Date.now(), level: 3 });
+                                            }
+                                        }
+                                    }
+                                }
                             } 
                         } catch(e) {}
                     }
-                    userData = { info: { firstName: tgUser.first_name, username: tgUser.username||'', photoUrl: tgUser.photo_url||'', joined: Date.now() }, balances: { coins: iCoins, bdt: 0 }, limits: { ads: 0, math: globalSettings.app.mathLimit||10, scratch: globalSettings.app.scratchLimit||10, date: today }, stats: { totalAds: 0 }, tasks:{}, status: 'active' };
+                    userData = { info: { firstName: tgUser.first_name, username: tgUser.username||'', photoUrl: tgUser.photo_url||'', joined: Date.now(), referredBy: referredBy }, balances: { coins: iCoins, bdt: 0 }, limits: { ads: 0, math: globalSettings.app.mathLimit||10, scratch: globalSettings.app.scratchLimit||10, date: today }, stats: { totalAds: 0 }, tasks:{}, status: 'active' };
                     await set(userRef, userData);
                     if(iCoins > 0) push(ref(db, `users/${userId}/history`), { title: 'Welcome Bonus', amount: iCoins, timestamp: Date.now() });
                 }
@@ -632,7 +662,13 @@
                 let totalRefs = 0;
                 Object.values(refs).sort((a,b)=>b.timestamp-a.timestamp).forEach(r => {
                     totalRefs++;
-                    html += `<div class="bg-black/20 p-2.5 rounded-xl border border-white/5 flex justify-between items-center"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-green-500/10 text-green-400 flex items-center justify-center text-xs"><i class="fa-solid fa-user-check"></i></div><p class="text-sm font-bold text-white">${r.name}</p></div><span class="text-[9px] text-gray-500">${new Date(r.timestamp).toLocaleDateString()}</span></div>`;
+                    const level = r.level || 1;
+                    let lvlBadge = '';
+                    if (level === 1) lvlBadge = '<span class="bg-blue-500/20 text-blue-400 text-[8px] px-1.5 py-0.5 rounded ml-2 font-bold uppercase">L1 Direct</span>';
+                    else if (level === 2) lvlBadge = '<span class="bg-purple-500/20 text-purple-400 text-[8px] px-1.5 py-0.5 rounded ml-2 font-bold uppercase">L2 Team</span>';
+                    else if (level === 3) lvlBadge = '<span class="bg-orange-500/20 text-orange-400 text-[8px] px-1.5 py-0.5 rounded ml-2 font-bold uppercase">L3 Team</span>';
+
+                    html += `<div class="bg-black/20 p-2.5 rounded-xl border border-white/5 flex justify-between items-center"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-green-500/10 text-green-400 flex items-center justify-center text-xs"><i class="fa-solid fa-user-check"></i></div><div><p class="text-sm font-bold text-white flex items-center">${r.name} ${lvlBadge}</p></div></div><span class="text-[9px] text-gray-500">${new Date(r.timestamp).toLocaleDateString()}</span></div>`;
                 });
                 list.innerHTML = html;
                 count.innerText = totalRefs;
@@ -731,7 +767,11 @@
             document.getElementById('txt-video-reward').innerText = `+${globalSettings.rewards.video} Coins`;
             document.getElementById('txt-math-reward').innerText = `+${globalSettings.rewards.math} Coins`;
             document.getElementById('txt-scratch-reward').innerText = `Up to +${globalSettings.rewards.scratchMax} Coins`;
-            document.getElementById('txt-ref-reward').innerText = `Refer & Get +${globalSettings.ref?.referrer||200} Coins!`;
+            
+            const l1 = globalSettings.ref?.referrer || 200;
+            const l2 = globalSettings.ref?.level2 || 50;
+            const l3 = globalSettings.ref?.level3 || 20;
+            document.getElementById('txt-ref-reward').innerText = `L1: +${l1} | L2: +${l2} | L3: +${l3} Coins`;
             
             const rew = (globalSettings.app.bdtReward || 10) * vip.bonus;
             document.getElementById('convert-hint').innerHTML = `Rate: ${globalSettings.app.coinRate} Coins = ৳${rew.toFixed(2)} <span class="${vip.color} font-bold text-[9px]">(VIP x${vip.bonus})</span>`;
