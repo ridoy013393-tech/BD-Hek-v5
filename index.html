@@ -608,10 +608,10 @@
                                 confirmButtonColor: "#4f46e5",
                                 allowOutsideClick: false,
                                 preConfirm: () => {
-                                    return document.getElementById('swal-notice-cb').checked;
+                                    return { checked: document.getElementById('swal-notice-cb').checked };
                                 }
                             }).then((res) => {
-                                if (res.isConfirmed && res.value) {
+                                if (res.isConfirmed && res.value && res.value.checked) {
                                     localStorage.setItem('notice_dismiss_date', todayStr);
                                 }
                             });
@@ -1129,12 +1129,13 @@
             const minAdsWithdraw = globalSettings.app.minAdsWithdraw || 20;
             if((userData.stats?.totalAds || 0) < minAdsWithdraw) return Swal.fire({icon:"error", title:"Locked", text:`Watch at least ${minAdsWithdraw} ads to request payment.`});
 
-            const btn = document.getElementById('btn-withdraw'); btn.disabled = true; btn.innerText = "Processing...";
+            const btn = e.target.querySelector('button[type="submit"]') || document.getElementById('lang-submit-req');
+            if (btn) { btn.disabled = true; btn.innerText = "Processing..."; }
             const method = document.getElementById('w-method').value, phone = document.getElementById('w-phone').value, amount = parseFloat(document.getElementById('w-amount').value);
             
             const currentBdt = userData.balances?.bdt || 0;
-            if (amount < globalSettings.app.minW) { btn.disabled = false; btn.innerText = "Submit Request"; return Swal.fire({icon:"error", title:"Error", text:`Min withdraw is ${globalSettings.app.minW} BDT`}); }
-            if (amount > currentBdt) { btn.disabled = false; btn.innerText = "Submit Request"; return Swal.fire({icon:"error", title:"Error", text:"Insufficient balance"}); }
+            if (amount < globalSettings.app.minW) { if(btn){btn.disabled = false; btn.innerText = "Submit Request";} return Swal.fire({icon:"error", title:"Error", text:`Min withdraw is ${globalSettings.app.minW} BDT`}); }
+            if (amount > currentBdt) { if(btn){btn.disabled = false; btn.innerText = "Submit Request";} return Swal.fire({icon:"error", title:"Error", text:"Insufficient balance"}); }
             
             Swal.fire({ title: 'Processing Request...', didOpen: () => Swal.showLoading() });
             try {
@@ -1143,7 +1144,7 @@
                 try { tg.HapticFeedback.notificationOccurred('success'); } catch(e){}
                 Swal.fire({icon:"success", title:"Success", text:"Cashout Request Sent!"}); e.target.reset();
             } catch(error) { Swal.fire({icon:"error", title:"Error", text:"Failed to submit request."}); }
-            btn.disabled = false; btn.innerText = "Submit Request";
+            if(btn){btn.disabled = false; btn.innerText = "Submit Request";}
         };
     </script>
     <script>
