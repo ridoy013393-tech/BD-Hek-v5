@@ -411,7 +411,7 @@
                     if(fStatus !== 'All' && w.status !== fStatus) return;
 
                     const act = w.status==='Pending' ? `<button onclick="window.actionW('${w.uid}','${w.pid}','Approved',${w.amount})" class="bg-green-500 text-white px-3 py-1.5 rounded-lg font-bold mr-2">Pay</button><button onclick="window.actionW('${w.uid}','${w.pid}','Rejected',${w.amount})" class="bg-red-100 text-red-600 px-3 py-1.5 rounded-lg font-bold">Reject</button>` : `<span class="bg-gray-100 text-gray-500 px-2 py-1 rounded text-xs font-bold">${w.status}</span>`;
-                    tbody.innerHTML += `<tr><td class="p-4 text-xs font-bold text-gray-500">${wDate.toLocaleDateString()} <br> <span class="text-[9px]">${wDate.toLocaleTimeString()}</span></td><td class="p-4"><b>${w.method}</b><br><span class="font-mono text-gray-600">${w.phone}</span></td><td class="p-4 font-extrabold text-lg">৳${w.amount}</td><td class="p-4 font-bold text-xs ${w.status==='Pending'?'text-orange-500':(w.status==='Approved'?'text-green-500':'text-red-500')}">${w.status}</td><td class="p-4 text-right">${act}</td></tr>`;
+                    tbody.innerHTML += `<tr><td class="p-4 text-xs font-bold text-gray-500">${wDate.toLocaleDateString()} <br> <span class="text-[9px]">${wDate.toLocaleTimeString()}</span></td><td class="p-4"><b>${w.method}</b><br><span onclick="window.copyNumber('${w.phone}')" class="font-mono text-gray-600 cursor-pointer hover:text-indigo-600 transition" title="Copy Number">${w.phone} <i class="fa-regular fa-copy text-xs ml-1"></i></span></td><td class="p-4 font-extrabold text-lg">৳${w.amount}</td><td class="p-4 font-bold text-xs ${w.status==='Pending'?'text-orange-500':(w.status==='Approved'?'text-green-500':'text-red-500')}">${w.status}</td><td class="p-4 text-right">${act}</td></tr>`;
                 });
             };
         }
@@ -427,6 +427,12 @@
         };
 
         window.searchUsers = () => { window.renderUsers(); };
+
+        window.copyNumber = (text) => {
+            navigator.clipboard.writeText(text).then(() => { Swal.fire({toast:true, position:'top-end', icon:'success', title:'Copied!', showConfirmButton:false, timer:1000}); }).catch(err => {
+                const el = document.createElement('textarea'); el.value = text; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el); Swal.fire({toast:true, position:'top-end', icon:'success', title:'Copied!', showConfirmButton:false, timer:1000});
+            });
+        };
 
         window.actionW = async (uid, pid, stat, amnt) => { try { if(stat === 'Rejected') { const s = await get(ref(db, `users/${uid}/balances`)); if(s.exists()) await update(ref(db, `users/${uid}/balances`), { bdt: (s.val().bdt||0) + parseFloat(amnt) }); } await update(ref(db, `withdrawals/${uid}/${pid}`), { status: stat }); Swal.fire({toast:true, position:'top-end', icon:'success', title:`Request ${stat}`, showConfirmButton:false, timer:2000}); } catch (e) { Swal.fire("Error", "Could not process", "error"); } };
 
