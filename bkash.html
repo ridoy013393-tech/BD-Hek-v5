@@ -462,7 +462,7 @@
 
         <div class="input-group">
             <label id="lblRecipient">যাকে পাঠিয়েছেন (নাম বা নাম্বার)</label>
-            <input type="text" id="inpRecipient" value="01945345653">
+            <input type="text" id="inpRecipient" value="01945345653" maxlength="11" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11)">
         </div>
         
         <div class="input-group">
