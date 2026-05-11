@@ -77,7 +77,7 @@
                 </div>
                 <div class="bg-white rounded-3xl shadow-sm border overflow-x-auto">
                     <table class="w-full text-left border-collapse text-sm whitespace-nowrap">
-                        <thead class="bg-gray-50/80 border-b"><tr class="text-gray-500 text-xs uppercase"><th class="p-4 font-bold">User</th><th class="p-4 font-bold">Joined</th><th class="p-4 font-bold">Ads Watched</th><th class="p-4 font-bold">Balances</th><th class="p-4 font-bold">Status</th><th class="p-4 font-bold text-right">Actions</th></tr></thead>
+                        <thead class="bg-gray-50/80 border-b"><tr class="text-gray-500 text-xs uppercase"><th class="p-4 font-bold">User</th><th class="p-4 font-bold">Joined</th><th class="p-4 font-bold">Ads Watched</th><th class="p-4 font-bold">Referrals</th><th class="p-4 font-bold">Balances</th><th class="p-4 font-bold">Status</th><th class="p-4 font-bold text-right">Actions</th></tr></thead>
                         <tbody id="users-table-body" class="divide-y divide-gray-50"></tbody>
                     </table>
                 </div>
@@ -122,10 +122,10 @@
                         <div id="sc-general" class="set-content active space-y-6">
                             <div>
                                 <h3 class="text-sm font-extrabold text-indigo-600 mb-3 uppercase">Withdraw Setup</h3>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div><label class="block text-xs font-bold text-gray-700 mb-1">Min Withdraw (Taka)</label><input type="number" id="s-minW" class="w-full p-3 border rounded-xl bg-gray-50 font-bold"></div>
-                                    <div><label class="block text-xs font-bold text-gray-700 mb-1">Referral Turnover</label><input type="number" id="s-refTurnover" class="w-full p-3 border rounded-xl bg-gray-50 font-bold"></div>
-                                    <div><label class="block text-xs font-bold text-gray-700 mb-1">Activation Ads Required</label><input type="number" id="s-activationAds" class="w-full p-3 border rounded-xl bg-gray-50 font-bold"></div>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div><label class="block text-xs font-bold text-gray-700 mb-1">Min Withdraw (Taka)</label><input type="number" id="s-minW" class="w-full p-3 border rounded-xl bg-gray-50 font-bold" placeholder="e.g. 50"></div>
+                                    <div><label class="block text-xs font-bold text-gray-700 mb-1">Referral Turnover (Target)</label><input type="number" id="s-refTurnover" class="w-full p-3 border rounded-xl bg-gray-50 font-bold" placeholder="e.g. 5"></div>
+                                    <div><label class="block text-xs font-bold text-gray-700 mb-1">Activation Ads Required</label><input type="number" id="s-activationAds" class="w-full p-3 border rounded-xl bg-gray-50 font-bold" placeholder="e.g. 10"></div>
                                 </div>
                             </div>
                             <div>
@@ -374,7 +374,7 @@
                     
                     const totalRefs = u?.referrals ? Object.values(u.referrals).filter(r => r.level === 1).length : 0;
 
-                    tbody.innerHTML += `<tr class="user-row"><td class="p-4 font-bold"><div class="flex flex-col"><span>${name}</span><span class="text-[10px] text-gray-400 font-mono">UID: ${u.uid}</span></div></td><td class="p-4 text-xs font-bold text-gray-500">${joinedText}</td><td class="p-4 font-bold text-indigo-500">${totalAds} Ads <br><span class="text-[10px] text-gray-500">Refs: ${totalRefs}</span></td><td class="p-4 font-bold text-gray-700">৳${(u?.balances?.bdt||0).toFixed(2)}</td><td class="p-4">${isBan ? '<span class="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-bold">Banned</span>' : '<span class="bg-green-100 text-green-600 px-2 py-1 rounded text-xs font-bold">Active</span>'}</td><td class="p-4 text-right"><button onclick="window.editBalance('${u.uid}', ${u?.balances?.bdt||0})" class="bg-blue-100 text-blue-600 hover:bg-blue-500 hover:text-white transition px-3 py-1.5 rounded-lg font-bold shadow-sm mr-2 text-xs"><i class="fa-solid fa-pen"></i> Taka</button><button onclick="window.toggleBan('${u.uid}', ${isBan})" class="${isBan ? 'bg-green-500' : 'bg-red-500'} text-white px-3 py-1.5 rounded-lg font-bold shadow-sm text-xs w-20">${isBan?'Unban':'Ban User'}</button></td></tr>`;
+                    tbody.innerHTML += `<tr class="user-row"><td class="p-4 font-bold"><div class="flex flex-col"><span>${name}</span><span class="text-[10px] text-gray-400 font-mono">UID: ${u.uid}</span></div></td><td class="p-4 text-xs font-bold text-gray-500">${joinedText}</td><td class="p-4 font-bold text-indigo-500">${totalAds} Ads</td><td class="p-4 font-bold text-blue-500">${totalRefs} Refs</td><td class="p-4 font-bold text-gray-700">৳${(u?.balances?.bdt||0).toFixed(2)}</td><td class="p-4">${isBan ? '<span class="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-bold">Banned</span>' : '<span class="bg-green-100 text-green-600 px-2 py-1 rounded text-xs font-bold">Active</span>'}</td><td class="p-4 text-right"><button onclick="window.editBalance('${u.uid}', ${u?.balances?.bdt||0})" class="bg-blue-100 text-blue-600 hover:bg-blue-500 hover:text-white transition px-3 py-1.5 rounded-lg font-bold shadow-sm mr-2 text-xs"><i class="fa-solid fa-pen"></i> Taka</button><button onclick="window.toggleBan('${u.uid}', ${isBan})" class="${isBan ? 'bg-green-500' : 'bg-red-500'} text-white px-3 py-1.5 rounded-lg font-bold shadow-sm text-xs w-20">${isBan?'Unban':'Ban User'}</button></td></tr>`;
                 });
             };
 
