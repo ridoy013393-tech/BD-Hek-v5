@@ -956,10 +956,33 @@
                 dText.innerText = `LOCKED: Watch ${minAdsDaily - todayWatched} more ads`; dText.className = "text-[10px] font-bold text-red-400 mt-1";
             } else { dText.innerText = `UNLOCKED: Ready to claim!`; dText.className = "text-[10px] font-bold text-green-400 mt-1"; }
 
-            if(totalWatched < minAdsWithdraw) {
+            const refTurnover = globalSettings.app.refTurnover || 0;
+            let currentRefs = 0;
+            if (userData.referrals) {
+                currentRefs = Object.values(userData.referrals).filter(r => r.level === 1).length;
+            }
+
+            let lockReasons = [];
+            if (totalWatched < minAdsWithdraw) {
+                lockReasons.push(window.currentLang === 'en' ? `Watch ${minAdsWithdraw} Ads (Current: ${totalWatched})` : `${minAdsWithdraw} অ্যাড দেখুন (বর্তমান: ${totalWatched})`);
+            }
+            if (currentRefs < refTurnover) {
+                lockReasons.push(window.currentLang === 'en' ? `Need ${refTurnover} Direct Referrals (Current: ${currentRefs})` : `${refTurnover} ডিরেক্ট রেফারেল প্রয়োজন (বর্তমান: ${currentRefs})`);
+            }
+
+            if (lockReasons.length > 0) {
                 document.getElementById('withdraw-notice').classList.remove('hidden');
-                document.getElementById('req-ads-w').innerText = minAdsWithdraw; document.getElementById('done-ads-w').innerText = totalWatched;
-            } else { document.getElementById('withdraw-notice').classList.add('hidden'); }
+                document.getElementById('withdraw-notice').innerHTML = `
+                    <div class="flex items-start gap-3">
+                        <i class="fa-solid fa-lock text-lg mt-0.5"></i>
+                        <div>
+                            <p class="font-bold mb-1">${window.currentLang === 'en' ? 'Withdrawal Locked' : 'উইথড্র লক করা'}</p>
+                            <p class="opacity-80 leading-relaxed text-[11px]">${lockReasons.join('<br>')}</p>
+                        </div>
+                    </div>`;
+            } else { 
+                document.getElementById('withdraw-notice').classList.add('hidden'); 
+            }
 
             const stContainer = document.getElementById('social-tasks-container');
             stContainer.innerHTML = '';
