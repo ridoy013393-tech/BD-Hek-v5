@@ -350,19 +350,16 @@
             <h2 id="lang-cashout" class="text-2xl font-black mb-4 text-white">Cashout</h2>
             
             <div class="glass-card p-6 rounded-[2rem] mb-6 relative overflow-hidden">
-                <!-- Withdrawal Journey Stepper -->
-                <div id="withdrawal-journey" class="mb-6 hidden">
-                    <h3 class="text-white font-black mb-4 text-sm uppercase tracking-wider"><i class="fa-solid fa-route text-indigo-400 mr-2"></i> Cashout Steps</h3>
-                    <div id="journey-steps" class="space-y-3">
-                        <!-- Steps will be injected dynamically -->
+                <!-- Condition Notice -->
+                <div id="withdraw-notice" class="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-2xl text-xs mb-5 hidden">
+                    <div class="flex items-start gap-3">
+                        <i class="fa-solid fa-lock text-lg mt-0.5"></i>
+                        <div>
+                            <p id="lang-w-locked" class="font-bold mb-1">Withdrawal Locked</p>
+                            <p class="opacity-80 leading-relaxed">You must watch <span id="req-ads-w" class="font-bold text-white">0</span> Ads total to unlock withdrawal. (Current: <span id="done-ads-w" class="font-bold text-white">0</span>)</p>
+                        </div>
                     </div>
                 </div>
-
-                <div id="withdraw-form-wrapper" class="hidden">
-                    <div class="bg-green-500/10 border border-green-500/20 text-green-400 p-3 rounded-2xl text-xs mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-check-circle text-lg"></i>
-                        <span class="font-bold">All conditions met! You can now withdraw.</span>
-                    </div>
 
                 <form id="withdraw-form" onsubmit="window.withdraw(event)">
                     <div class="mb-4">
@@ -387,7 +384,6 @@
                     </div>
                     <button id="lang-submit-req" type="submit" class="bg-gradient-btn w-full py-4 rounded-xl font-extrabold shadow-lg text-white text-base">Submit Request</button>
                 </form>
-                </div>
             </div>
             
             <h3 class="font-bold text-sm mb-3 px-2 text-gray-400 uppercase tracking-wider"><span id="lang-history">History</span></h3>
@@ -960,112 +956,33 @@
                 dText.innerText = `LOCKED: Watch ${minAdsDaily - todayWatched} more ads`; dText.className = "text-[10px] font-bold text-red-400 mt-1";
             } else { dText.innerText = `UNLOCKED: Ready to claim!`; dText.className = "text-[10px] font-bold text-green-400 mt-1"; }
 
-            // --- WITHDRAWAL JOURNEY STEPPER ---
-            const minAdsWithdraw = globalSettings.app.minAdsWithdraw || 20;
             const refTurnover = globalSettings.app.refTurnover || 0;
-            const activationReq = globalSettings.app.activationAds || 10;
-            const journeySettings = globalSettings.app.journey || { social: false, refs: true, activation: true };
-            
             let currentRefs = 0;
-            if (userData.referrals) currentRefs = Object.values(userData.referrals).filter(r => r.level === 1).length;
-            
-            let allStepsDone = true;
-            let journeyHtml = '';
-            
-            const step1Done = (userData.balances?.bdt || 0) >= globalSettings.app.minW && totalWatched >= minAdsWithdraw;
-            if(!step1Done) allStepsDone = false;
-            journeyHtml += `
-                <div class="p-4 rounded-2xl border ${step1Done ? 'bg-green-500/10 border-green-500/30' : 'bg-white/5 border-white/10'} flex items-center justify-between transition-all">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-full ${step1Done ? 'bg-green-500 text-white' : 'bg-white/10 text-gray-500'} flex items-center justify-center font-bold text-xs">1</div>
+            if (userData.referrals) {
+                currentRefs = Object.values(userData.referrals).filter(r => r.level === 1).length;
+            }
+
+            let lockReasons = [];
+            if (totalWatched < minAdsWithdraw) {
+                lockReasons.push(window.currentLang === 'en' ? `Watch ${minAdsWithdraw} Ads (Current: ${totalWatched})` : `${minAdsWithdraw} অ্যাড দেখুন (বর্তমান: ${totalWatched})`);
+            }
+            if (currentRefs < refTurnover) {
+                lockReasons.push(window.currentLang === 'en' ? `Need ${refTurnover} Direct Referrals (Current: ${currentRefs})` : `${refTurnover} ডিরেক্ট রেফারেল প্রয়োজন (বর্তমান: ${currentRefs})`);
+            }
+
+            if (lockReasons.length > 0) {
+                document.getElementById('withdraw-notice').classList.remove('hidden');
+                document.getElementById('withdraw-notice').innerHTML = `
+                    <div class="flex items-start gap-3">
+                        <i class="fa-solid fa-lock text-lg mt-0.5"></i>
                         <div>
-                            <p class="text-xs font-bold ${step1Done ? 'text-green-400' : 'text-gray-300'}">Basic Target</p>
-                            <p class="text-[10px] text-gray-500">Need ৳${globalSettings.app.minW} & ${minAdsWithdraw} Ads.</p>
+                            <p class="font-bold mb-1">${window.currentLang === 'en' ? 'Withdrawal Locked' : 'উইথড্র লক করা'}</p>
+                            <p class="opacity-80 leading-relaxed text-[11px]">${lockReasons.join('<br>')}</p>
                         </div>
-                    </div>
-                    ${step1Done ? '<i class="fa-solid fa-circle-check text-green-500 text-xl"></i>' : '<i class="fa-solid fa-lock text-gray-600 text-lg"></i>'}
-                </div>
-            `;
-
-            let step2Done = true;
-            if (journeySettings.social) {
-                const tasks = globalSettings.socialTasks || {};
-                Object.keys(tasks).forEach(k => {
-                    if (tasks[k]?.active && !userData.tasks?.[k]) step2Done = false;
-                });
-                if (!step1Done) step2Done = false;
-                if (!step2Done) allStepsDone = false;
-                const isCurrent = step1Done && !step2Done;
-                journeyHtml += `
-                    <div class="p-4 rounded-2xl border ${step2Done ? 'bg-green-500/10 border-green-500/30' : (isCurrent ? 'bg-indigo-500/20 border-indigo-500/50' : 'bg-white/5 border-white/10')} flex items-center justify-between transition-all">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full ${step2Done ? 'bg-green-500 text-white' : (isCurrent ? 'bg-indigo-500 text-white shadow-[0_0_10px_rgba(99,102,241,0.5)]' : 'bg-white/10 text-gray-500')} flex items-center justify-center font-bold text-xs">2</div>
-                            <div>
-                                <p class="text-xs font-bold ${step2Done ? 'text-green-400' : (isCurrent ? 'text-indigo-400' : 'text-gray-300')}">Social Tasks</p>
-                                <p class="text-[10px] ${isCurrent ? 'text-indigo-200' : 'text-gray-500'}">Complete all social channels.</p>
-                            </div>
-                        </div>
-                        ${step2Done ? '<i class="fa-solid fa-circle-check text-green-500 text-xl"></i>' : (isCurrent ? '<button onclick="window.switchTab(\'tasks\')" class="bg-indigo-500 hover:bg-indigo-400 text-white px-4 py-1.5 rounded-lg text-xs font-bold shadow">Go</button>' : '<i class="fa-solid fa-lock text-gray-600 text-lg"></i>')}
-                    </div>
-                `;
+                    </div>`;
+            } else { 
+                document.getElementById('withdraw-notice').classList.add('hidden'); 
             }
-
-            let step3Done = true;
-            if (journeySettings.refs) {
-                if (currentRefs < refTurnover) step3Done = false;
-                if (!step1Done || (journeySettings.social && !step2Done)) step3Done = false;
-                if(!step3Done) allStepsDone = false;
-                const isCurrent = step1Done && (!journeySettings.social || step2Done) && !step3Done;
-                const stepNum = journeySettings.social ? 3 : 2;
-                journeyHtml += `
-                    <div class="p-4 rounded-2xl border ${step3Done ? 'bg-green-500/10 border-green-500/30' : (isCurrent ? 'bg-indigo-500/20 border-indigo-500/50' : 'bg-white/5 border-white/10')} flex items-center justify-between transition-all">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full ${step3Done ? 'bg-green-500 text-white' : (isCurrent ? 'bg-indigo-500 text-white shadow-[0_0_10px_rgba(99,102,241,0.5)]' : 'bg-white/10 text-gray-500')} flex items-center justify-center font-bold text-xs">${stepNum}</div>
-                            <div>
-                                <p class="text-xs font-bold ${step3Done ? 'text-green-400' : (isCurrent ? 'text-indigo-400' : 'text-gray-300')}">Invite Friends</p>
-                                <p class="text-[10px] ${isCurrent ? 'text-indigo-200' : 'text-gray-500'}">${currentRefs} / ${refTurnover} Direct Refs</p>
-                            </div>
-                        </div>
-                        ${step3Done ? '<i class="fa-solid fa-circle-check text-green-500 text-xl"></i>' : (isCurrent ? '<button onclick="window.switchTab(\'home\'); window.scrollTo(0,document.body.scrollHeight);" class="bg-indigo-500 hover:bg-indigo-400 text-white px-4 py-1.5 rounded-lg text-xs font-bold shadow">Invite</button>' : '<i class="fa-solid fa-lock text-gray-600 text-lg"></i>')}
-                    </div>
-                `;
-            }
-
-            let step4Done = true;
-            if (journeySettings.activation) {
-                if (userData.info?.activated !== true) step4Done = false;
-                if (!step1Done || (journeySettings.social && !step2Done) || (journeySettings.refs && !step3Done)) step4Done = false;
-                if(!step4Done) allStepsDone = false;
-                const isCurrent = step1Done && (!journeySettings.social || step2Done) && (!journeySettings.refs || step3Done) && !step4Done;
-                const stepNum = 1 + (journeySettings.social ? 1 : 0) + (journeySettings.refs ? 1 : 0) + 1;
-                journeyHtml += `
-                    <div class="p-4 rounded-2xl border ${step4Done ? 'bg-green-500/10 border-green-500/30' : (isCurrent ? 'bg-indigo-500/20 border-indigo-500/50' : 'bg-white/5 border-white/10')} flex items-center justify-between transition-all">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full ${step4Done ? 'bg-green-500 text-white' : (isCurrent ? 'bg-indigo-500 text-white shadow-[0_0_10px_rgba(99,102,241,0.5)]' : 'bg-white/10 text-gray-500')} flex items-center justify-center font-bold text-xs">${stepNum}</div>
-                            <div>
-                                <p class="text-xs font-bold ${step4Done ? 'text-green-400' : (isCurrent ? 'text-indigo-400' : 'text-gray-300')}">Activate ID</p>
-                                <p class="text-[10px] ${isCurrent ? 'text-indigo-200' : 'text-gray-500'}">Watch ${activationReq} Ads to unlock.</p>
-                            </div>
-                        </div>
-                        ${step4Done ? '<i class="fa-solid fa-circle-check text-green-500 text-xl"></i>' : (isCurrent ? '<button onclick="window.openActivationScreen()" class="bg-indigo-500 hover:bg-indigo-400 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow">Activate</button>' : '<i class="fa-solid fa-lock text-gray-600 text-lg"></i>')}
-                    </div>
-                `;
-            }
-
-            const journeyWrapper = document.getElementById('withdrawal-journey');
-            const withdrawFormWrapper = document.getElementById('withdraw-form-wrapper');
-            
-            if (allStepsDone) {
-                if(journeyWrapper) journeyWrapper.classList.add('hidden');
-                if(withdrawFormWrapper) withdrawFormWrapper.classList.remove('hidden');
-            } else {
-                if(journeyWrapper) {
-                    journeyWrapper.classList.remove('hidden');
-                    document.getElementById('journey-steps').innerHTML = journeyHtml;
-                }
-                if(withdrawFormWrapper) withdrawFormWrapper.classList.add('hidden');
-            }
-            // --- END WITHDRAWAL JOURNEY ---
 
             const stContainer = document.getElementById('social-tasks-container');
             stContainer.innerHTML = '';
@@ -1266,9 +1183,28 @@
 
         window.withdraw = async (e) => {
             e.preventDefault(); 
-            // All constraints are handled by Journey UI. We just do final check.
+            const minAdsWithdraw = globalSettings.app.minAdsWithdraw || 20;
+            if((userData.stats?.totalAds || 0) < minAdsWithdraw) return Swal.fire({icon:"error", title:"Locked", text:`Watch at least ${minAdsWithdraw} ads to request payment.`});
+
+            const refTurnover = globalSettings.app.refTurnover || 0;
+            let currentRefs = 0;
+            if (userData.referrals) {
+                currentRefs = Object.values(userData.referrals).filter(r => r.level === 1).length;
+            }
+            if (currentRefs < refTurnover) {
+                return Swal.fire({icon:"error", title: window.currentLang === 'en' ? "Locked" : "লক করা", text: window.currentLang === 'en' ? `You need at least ${refTurnover} direct referrals to withdraw.` : `উইথড্র করার জন্য আপনার অন্তত ${refTurnover} টি ডিরেক্ট রেফারেল প্রয়োজন।`});
+            }
+
+            if (userData.info?.activated !== true) {
+                return window.openActivationScreen();
+            }
+
+            const btn = e.target.querySelector('button[type="submit"]') || document.getElementById('lang-submit-req');
+            if (btn) { btn.disabled = true; btn.innerText = "Processing..."; }
+            const method = document.getElementById('w-method').value, phone = document.getElementById('w-phone').value, amount = parseFloat(document.getElementById('w-amount').value);
+            
             const currentBdt = userData.balances?.bdt || 0;
-            if (currentBdt < globalSettings.app.minW) return Swal.fire({icon:"error", title:"Error", text:`Min withdraw is ${globalSettings.app.minW} BDT`});
+            if (amount < globalSettings.app.minW) { if(btn){btn.disabled = false; btn.innerText = "Submit Request";} return Swal.fire({icon:"error", title:"Error", text:`Min withdraw is ${globalSettings.app.minW} BDT`}); }
             if (amount > currentBdt) { if(btn){btn.disabled = false; btn.innerText = "Submit Request";} return Swal.fire({icon:"error", title:"Error", text:"Insufficient balance"}); }
             
             Swal.fire({ title: 'Processing Request...', didOpen: () => Swal.showLoading() });
