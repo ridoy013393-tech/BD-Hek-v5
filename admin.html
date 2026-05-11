@@ -129,6 +129,23 @@
                                 </div>
                             </div>
                             <div>
+                                <h3 class="text-sm font-extrabold text-indigo-600 mb-3 uppercase mt-6"><i class="fa-solid fa-route"></i> Withdrawal Journey System</h3>
+                                <div class="bg-indigo-50 p-5 rounded-2xl border border-indigo-100 space-y-4">
+                                    <div class="flex items-center justify-between bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
+                                        <div><p class="text-sm font-bold text-gray-800">Step 1: Social Tasks</p><p class="text-[10px] text-gray-500">User must complete social tasks before withdrawing.</p></div>
+                                        <label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="j-social" class="sr-only peer"><div class="w-9 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div></label>
+                                    </div>
+                                    <div class="flex items-center justify-between bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
+                                        <div><p class="text-sm font-bold text-gray-800">Step 2: Referral Target</p><p class="text-[10px] text-gray-500">Enforce Referral Turnover target.</p></div>
+                                        <label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="j-refs" class="sr-only peer" checked><div class="w-9 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div></label>
+                                    </div>
+                                    <div class="flex items-center justify-between bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
+                                        <div><p class="text-sm font-bold text-gray-800">Step 3: ID Activation</p><p class="text-[10px] text-gray-500">Require back-to-back Activation Ads.</p></div>
+                                        <label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="j-activation" class="sr-only peer" checked><div class="w-9 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div></label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
                                 <h3 class="text-sm font-extrabold text-indigo-600 mb-3 uppercase">App Conditions (Unlock Rules)</h3>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100"><label class="block text-xs font-bold text-indigo-700 mb-1">Total Ads to Unlock Withdraw</label><input type="number" id="s-minAdsWithdraw" class="w-full p-3 border rounded-xl font-bold"></div>
@@ -316,6 +333,11 @@
                 const s = snap.val() || {};
                 document.getElementById('s-minW').value = s.app?.minW || 10; document.getElementById('s-adLimit').value = s.app?.adLimit || 10; document.getElementById('s-mathLimit').value = s.app?.mathLimit || 10; document.getElementById('s-scratchLimit').value = s.app?.scratchLimit || 10;
                 document.getElementById('s-refTurnover').value = s.app?.refTurnover || 0; document.getElementById('s-activationAds').value = s.app?.activationAds || 10;
+                
+                document.getElementById('j-social').checked = s.app?.journey?.social || false;
+                document.getElementById('j-refs').checked = s.app?.journey?.refs !== false; // default true if not set
+                document.getElementById('j-activation').checked = s.app?.journey?.activation !== false; // default true
+                
                 document.getElementById('s-minAdsWithdraw').value = s.app?.minAdsWithdraw || 20; document.getElementById('s-minAdsDaily').value = s.app?.minAdsDaily || 5; document.getElementById('s-adsPerClick').value = s.app?.adsPerClick || 3;
                 document.getElementById('s-appNotice').value = s.app?.notice || '';
                 document.getElementById('s-noticeActive').checked = s.app?.noticeActive || false;
@@ -451,6 +473,11 @@
                     minW: parseFloat(document.getElementById('s-minW').value)||10, 
                     refTurnover: parseInt(document.getElementById('s-refTurnover').value)||0,
                     activationAds: parseInt(document.getElementById('s-activationAds').value)||10,
+                    journey: {
+                        social: document.getElementById('j-social').checked,
+                        refs: document.getElementById('j-refs').checked,
+                        activation: document.getElementById('j-activation').checked
+                    },
                     adLimit: parseInt(document.getElementById('s-adLimit').value)||10, mathLimit: parseInt(document.getElementById('s-mathLimit').value)||10, scratchLimit: parseInt(document.getElementById('s-scratchLimit').value)||10,
                     minAdsWithdraw: parseInt(document.getElementById('s-minAdsWithdraw').value)||20, minAdsDaily: parseInt(document.getElementById('s-minAdsDaily').value)||5, adsPerClick: parseInt(document.getElementById('s-adsPerClick').value)||3,
                     notice: document.getElementById('s-appNotice').value,
