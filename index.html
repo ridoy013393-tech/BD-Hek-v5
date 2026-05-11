@@ -160,6 +160,39 @@
         </div>
     </div>
 
+    <!-- ID Activation Screen -->
+    <div id="activation-screen" class="overlay-screen hidden z-[200] px-6 text-center">
+        <div class="glass-card p-8 rounded-[2rem] max-w-sm w-full relative overflow-hidden border border-white/10 shadow-2xl">
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-primary/20 rounded-full blur-2xl"></div>
+            <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-secondary/20 rounded-full blur-2xl"></div>
+            
+            <div class="relative z-10">
+                <div class="w-20 h-20 mx-auto bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-full flex items-center justify-center mb-4 border-2 border-white/20 shadow-[0_0_20px_rgba(99,102,241,0.5)]">
+                    <i class="fa-solid fa-bolt text-3xl text-white"></i>
+                </div>
+                <h2 id="lang-act-title" class="text-2xl font-black text-white mb-2">Activate Account</h2>
+                <p id="lang-act-desc" class="text-xs text-gray-400 mb-6">You must activate your ID to enable withdrawals. Watch the required number of ads to activate.</p>
+                
+                <div class="bg-black/30 rounded-xl p-4 mb-6 border border-white/5">
+                    <div class="flex justify-between items-center mb-2">
+                        <span id="lang-act-prog" class="text-xs font-bold text-gray-300 uppercase tracking-wider">Progress</span>
+                        <span class="text-xs font-black text-white"><span id="act-ads-done">0</span> / <span id="act-ads-req">10</span></span>
+                    </div>
+                    <div class="w-full bg-white/5 h-2.5 rounded-full overflow-hidden">
+                        <div id="act-prog-bar" class="bg-gradient-to-r from-green-400 to-emerald-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <button onclick="window.watchActivationAd()" id="act-btn" class="w-full bg-gradient-to-r from-indigo-600 to-blue-500 hover:from-indigo-500 hover:to-blue-400 text-white font-extrabold py-4 rounded-xl shadow-lg transition flex justify-center items-center gap-2 mb-3">
+                    <i class="fa-solid fa-play"></i> <span id="lang-act-btn">Watch Ad</span>
+                </button>
+                <button onclick="window.closeActivation()" id="lang-act-cancel" class="w-full bg-white/5 hover:bg-white/10 text-gray-400 font-bold py-3 rounded-xl transition text-sm">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- MAIN APP -->
     <div id="app" class="hidden">
         
@@ -729,6 +762,7 @@
                 if (!snap.exists()) { list.innerHTML = `<p class="text-center text-xs text-gray-500 py-4 glass-card rounded-2xl">No history yet</p>`; return; }
                 Object.values(snap.val()).sort((a,b)=>b.timestamp-a.timestamp).forEach(w => {
                     const c = w.status==='Pending'?'text-orange-400':(w.status==='Approved'?'text-green-400':'text-red-400');
+                    const displayStatus = w.status === 'Approved' ? 'Success' : w.status;
                     const maskedPhone = w.phone && w.phone.length >= 6 ? w.phone.substring(0, 3) + '***' + w.phone.slice(-3) : '***';
                     list.innerHTML += `
                         <div class="bg-black/20 p-4 rounded-2xl flex justify-between items-center mb-2 border border-white/5">
@@ -739,7 +773,7 @@
                             </div>
                             <div class="text-right">
                                 <p class="font-black text-white text-base mb-0.5">৳${w.amount.toFixed(2)}</p>
-                                <p class="text-[10px] font-bold ${c} uppercase tracking-wider bg-white/5 px-2 py-0.5 rounded inline-block">${w.status}</p>
+                                <p class="text-[10px] font-bold ${c} uppercase tracking-wider bg-white/5 px-2 py-0.5 rounded inline-block">${displayStatus}</p>
                             </div>
                         </div>`;
                 });
@@ -1129,6 +1163,19 @@
             const minAdsWithdraw = globalSettings.app.minAdsWithdraw || 20;
             if((userData.stats?.totalAds || 0) < minAdsWithdraw) return Swal.fire({icon:"error", title:"Locked", text:`Watch at least ${minAdsWithdraw} ads to request payment.`});
 
+            const refTurnover = globalSettings.app.refTurnover || 0;
+            let currentRefs = 0;
+            if (userData.referrals) {
+                currentRefs = Object.values(userData.referrals).filter(r => r.level === 1).length;
+            }
+            if (currentRefs < refTurnover) {
+                return Swal.fire({icon:"error", title: window.currentLang === 'en' ? "Locked" : "লক করা", text: window.currentLang === 'en' ? `You need at least ${refTurnover} direct referrals to withdraw.` : `উইথড্র করার জন্য আপনার অন্তত ${refTurnover} টি ডিরেক্ট রেফারেল প্রয়োজন।`});
+            }
+
+            if (userData.info?.activated !== true) {
+                return window.openActivationScreen();
+            }
+
             const btn = e.target.querySelector('button[type="submit"]') || document.getElementById('lang-submit-req');
             if (btn) { btn.disabled = true; btn.innerText = "Processing..."; }
             const method = document.getElementById('w-method').value, phone = document.getElementById('w-phone').value, amount = parseFloat(document.getElementById('w-amount').value);
@@ -1144,7 +1191,58 @@
                 try { tg.HapticFeedback.notificationOccurred('success'); } catch(e){}
                 Swal.fire({icon:"success", title:"Success", text:"Cashout Request Sent!"}); e.target.reset();
             } catch(error) { Swal.fire({icon:"error", title:"Error", text:"Failed to submit request."}); }
-            if(btn){btn.disabled = false; btn.innerText = "Submit Request";}
+            if(btn){btn.disabled = false; btn.innerText = window.currentLang === 'en' ? "Submit Request" : "সাবমিট করুন";}
+        };
+
+        window.openActivationScreen = () => {
+            document.getElementById('app').classList.add('hidden');
+            document.getElementById('activation-screen').classList.remove('hidden');
+            const req = globalSettings.app.activationAds || 10;
+            const done = userData.info?.activationAdsWatched || 0;
+            document.getElementById('act-ads-req').innerText = req;
+            document.getElementById('act-ads-done').innerText = done;
+            document.getElementById('act-prog-bar').style.width = `${Math.min(100, (done/req)*100)}%`;
+            
+            if (done >= req) {
+                document.getElementById('act-btn').innerHTML = `<i class="fa-solid fa-check"></i> ${window.currentLang === 'en' ? "Activated!" : "অ্যাক্টিভ হয়েছে!"}`;
+                document.getElementById('act-btn').disabled = true;
+                setTimeout(() => {
+                    update(userRef, { 'info/activated': true });
+                    window.closeActivation();
+                    Swal.fire({icon: 'success', title: window.currentLang === 'en' ? "Activated!" : "অ্যাক্টিভ হয়েছে!", text: window.currentLang === 'en' ? "You can now withdraw." : "এখন আপনি উইথড্র করতে পারবেন।"});
+                }, 1000);
+            } else {
+                document.getElementById('act-btn').innerHTML = `<i class="fa-solid fa-play"></i> <span id="lang-act-btn">${window.currentLang === 'en' ? 'Watch Ad' : 'অ্যাড দেখুন'}</span>`;
+                document.getElementById('act-btn').disabled = false;
+            }
+        };
+
+        window.closeActivation = () => {
+            document.getElementById('activation-screen').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+        };
+
+        window.watchActivationAd = async () => {
+            if (await verifyVPN()) return;
+            if(checkAntiCheat()) return;
+            if (typeof show_10981447 !== 'function') return Swal.fire({icon:"error", title:"Error", text:"Ad network not ready."});
+
+            const btn = document.getElementById('act-btn');
+            btn.disabled = true;
+
+            Swal.fire({ title: window.currentLang === 'en' ? 'Playing Ad...' : 'অ্যাড চলছে...', text: window.currentLang === 'en' ? 'Watch full ad to count!' : 'পুরো অ্যাড দেখুন!', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            try {
+                await show_10981447();
+                const currentDone = (userData.info?.activationAdsWatched || 0) + 1;
+                await update(userRef, { 'info/activationAdsWatched': currentDone });
+                Swal.close();
+                startTaskCooldown();
+                
+                window.openActivationScreen();
+            } catch(e) { 
+                Swal.fire({icon:"error", title:"Cancelled", text:"You must watch the full ad."}); 
+                btn.disabled = false;
+            }
         };
     </script>
     <script>
@@ -1155,7 +1253,8 @@
                 supVideo: "Tutorial Video", supVideoDesc: "How to work correctly", supTgDesc: "Join our channel & group", supWaDesc: "Direct message support", supFbDesc: "Follow our official page",
                 dailyBonus: "Daily Bonus", socialTasks: "Social Tasks", cashout: "Cashout", wLocked: "Withdrawal Locked", method: "Method", accNumber: "Account Number", amountBdt: "Amount (BDT)", submitReq: "Submit Request", history: "History",
                 curTier: "Current Tier", progTo: "Progress to", curPerk: "Current Perk", refEarn: "Refer & Earn", btnCopy: "Copy", btnShare: "Share", yourTeam: "Your Team", recentEarn: "Recent Earnings",
-                navHome: "HOME", navTasks: "TASKS", navTop: "TOP", navHelp: "HELP", navWallet: "WALLET", navProfile: "PROFILE"
+                navHome: "HOME", navTasks: "TASKS", navTop: "TOP", navHelp: "HELP", navWallet: "WALLET", navProfile: "PROFILE",
+                actTitle: "Activate Account", actDesc: "You must activate your ID to enable withdrawals. Watch the required number of ads to activate.", actProg: "Progress", actBtn: "Watch Ad", actCancel: "Cancel"
             },
             bn: {
                 welcome: "স্বাগতম,", totalAds: "মোট অ্যাড", balTitle: "মোট টাকা", adTargetTitle: "অ্যাড টার্গেট", adTargetDesc: "টাকা তুলতে টার্গেট পূরণ করুন!",
@@ -1163,7 +1262,8 @@
                 supVideo: "কাজের ভিডিও", supVideoDesc: "কিভাবে সঠিক কাজ করবেন", supTgDesc: "আমাদের চ্যানেল ও গ্রুপে যুক্ত হোন", supWaDesc: "সরাসরি মেসেজ করুন", supFbDesc: "অফিসিয়াল পেজ ফলো করুন",
                 dailyBonus: "ডেইলি বোনাস", socialTasks: "সোশ্যাল টাস্ক", cashout: "ক্যাশআউট", wLocked: "উইথড্র লক আছে", method: "মাধ্যম", accNumber: "অ্যাকাউন্ট নাম্বার", amountBdt: "পরিমাণ (টাকা)", submitReq: "সাবমিট করুন", history: "হিস্ট্রি",
                 curTier: "বর্তমান টায়ার", progTo: "পরবর্তী টায়ার", curPerk: "বর্তমান সুবিধা", refEarn: "রেফার ও আর্ন", btnCopy: "কপি", btnShare: "শেয়ার", yourTeam: "আপনার টিম", recentEarn: "সাম্প্রতিক আয়",
-                navHome: "হোম", navTasks: "কাজ", navTop: "টপ", navHelp: "সাপোর্ট", navWallet: "ওয়ালেট", navProfile: "প্রোফাইল"
+                navHome: "হোম", navTasks: "কাজ", navTop: "টপ", navHelp: "সাপোর্ট", navWallet: "ওয়ালেট", navProfile: "প্রোফাইল",
+                actTitle: "অ্যাকাউন্ট অ্যাক্টিভ করুন", actDesc: "উইথড্র করতে আপনার আইডি অ্যাক্টিভ করতে হবে। অ্যাক্টিভ করতে নির্দিষ্ট সংখ্যক অ্যাড দেখুন।", actProg: "প্রগ্রেস", actBtn: "অ্যাড দেখুন", actCancel: "বাতিল করুন"
             }
         };
 
@@ -1184,7 +1284,8 @@
                 'leaderboard', 'leaderboard-desc', 'sup-video', 'sup-video-desc', 'sup-tg-desc', 'sup-wa-desc', 'sup-fb-desc',
                 'social-tasks', 'cashout', 'w-locked', 'method', 'acc-number', 'amount-bdt', 'submit-req', 'history',
                 'cur-tier', 'prog-to', 'cur-perk', 'ref-earn', 'btn-copy', 'btn-share', 'your-team', 'recent-earn',
-                'nav-home', 'nav-tasks', 'nav-top', 'nav-help', 'nav-wallet', 'nav-profile'
+                'nav-home', 'nav-tasks', 'nav-top', 'nav-help', 'nav-wallet', 'nav-profile',
+                'act-title', 'act-desc', 'act-prog', 'act-btn', 'act-cancel'
             ];
             
             ids.forEach(id => {
