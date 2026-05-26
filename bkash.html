@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MX Player Pro - HTML5 Bengali Transcriber</title>
+    <title>MX Player Pro - Ultimate Media Center</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
@@ -13,67 +13,167 @@
     <style>
         body {
             font-family: 'Hind Siliguri', sans-serif;
-            background-color: #080c14;
+            background-color: #0b0f19;
         }
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             height: 14px;
             width: 14px;
             border-radius: 50%;
-            background: #3b82f6;
+            background: #2563eb;
             cursor: pointer;
         }
         .subtitle-shadow {
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 1), -1px -1px 4px rgba(0, 0, 0, 1);
+            text-shadow: 2px 2px 4px rgba(0,0,0,1), -1px -1px 4px rgba(0,0,0,1);
         }
     </style>
 </head>
-<body class="text-slate-100 min-h-screen flex flex-col justify-between overflow-hidden select-none">
+<body class="text-slate-100 min-h-screen flex flex-col justify-between overflow-x-hidden select-none">
 
-    <!-- Screen 1: File Browser (With Video & SRT upload option) -->
-    <div id="fileBrowserScreen" class="flex-grow flex flex-col justify-center items-center p-4">
-        <div class="max-w-md w-full bg-slate-900 border border-slate-850 rounded-2xl p-6 md:p-8 shadow-2xl text-center">
-            
-            <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-blue-900/40">
-                <i data-lucide="play" class="w-8 h-8 text-white fill-white"></i>
-            </div>
-            <h1 class="text-2xl font-bold mb-2">এমএক্স প্লেয়ার আল্টিমেট</h1>
-            <p class="text-slate-400 text-sm mb-6">আপনার ডিভাইস থেকে যেকোনো ভিডিও ফাইল এবং (ঐচ্ছিক) সাবটাইটেল ফাইল লোড করুন।</p>
-            
-            <div class="space-y-4">
-                <!-- Video File Input -->
-                <div>
-                    <span class="block text-xs text-left text-slate-400 mb-1.5 font-semibold">১. ভিডিও ফাইল সিলেক্ট করুন:</span>
-                    <label class="block w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl cursor-pointer transition shadow-lg shadow-blue-600/20">
-                        <span id="videoBtnText">ভিডিও ফাইল ওপেন করুন</span>
-                        <input type="file" id="videoFileInput" accept="video/*" class="hidden">
-                    </label>
-                </div>
-
-                <!-- SRT File Input (Optional) -->
-                <div>
-                    <span class="block text-xs text-left text-slate-400 mb-1.5 font-semibold">২. সাবটাইটেল ফাইল সিলেক্ট করুন (ঐচ্ছিক):</span>
-                    <label class="block w-full bg-slate-800 hover:bg-slate-755 text-slate-300 font-semibold py-2 px-4 rounded-xl cursor-pointer border border-slate-700 transition">
-                        <span id="srtBtnText">.SRT ফাইল ওপেন করুন</span>
-                        <input type="file" id="srtFileInput" accept=".srt" class="hidden">
-                    </label>
-                </div>
-            </div>
-            
-            <div class="mt-8 pt-6 border-t border-slate-800 text-left text-xs text-slate-500 space-y-2">
-                <p class="flex items-center gap-2"><i data-lucide="smartphone" class="w-4 h-4 text-blue-500"></i> মোবাইলের মত স্ক্রিনে সোয়াইপ করে ব্রাইটনেস ও সাউন্ড কন্ট্রোল করতে পারবেন।</p>
-                <p class="flex items-center gap-2"><i data-lucide="languages" class="w-4 h-4 text-blue-500"></i> ইংরেজি কথা অটোমেটিক বাংলা অনুবাদের ফিচার যুক্ত রয়েছে।</p>
-            </div>
+    <!-- Splash Screen (ফেইড আউট হবে) -->
+    <div id="splashScreen" class="fixed inset-0 bg-slate-950 flex flex-col justify-center items-center z-50 transition-opacity duration-700">
+        <div class="w-20 h-20 bg-blue-600 rounded-3xl flex items-center justify-center mb-4 shadow-lg shadow-blue-900/50">
+            <i data-lucide="play" class="w-10 h-10 text-white fill-white"></i>
         </div>
+        <h1 class="text-3xl font-bold tracking-wider">MX PLAYER</h1>
+        <p class="text-blue-500 text-xs font-semibold uppercase mt-1 tracking-widest">Ultimate Edition</p>
     </div>
 
-    <!-- Screen 2: Custom Video Player Screen -->
+    <!-- Screen 1: MX Player Dashboard (Homescreen) -->
+    <div id="mainDashboard" class="flex-grow flex flex-col">
+        <!-- Dashboard Header -->
+        <header class="bg-slate-900 border-b border-slate-800 p-4 sticky top-0 z-40">
+            <div class="max-w-6xl mx-auto flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <button class="p-1 hover:bg-slate-800 rounded-lg"><i data-lucide="menu" class="w-6 h-6 text-slate-300"></i></button>
+                    <span class="text-xl font-bold text-white">MX Player</span>
+                </div>
+                <!-- Navigation Tabs -->
+                <div class="flex bg-slate-950 p-1 rounded-lg border border-slate-800">
+                    <button id="tabLocal" class="px-4 py-1.5 rounded-md text-xs font-semibold bg-blue-600 text-white transition">লোকাল ফোল্ডার</button>
+                    <button id="tabOnline" class="px-4 py-1.5 rounded-md text-xs font-semibold text-slate-400 hover:text-white transition">অনলাইন ক্যাটাগরি</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="max-w-6xl w-full mx-auto p-4 flex-grow">
+            
+            <!-- LOCAL TAB CONTENT -->
+            <div id="localContent" class="space-y-6">
+                <!-- Directory Scanner Section -->
+                <div class="bg-gradient-to-r from-blue-900/30 to-slate-900 border border-blue-950 rounded-2xl p-5 flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="text-center md:text-left">
+                        <h3 class="text-md font-bold text-blue-400">আপনার মেমোরির ভিডিও ফোল্ডারটি অ্যাড করুন</h3>
+                        <p class="text-xs text-slate-400 mt-1">ফোল্ডারটি সিলেক্ট করলেই অ্যাপটি স্বয়ংক্রিয়ভাবে ক্যাটাগরি তৈরি করে ফেলবে।</p>
+                    </div>
+                    <label class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold py-2.5 px-5 rounded-xl cursor-pointer transition flex items-center gap-2 shadow-lg shadow-blue-900/30">
+                        <i data-lucide="folder-open" class="w-4 h-4"></i> ফোল্ডার স্ক্যান করুন
+                        <input type="file" id="directoryInput" webkitdirectory directory multiple class="hidden">
+                    </label>
+                </div>
+
+                <!-- Folder Grid (MX Player Style Folders list) -->
+                <div>
+                    <h4 class="text-sm font-semibold text-slate-400 mb-4 uppercase tracking-wider">মিডিয়া ফোল্ডারসমূহ</h4>
+                    <div id="localFolderGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                        <!-- Default Mock folders showing MX Player feel -->
+                        <div onclick="alert('ভিডিও দেখার জন্য দয়া করে ওপরে থাকা \'ফোল্ডার স্ক্যান করুন\' বাটনে ক্লিক করে আপনার ডিভাইসের ভিডিও ফোল্ডারটি দেখান।')" class="bg-slate-900 hover:bg-slate-850 p-4 rounded-xl border border-slate-800 cursor-pointer transition flex items-center gap-3">
+                            <div class="p-3 bg-blue-950 rounded-lg text-blue-500"><i data-lucide="folder" class="w-6 h-6"></i></div>
+                            <div>
+                                <h5 class="text-sm font-bold">Camera</h5>
+                                <p class="text-[10px] text-slate-500">০টি ভিডিও</p>
+                            </div>
+                        </div>
+                        <div onclick="alert('ভিডিও দেখার জন্য দয়া করে ওপরে থাকা \'ফোল্ডার স্ক্যান করুন\' বাটনে ক্লিক করে আপনার ডিভাইসের ভিডিও ফোল্ডারটি দেখান।')" class="bg-slate-900 hover:bg-slate-850 p-4 rounded-xl border border-slate-800 cursor-pointer transition flex items-center gap-3">
+                            <div class="p-3 bg-blue-950 rounded-lg text-blue-500"><i data-lucide="folder" class="w-6 h-6"></i></div>
+                            <div>
+                                <h5 class="text-sm font-bold">WhatsApp Video</h5>
+                                <p class="text-[10px] text-slate-500">০টি ভিডিও</p>
+                            </div>
+                        </div>
+                        <div onclick="alert('ভিডিও দেখার জন্য দয়া করে ওপরে থাকা \'ফোল্ডার স্ক্যান করুন\' বাটনে ক্লিক করে আপনার ডিভাইসের ভিডিও ফোল্ডারটি দেখান।')" class="bg-slate-900 hover:bg-slate-850 p-4 rounded-xl border border-slate-800 cursor-pointer transition flex items-center gap-3">
+                            <div class="p-3 bg-blue-950 rounded-lg text-blue-500"><i data-lucide="folder" class="w-6 h-6"></i></div>
+                            <div>
+                                <h5 class="text-sm font-bold">Downloads</h5>
+                                <p class="text-[10px] text-slate-500">০টি ভিডিও</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Video list inside active folder (Hidden until folder clicked) -->
+                <div id="localVideoListSection" class="hidden pt-4">
+                    <div class="flex items-center gap-2 mb-4">
+                        <button id="backToFoldersBtn" class="p-1 hover:bg-slate-800 rounded"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
+                        <h4 id="activeFolderName" class="text-md font-bold text-white">ফোল্ডারের নাম</h4>
+                    </div>
+                    <div id="localVideoGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        <!-- Dynamic videos go here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- ONLINE TAB CONTENT (Pre-loaded with videos - No selection required!) -->
+            <div id="onlineContent" class="hidden space-y-8">
+                <!-- Category 1: Drama & Movies -->
+                <div>
+                    <h3 class="text-md font-bold text-blue-400 mb-3 flex items-center gap-2"><i data-lucide="film" class="w-5 h-5"></i> নাটক ও অ্যানিমেশন ফিল্ম</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        <div onclick="playOnlineVideo('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4', 'Big Buck Bunny (Animation)')" class="bg-slate-900 rounded-xl overflow-hidden border border-slate-800 cursor-pointer hover:border-blue-600 transition group">
+                            <div class="aspect-video bg-slate-950 relative flex items-center justify-center">
+                                <i data-lucide="play" class="w-10 h-10 text-white/50 group-hover:text-white transition"></i>
+                            </div>
+                            <div class="p-3">
+                                <h4 class="text-sm font-semibold truncate">Big Buck Bunny (অ্যানিমেশন ফিল্ম)</h4>
+                                <p class="text-[10px] text-slate-500 mt-1">ক্যাটাগরি: কার্টুন • ১০ মিনিট</p>
+                            </div>
+                        </div>
+                        <div onclick="playOnlineVideo('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4', 'Elephants Dream (Sci-Fi Animation)')" class="bg-slate-900 rounded-xl overflow-hidden border border-slate-800 cursor-pointer hover:border-blue-600 transition group">
+                            <div class="aspect-video bg-slate-950 relative flex items-center justify-center">
+                                <i data-lucide="play" class="w-10 h-10 text-white/50 group-hover:text-white transition"></i>
+                            </div>
+                            <div class="p-3">
+                                <h4 class="text-sm font-semibold truncate">Elephants Dream (সায়েন্স ফিকশন)</h4>
+                                <p class="text-[10px] text-slate-500 mt-1">ক্যাটাগরি: সায়েন্স ফিকশন • ১১ মিনিট</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category 2: Nature & Travel -->
+                <div>
+                    <h3 class="text-md font-bold text-emerald-400 mb-3 flex items-center gap-2"><i data-lucide="compass" class="w-5 h-5"></i> প্রকৃতি ও ভ্রমণ</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        <div onclick="playOnlineVideo('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4', 'For Bigger Blazes (Nature Clip)')" class="bg-slate-900 rounded-xl overflow-hidden border border-slate-800 cursor-pointer hover:border-blue-600 transition group">
+                            <div class="aspect-video bg-slate-950 relative flex items-center justify-center">
+                                <i data-lucide="play" class="w-10 h-10 text-white/50 group-hover:text-white transition"></i>
+                            </div>
+                            <div class="p-3">
+                                <h4 class="text-sm font-semibold truncate">প্রাকৃতিক সৌন্দর্য ও এডভেঞ্চার</h4>
+                                <p class="text-[10px] text-slate-500 mt-1">ক্যাটাগরি: প্রকৃতি • ৫ মিনিট</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Screen 3: MX Player Screen (Hidden Initially) -->
     <div id="playerScreen" class="hidden fixed inset-0 bg-black flex flex-col justify-between group">
         
         <!-- Brightness Overlay Screen -->
         <div id="brightnessOverlay" class="absolute inset-0 bg-black pointer-events-none z-10 opacity-0 transition-opacity"></div>
 
-        <!-- Gesture HUD Indicators (Volume, Brightness, Seek) -->
+        <!-- Local File Running Alert (Only visible if browser speech recognition is blocked) -->
+        <div id="localFileAlert" class="absolute top-16 left-1/2 -translate-x-1/2 bg-amber-600/95 text-white text-xs px-4 py-2 rounded-lg shadow-xl z-35 hidden max-w-sm text-center">
+            <p class="font-bold">লোকাল ফাইল ওয়ার্নিং!</p>
+            <p class="text-[10px] mt-0.5">রিয়েল-টাইম বাংলা সাবটাইটেল বা অনুবাদের জন্য ফাইলটিকে Live Server বা অনলাইনে আপলোড করে চালান।</p>
+        </div>
+
+        <!-- Gesture HUD Indicators -->
         <div id="hudIndicator" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/80 px-4 py-3 rounded-2xl flex flex-col items-center justify-center gap-2 pointer-events-none z-30 opacity-0 transition-opacity duration-200">
             <i id="hudIcon" data-lucide="volume-2" class="w-8 h-8 text-blue-500"></i>
             <span id="hudValue" class="text-sm font-bold">50%</span>
@@ -93,7 +193,7 @@
                     <option value="bn-BD" selected>বাংলা ভয়েস</option>
                     <option value="en-US">English (ভয়েস)</option>
                 </select>
-                <!-- Auto Translate Toggle (Visible when English selected) -->
+                <!-- Auto Translate Toggle -->
                 <div id="translateToggleContainer" class="hidden flex items-center bg-slate-900 px-2 py-1 rounded border border-slate-700 text-xs text-slate-300 gap-1.5">
                     <input type="checkbox" id="translateCheck" class="cursor-pointer">
                     <label for="translateCheck" class="cursor-pointer">অনুবাদ (বাংলা)</label>
@@ -109,7 +209,7 @@
         <div class="relative w-full h-full flex items-center justify-center">
             <video id="mainVideo" class="w-full h-full object-contain pointer-events-auto"></video>
 
-            <!-- On-Screen Subtitle Rendering -->
+            <!-- Subtitle Overlay -->
             <div id="subtitleContainer" class="absolute bottom-24 left-1/2 -translate-x-1/2 w-11/12 max-w-3xl text-center pointer-events-none z-20">
                 <p id="subtitleText" class="subtitle-shadow text-yellow-400 font-semibold text-lg md:text-2xl bg-black/60 px-4 py-2 rounded-lg inline-block leading-relaxed max-w-full break-words transition-all duration-100"></p>
             </div>
@@ -125,22 +225,18 @@
                 <span id="totalDuration" class="text-xs text-slate-300">00:00</span>
             </div>
 
-            <!-- Lower Row Buttons -->
+            <!-- Controls Row -->
             <div class="flex justify-between items-center">
                 <div class="flex items-center gap-3 md:gap-4">
-                    <!-- Play/Pause -->
                     <button id="playPauseBtn" class="p-2 hover:bg-white/10 rounded-full transition">
                         <i data-lucide="play" class="w-6 h-6 fill-white"></i>
                     </button>
-                    <!-- Skip Back -->
                     <button id="skipBackwardBtn" class="p-2 hover:bg-white/10 rounded-full transition">
                         <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
                     </button>
-                    <!-- Skip Forward -->
                     <button id="skipForwardBtn" class="p-2 hover:bg-white/10 rounded-full transition">
                         <i data-lucide="rotate-cw" class="w-5 h-5"></i>
                     </button>
-                    <!-- Volume slider inside controls -->
                     <div class="flex items-center gap-1 group/vol">
                         <button id="muteBtn" class="p-2 hover:bg-white/10 rounded-full transition">
                             <i data-lucide="volume-2" class="w-5 h-5"></i>
@@ -149,15 +245,12 @@
                     </div>
                 </div>
 
-                <!-- Customizations (Speed, Font style, SRT export) -->
+                <!-- Right Side Customizations -->
                 <div class="flex items-center gap-2 md:gap-3">
-                    
-                    <!-- Export Timestamps to SRT -->
-                    <button id="downloadSrtBtn" class="hidden md:flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-xs text-white px-2.5 py-1.5 rounded transition font-semibold" title="রেকর্ড হওয়া ফাইলটি .srt ফরমেটে নামান">
+                    <button id="downloadSrtBtn" class="hidden md:flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-xs text-white px-2.5 py-1.5 rounded transition font-semibold">
                         <i data-lucide="download" class="w-3.5 h-3.5"></i> .SRT নামান
                     </button>
 
-                    <!-- Playback Speed Control -->
                     <select id="speedSelect" class="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-300 focus:outline-none">
                         <option value="0.5">0.5x</option>
                         <option value="1.0" selected>1.0x (Normal)</option>
@@ -166,31 +259,28 @@
                         <option value="2.0">2.0x</option>
                     </select>
 
-                    <!-- Subtitle Style Adjuster -->
                     <div class="relative group/style">
                         <button class="bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-xs text-slate-300 flex items-center gap-1">
-                            <i data-lucide="type" class="w-3.5 h-3.5"></i> সাবটাইল স্টাইল
+                            <i data-lucide="type" class="w-3.5 h-3.5"></i> স্টাইল
                         </button>
-                        <!-- Stylist Panel Hover Menu -->
                         <div class="absolute bottom-full right-0 mb-2 w-48 bg-slate-900 border border-slate-700 rounded-lg p-3 hidden group-hover/style:block shadow-xl z-30">
-                            <p class="text-xs text-slate-400 mb-2 font-semibold">ফন্ট কালার পরিবর্তন:</p>
+                            <p class="text-xs text-slate-400 mb-2 font-semibold">ফন্ট কালার:</p>
                             <div class="flex gap-2 mb-3">
                                 <button onclick="setSubColor('yellow')" class="w-6 h-6 rounded bg-yellow-400 border border-white/20"></button>
                                 <button onclick="setSubColor('white')" class="w-6 h-6 rounded bg-white border border-white/20"></button>
                                 <button onclick="setSubColor('green')" class="w-6 h-6 rounded bg-green-400 border border-white/20"></button>
                                 <button onclick="setSubColor('cyan')" class="w-6 h-6 rounded bg-cyan-400 border border-white/20"></button>
                             </div>
-                            <p class="text-xs text-slate-400 mb-2 font-semibold">ফন্ট সাইজ পরিবর্তন:</p>
+                            <p class="text-xs text-slate-400 mb-2 font-semibold">ফন্ট সাইজ:</p>
                             <select id="subSizeSelect" class="w-full bg-slate-950 text-xs border border-slate-700 rounded p-1 text-slate-300 outline-none">
-                                <option value="text-lg">ছোট (Small)</option>
-                                <option value="text-2xl" selected>মাঝারি (Medium)</option>
-                                <option value="text-3xl">বড় (Large)</option>
-                                <option value="text-4xl">অতিরিক্ত বড় (XL)</option>
+                                <option value="text-lg">ছোট</option>
+                                <option value="text-2xl" selected>মাঝারি</option>
+                                <option value="text-3xl">বড়</option>
+                                <option value="text-4xl">অতিরিক্ত বড়</option>
                             </select>
                         </div>
                     </div>
 
-                    <!-- Fullscreen -->
                     <button id="fullscreenBtn" class="p-2 hover:bg-white/10 rounded-full transition">
                         <i data-lucide="maximize" class="w-5 h-5"></i>
                     </button>
@@ -201,13 +291,12 @@
 
     <!-- JS Logic -->
     <script>
-        // DOM Nodes
-        const fileBrowserScreen = document.getElementById('fileBrowserScreen');
+        // DOM Handles
+        const splashScreen = document.getElementById('splashScreen');
+        const mainDashboard = document.getElementById('mainDashboard');
         const playerScreen = document.getElementById('playerScreen');
-        const videoFileInput = document.getElementById('videoFileInput');
-        const srtFileInput = document.getElementById('srtFileInput');
+        const directoryInput = document.getElementById('directoryInput');
         const mainVideo = document.getElementById('mainVideo');
-        
         const videoTitle = document.getElementById('videoTitle');
         const backBtn = document.getElementById('backBtn');
         const playPauseBtn = document.getElementById('playPauseBtn');
@@ -229,13 +318,25 @@
         const translateToggleContainer = document.getElementById('translateToggleContainer');
         const translateCheck = document.getElementById('translateCheck');
         const brightnessOverlay = document.getElementById('brightnessOverlay');
+        const localFileAlert = document.getElementById('localFileAlert');
 
-        // HUD Elements
+        // Tabs
+        const tabLocal = document.getElementById('tabLocal');
+        const tabOnline = document.getElementById('tabOnline');
+        const localContent = document.getElementById('localContent');
+        const onlineContent = document.getElementById('onlineContent');
+
+        // Folder Elements
+        const localFolderGrid = document.getElementById('localFolderGrid');
+        const localVideoListSection = document.getElementById('localVideoListSection');
+        const activeFolderName = document.getElementById('activeFolderName');
+        const localVideoGrid = document.getElementById('localVideoGrid');
+        const backToFoldersBtn = document.getElementById('backToFoldersBtn');
+
+        // HUD
         const hudIndicator = document.getElementById('hudIndicator');
         const hudIcon = document.getElementById('hudIcon');
         const hudValue = document.getElementById('hudValue');
-
-        // UI Controls Panels for auto-hide
         const topBar = document.getElementById('topBar');
         const bottomControls = document.getElementById('bottomControls');
 
@@ -246,15 +347,156 @@
         let hudTimeout;
 
         // Custom States
-        let currentBrightness = 100; // 10% to 100%
-        let srtData = []; // Array for generated SRT timestamps
+        let currentBrightness = 100;
+        let srtData = [];
         let srtCount = 1;
         let lastBlockEndTime = 0;
-        let loadedSubtitles = []; // Parsed local SRT subtitles
+        let localFilesMap = {}; // Will hold files categorized by folder name
+
+        // Fade out splash screen after 1.5 seconds
+        setTimeout(() => {
+            splashScreen.classList.add('opacity-0');
+            setTimeout(() => splashScreen.classList.add('hidden'), 700);
+        }, 1500);
 
         lucide.createIcons();
 
-        // Check Speech Engine
+        // Check if app is opened locally via file://
+        if (window.location.protocol === 'file:') {
+            localFileAlert.classList.remove('hidden');
+        }
+
+        // Tab Switching
+        tabLocal.addEventListener('click', () => {
+            tabLocal.className = "px-4 py-1.5 rounded-md text-xs font-semibold bg-blue-600 text-white transition";
+            tabOnline.className = "px-4 py-1.5 rounded-md text-xs font-semibold text-slate-400 hover:text-white transition";
+            localContent.classList.remove('hidden');
+            onlineContent.classList.add('hidden');
+        });
+
+        tabOnline.addEventListener('click', () => {
+            tabOnline.className = "px-4 py-1.5 rounded-md text-xs font-semibold bg-blue-600 text-white transition";
+            tabLocal.className = "px-4 py-1.5 rounded-md text-xs font-semibold text-slate-400 hover:text-white transition";
+            onlineContent.classList.remove('hidden');
+            localContent.classList.add('hidden');
+        });
+
+        // ----------------------------------------
+        // Directory Scanner / Folder logic
+        // ----------------------------------------
+        directoryInput.addEventListener('change', function(e) {
+            const files = e.target.files;
+            if (files.length === 0) return;
+
+            localFilesMap = {}; // Reset
+
+            for (let file of files) {
+                // Check if file is a video
+                if (file.type.startsWith('video/') || file.name.endsWith('.mp4') || file.name.endsWith('.mkv') || file.name.endsWith('.webm')) {
+                    // Extract folder name from path
+                    let relativePath = file.webkitRelativePath || "";
+                    let pathParts = relativePath.split('/');
+                    let folderName = "Other Videos";
+                    
+                    if (pathParts.length > 1) {
+                        folderName = pathParts[pathParts.length - 2]; // Parent directory name
+                    }
+
+                    if (!localFilesMap[folderName]) {
+                        localFilesMap[folderName] = [];
+                    }
+                    localFilesMap[folderName].push(file);
+                }
+            }
+
+            renderLocalFolders();
+        });
+
+        function renderLocalFolders() {
+            localFolderGrid.innerHTML = ''; // Clear defaults
+            localFolderGrid.classList.remove('hidden');
+            localVideoListSection.classList.add('hidden');
+
+            const folders = Object.keys(localFilesMap);
+            if (folders.length === 0) {
+                localFolderGrid.innerHTML = `<div class="col-span-full text-center text-slate-500 py-8">কোনো ভিডিও ফাইল খুঁজে পাওয়া যায়নি।</div>`;
+                return;
+            }
+
+            folders.forEach(folder => {
+                const count = localFilesMap[folder].length;
+                const folderDiv = document.createElement('div');
+                folderDiv.className = "bg-slate-900 hover:bg-slate-850 p-4 rounded-xl border border-slate-800 cursor-pointer transition flex items-center gap-3";
+                folderDiv.innerHTML = `
+                    <div class="p-3 bg-blue-950 rounded-lg text-blue-500"><i data-lucide="folder" class="w-6 h-6"></i></div>
+                    <div>
+                        <h5 class="text-sm font-bold truncate max-w-[120px]">${folder}</h5>
+                        <p class="text-[10px] text-slate-500">${count}টি ভিডিও</p>
+                    </div>
+                `;
+                folderDiv.addEventListener('click', () => openFolder(folder));
+                localFolderGrid.appendChild(folderDiv);
+            });
+            lucide.createIcons();
+        }
+
+        function openFolder(folderName) {
+            localFolderGrid.classList.add('hidden');
+            localVideoListSection.classList.remove('hidden');
+            activeFolderName.innerText = folderName;
+
+            localVideoGrid.innerHTML = '';
+            const files = localFilesMap[folderName];
+
+            files.forEach((file, index) => {
+                const videoDiv = document.createElement('div');
+                videoDiv.className = "bg-slate-900 rounded-xl overflow-hidden border border-slate-800 cursor-pointer hover:border-blue-600 transition group";
+                videoDiv.innerHTML = `
+                    <div class="aspect-video bg-slate-950 relative flex items-center justify-center">
+                        <i data-lucide="play" class="w-10 h-10 text-white/50 group-hover:text-white transition"></i>
+                    </div>
+                    <div class="p-3">
+                        <h4 class="text-sm font-semibold truncate">${file.name}</h4>
+                        <p class="text-[10px] text-slate-500 mt-1">আকার: ${(file.size / (1024*1024)).toFixed(1)} MB</p>
+                    </div>
+                `;
+                videoDiv.addEventListener('click', () => playLocalVideo(file));
+                localVideoGrid.appendChild(videoDiv);
+            });
+            lucide.createIcons();
+        }
+
+        backToFoldersBtn.addEventListener('click', () => {
+            localVideoListSection.classList.add('hidden');
+            localFolderGrid.classList.remove('hidden');
+        });
+
+        // ----------------------------------------
+        // Player Triggering
+        // ----------------------------------------
+        function playLocalVideo(file) {
+            mainVideo.src = URL.createObjectURL(file);
+            videoTitle.innerText = file.name;
+            startPlayer();
+        }
+
+        function playOnlineVideo(url, title) {
+            mainVideo.src = url;
+            videoTitle.innerText = title;
+            startPlayer();
+        }
+
+        function startPlayer() {
+            mainDashboard.classList.add('hidden');
+            playerScreen.classList.remove('hidden');
+            mainVideo.play();
+            updatePlayPauseIcon(true);
+            startTranscription();
+        }
+
+        // ----------------------------------------
+        // Custom Speech Engine (Whisper Web / Speech API style)
+        // ----------------------------------------
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (SpeechRecognition) {
             recognition = new SpeechRecognition();
@@ -264,7 +506,6 @@
             recognition.onstart = () => {
                 micToggleBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
                 micToggleBtn.classList.add('bg-green-600', 'hover:bg-green-700');
-                // Show SRT Download Button when active recording
                 downloadSrtBtn.classList.remove('hidden');
                 lastBlockEndTime = mainVideo.currentTime;
             };
@@ -282,22 +523,20 @@
                     }
                 }
 
-                // If Final Transcription is ready
                 if (finalTranscript.trim()) {
                     let textToShow = finalTranscript.trim();
                     const blockStartTime = lastBlockEndTime;
                     const blockEndTime = mainVideo.currentTime > blockStartTime ? mainVideo.currentTime : blockStartTime + 1.5;
 
-                    // Handle English-to-Bengali translation via Free Translation API
+                    // Enable auto translation
                     if (langSelect.value === 'en-US' && translateCheck.checked) {
                         subtitleText.innerText = "অনুবাদ হচ্ছে...";
                         textToShow = await translateToBengali(textToShow);
                     }
 
-                    // Render Subtitle On-Screen
                     subtitleText.innerText = textToShow;
 
-                    // Store timestamp for generating SRT later
+                    // Add to SRT Data stack
                     srtData.push({
                         id: srtCount++,
                         start: blockStartTime,
@@ -310,7 +549,6 @@
                     clearTimeout(subtitleTimeout);
                     subtitleTimeout = setTimeout(() => { subtitleText.innerText = ''; }, 3500);
                 } 
-                // Display Interim/Realtime text instantly (Slightly blue)
                 else if (interimTranscript.trim()) {
                     subtitleText.innerText = interimTranscript;
                 }
@@ -327,7 +565,6 @@
             };
         }
 
-        // Toggle Translation Container visibility
         langSelect.addEventListener('change', () => {
             if (langSelect.value === 'en-US') {
                 translateToggleContainer.classList.remove('hidden');
@@ -337,7 +574,6 @@
             }
         });
 
-        // Free Translation Handler (MyMemory API API Limit standard apply)
         async function translateToBengali(text) {
             try {
                 const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|bn`);
@@ -348,20 +584,22 @@
             } catch (error) {
                 console.error("Translation failed:", error);
             }
-            return text; // Fallback to raw text
+            return text;
         }
 
         function startTranscription() {
             if (!recognition) return;
             isListening = true;
             recognition.lang = langSelect.value;
-            recognition.start();
+            try {
+                recognition.start();
+            } catch (e) { console.log("Recognizer start blocked: requires server"); }
         }
 
         function stopTranscription() {
             isListening = false;
             if (recognition) {
-                recognition.stop();
+                try { recognition.stop(); } catch(e){}
             }
             subtitleText.innerText = '';
         }
@@ -371,92 +609,20 @@
             else startTranscription();
         });
 
-        // SRT Parsing Algorithm (Local SRT Upload)
-        function parseSRT(text) {
-            const subs = [];
-            const blocks = text.trim().split('\n\n');
-            for (let block of blocks) {
-                const lines = block.split('\n');
-                if (lines.length >= 3) {
-                    const id = lines[0];
-                    const timeMatch = lines[1].match(/(\d+:\d+:\d+,\d+)\s*-->\s*(\d+:\d+:\d+,\d+)/);
-                    if (timeMatch) {
-                        const start = srtToSeconds(timeMatch[1]);
-                        const end = srtToSeconds(timeMatch[2]);
-                        const text = lines.slice(2).join('\n');
-                        subs.push({ start, end, text });
-                    }
-                }
-            }
-            return subs;
-        }
-
-        function srtToSeconds(timeStr) {
-            const parts = timeStr.replace(',', '.').split(':');
-            return parseFloat(parts[0]) * 3600 + parseFloat(parts[1]) * 60 + parseFloat(parts[2]);
-        }
-
-        // Video File & Subtitle Loader
-        videoFileInput.addEventListener('change', function() {
-            const file = this.files[0];
-            if (file) {
-                document.getElementById('videoBtnText').innerText = file.name;
-                videoTitle.innerText = file.name;
-                mainVideo.src = URL.createObjectURL(file);
-                checkReadyToPlay();
-            }
-        });
-
-        srtFileInput.addEventListener('change', function() {
-            const file = this.files[0];
-            if (file) {
-                document.getElementById('srtBtnText').innerText = file.name;
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    loadedSubtitles = parseSRT(e.target.result);
-                };
-                reader.readAsText(file);
-            }
-        });
-
-        function checkReadyToPlay() {
-            if (mainVideo.src) {
-                fileBrowserScreen.classList.add('hidden');
-                playerScreen.classList.remove('hidden');
-                mainVideo.play();
-                updatePlayPauseIcon(true);
-                // Listeners start if voice setup enabled
-                startTranscription();
-            }
-        }
-
+        // Exit Player Screen
         backBtn.addEventListener('click', () => {
             stopTranscription();
             mainVideo.pause();
             mainVideo.src = "";
-            loadedSubtitles = [];
             srtData = [];
             srtCount = 1;
-            document.getElementById('videoBtnText').innerText = "ভিডিও ফাইল ওপেন করুন";
-            document.getElementById('srtBtnText').innerText = ".SRT ফাইল ওপেন করুন";
             playerScreen.classList.add('hidden');
-            fileBrowserScreen.classList.remove('hidden');
+            mainDashboard.classList.remove('hidden');
         });
 
-        // Render Loaded Subtitles
-        mainVideo.addEventListener('timeupdate', () => {
-            if (loadedSubtitles.length > 0) {
-                const curTime = mainVideo.currentTime;
-                const match = loadedSubtitles.find(sub => curTime >= sub.start && curTime <= sub.end);
-                if (match) {
-                    subtitleText.innerText = match.text;
-                } else {
-                    subtitleText.innerText = '';
-                }
-            }
-        });
-
-        // Double Click Skip Mechanism
+        // ----------------------------------------
+        // Player Navigation & Controls Logic
+        // ----------------------------------------
         let clickTimer;
         mainVideo.addEventListener('click', (e) => {
             if (e.detail === 1) {
@@ -500,7 +666,6 @@
         skipBackwardBtn.addEventListener('click', () => { mainVideo.currentTime -= 10; showHUD('rotate-ccw', '-10s'); });
         skipForwardBtn.addEventListener('click', () => { mainVideo.currentTime += 10; showHUD('rotate-cw', '+10s'); });
 
-        // Volume & Mute Handling
         muteBtn.addEventListener('click', () => {
             mainVideo.muted = !mainVideo.muted;
             muteBtn.innerHTML = mainVideo.muted 
@@ -514,12 +679,10 @@
             mainVideo.muted = e.target.value == 0;
         });
 
-        // Speed Adjustment
         speedSelect.addEventListener('change', (e) => {
             mainVideo.playbackRate = parseFloat(e.target.value);
         });
 
-        // Style Customizer
         function setSubColor(color) {
             subtitleText.className = `subtitle-shadow font-semibold bg-black/60 px-4 py-2 rounded-lg inline-block leading-relaxed max-w-full break-words transition-all duration-100`;
             if (color === 'yellow') subtitleText.classList.add('text-yellow-400');
@@ -533,7 +696,6 @@
             subtitleText.classList.add(e.target.value);
         });
 
-        // Seekbar Mechanics
         mainVideo.addEventListener('loadedmetadata', () => {
             seekBar.max = mainVideo.duration;
             totalDurationEl.innerText = formatTime(mainVideo.duration);
@@ -556,11 +718,13 @@
             return `${minutes < 10 ? '0' : ''}${minutes}:${secs < 10 ? '0' : ''}${secs}`;
         }
 
-        // Gesture Detection: Volume & Brightness Swipes
+        // ----------------------------------------
+        // Swipe Drag Gestures (Volume & Brightness)
+        // ----------------------------------------
         let isDragging = false;
         let startY = 0;
         let startValue = 0;
-        let dragType = ''; // 'volume' or 'brightness'
+        let dragType = ''; 
 
         function handleDragStart(clientX, clientY) {
             isDragging = true;
@@ -579,7 +743,7 @@
             if (!isDragging) return;
             const deltaY = startY - clientY;
             const rect = playerScreen.getBoundingClientRect();
-            const normalizedDelta = (deltaY / rect.height) * 1.8; // Swipe Sensitivity
+            const normalizedDelta = (deltaY / rect.height) * 1.8;
 
             if (dragType === 'volume') {
                 let newVol = Math.max(0, Math.min(1, startValue + normalizedDelta));
@@ -589,13 +753,11 @@
             } else if (dragType === 'brightness') {
                 let newBright = Math.max(10, Math.min(100, startValue + normalizedDelta * 100));
                 currentBrightness = newBright;
-                // Update opacity overlay
                 brightnessOverlay.style.opacity = (1 - (newBright / 100)).toFixed(2);
                 showHUD('sun', `Brightness: ${Math.round(newBright)}%`);
             }
         }
 
-        // Event hooks for Mouse Drag
         playerScreen.addEventListener('mousedown', (e) => {
             if (e.target === mainVideo || e.target === brightnessOverlay) {
                 handleDragStart(e.clientX, e.clientY);
@@ -604,7 +766,6 @@
         playerScreen.addEventListener('mousemove', (e) => handleDragMove(e.clientX, e.clientY));
         window.addEventListener('mouseup', () => { isDragging = false; });
 
-        // Event hooks for Touch Swipe (Mobile devices)
         playerScreen.addEventListener('touchstart', (e) => {
             const touch = e.touches[0];
             if (touch.target === mainVideo || touch.target === brightnessOverlay) {
@@ -617,7 +778,6 @@
         });
         playerScreen.addEventListener('touchend', () => { isDragging = false; });
 
-        // HUD Renderer Helper
         function showHUD(iconName, value) {
             hudIcon.setAttribute('data-lucide', iconName);
             hudValue.innerText = value;
@@ -627,7 +787,6 @@
             hudTimeout = setTimeout(() => { hudIndicator.style.opacity = '0'; }, 800);
         }
 
-        // Fullscreen Toggle
         fullscreenBtn.addEventListener('click', () => {
             if (!document.fullscreenElement) {
                 playerScreen.requestFullscreen().catch(err => { alert(err.message); });
@@ -636,7 +795,6 @@
             }
         });
 
-        // Controls Auto-Hide
         function showControls() {
             topBar.style.opacity = '1';
             bottomControls.style.opacity = '1';
@@ -657,7 +815,7 @@
         playerScreen.addEventListener('mousemove', showControls);
         playerScreen.addEventListener('click', showControls);
 
-        // SRT file generator format functions
+        // Download Timestamps to SRT
         function formatSRTTime(seconds) {
             const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
             const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
@@ -666,10 +824,9 @@
             return `${h}:${m}:${s},${ms}`;
         }
 
-        // Save transcripts to .SRT Subtitle File
         downloadSrtBtn.addEventListener('click', () => {
             if (srtData.length === 0) {
-                alert("রেকর্ড করা কোনো সাবটাইটেল ডেটা খুঁজে পাওয়া যায়নি।");
+                alert("রেকর্ড করার মতো কোনো সাবটাইটেল ডেটা পাওয়া যায়নি।");
                 return;
             }
             let srtContent = '';
