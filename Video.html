@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MX Player Pro - HTML5 Bengali Transcriber</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Hind Siliguri', sans-serif;
+            background-color: #080c14;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 14px;
+            width: 14px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+        }
+        .subtitle-shadow {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 1), -1px -1px 4px rgba(0, 0, 0, 1);
+        }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col justify-between overflow-hidden select-none">
+
+    <!-- Screen 1: File Browser (With Video & SRT upload option) -->
+    <div id="fileBrowserScreen" class="flex-grow flex flex-col justify-center items-center p-4">
+        <div class="max-w-md w-full bg-slate-900 border border-slate-850 rounded-2xl p-6 md:p-8 shadow-2xl text-center">
+            
+            <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-blue-900/40">
+                <i data-lucide="play" class="w-8 h-8 text-white fill-white"></i>
+            </div>
+            <h1 class="text-2xl font-bold mb-2">এমএক্স প্লেয়ার আল্টিমেট</h1>
+            <p class="text-slate-400 text-sm mb-6">আপনার ডিভাইস থেকে যেকোনো ভিডিও ফাইল এবং (ঐচ্ছিক) সাবটাইটেল ফাইল লোড করুন।</p>
+            
+            <div class="space-y-4">
+                <!-- Video File Input -->
+                <div>
+                    <span class="block text-xs text-left text-slate-400 mb-1.5 font-semibold">১. ভিডিও ফাইল সিলেক্ট করুন:</span>
+                    <label class="block w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl cursor-pointer transition shadow-lg shadow-blue-600/20">
+                        <span id="videoBtnText">ভিডিও ফাইল ওপেন করুন</span>
+                        <input type="file" id="videoFileInput" accept="video/*" class="hidden">
+                    </label>
+                </div>
+
+                <!-- SRT File Input (Optional) -->
+                <div>
+                    <span class="block text-xs text-left text-slate-400 mb-1.5 font-semibold">২. সাবটাইটেল ফাইল সিলেক্ট করুন (ঐচ্ছিক):</span>
+                    <label class="block w-full bg-slate-800 hover:bg-slate-755 text-slate-300 font-semibold py-2 px-4 rounded-xl cursor-pointer border border-slate-700 transition">
+                        <span id="srtBtnText">.SRT ফাইল ওপেন করুন</span>
+                        <input type="file" id="srtFileInput" accept=".srt" class="hidden">
+                    </label>
+                </div>
+            </div>
+            
+            <div class="mt-8 pt-6 border-t border-slate-800 text-left text-xs text-slate-500 space-y-2">
+                <p class="flex items-center gap-2"><i data-lucide="smartphone" class="w-4 h-4 text-blue-500"></i> মোবাইলের মত স্ক্রিনে সোয়াইপ করে ব্রাইটনেস ও সাউন্ড কন্ট্রোল করতে পারবেন।</p>
+                <p class="flex items-center gap-2"><i data-lucide="languages" class="w-4 h-4 text-blue-500"></i> ইংরেজি কথা অটোমেটিক বাংলা অনুবাদের ফিচার যুক্ত রয়েছে।</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen 2: Custom Video Player Screen -->
+    <div id="playerScreen" class="hidden fixed inset-0 bg-black flex flex-col justify-between group">
+        
+        <!-- Brightness Overlay Screen -->
+        <div id="brightnessOverlay" class="absolute inset-0 bg-black pointer-events-none z-10 opacity-0 transition-opacity"></div>
+
+        <!-- Gesture HUD Indicators (Volume, Brightness, Seek) -->
+        <div id="hudIndicator" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/80 px-4 py-3 rounded-2xl flex flex-col items-center justify-center gap-2 pointer-events-none z-30 opacity-0 transition-opacity duration-200">
+            <i id="hudIcon" data-lucide="volume-2" class="w-8 h-8 text-blue-500"></i>
+            <span id="hudValue" class="text-sm font-bold">50%</span>
+        </div>
+
+        <!-- Top Control Bar -->
+        <div id="topBar" class="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/90 to-transparent p-4 flex justify-between items-center z-20 transition-opacity duration-300">
+            <button id="backBtn" class="p-2 hover:bg-white/10 rounded-full transition">
+                <i data-lucide="arrow-left" class="w-6 h-6"></i>
+            </button>
+            <div class="flex-grow mx-4">
+                <h2 id="videoTitle" class="text-sm font-semibold truncate text-slate-200">ভিডিওর নাম</h2>
+            </div>
+            <div class="flex items-center gap-2">
+                <!-- Language Selector -->
+                <select id="langSelect" class="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-200 focus:outline-none">
+                    <option value="bn-BD" selected>বাংলা ভয়েস</option>
+                    <option value="en-US">English (ভয়েস)</option>
+                </select>
+                <!-- Auto Translate Toggle (Visible when English selected) -->
+                <div id="translateToggleContainer" class="hidden flex items-center bg-slate-900 px-2 py-1 rounded border border-slate-700 text-xs text-slate-300 gap-1.5">
+                    <input type="checkbox" id="translateCheck" class="cursor-pointer">
+                    <label for="translateCheck" class="cursor-pointer">অনুবাদ (বাংলা)</label>
+                </div>
+                <!-- Mic Button -->
+                <button id="micToggleBtn" class="p-2 bg-red-600 hover:bg-red-700 text-white rounded-full transition" title="অনুলিপি শুরু/বন্ধ">
+                    <i data-lucide="mic" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Video Display Area -->
+        <div class="relative w-full h-full flex items-center justify-center">
+            <video id="mainVideo" class="w-full h-full object-contain pointer-events-auto"></video>
+
+            <!-- On-Screen Subtitle Rendering -->
+            <div id="subtitleContainer" class="absolute bottom-24 left-1/2 -translate-x-1/2 w-11/12 max-w-3xl text-center pointer-events-none z-20">
+                <p id="subtitleText" class="subtitle-shadow text-yellow-400 font-semibold text-lg md:text-2xl bg-black/60 px-4 py-2 rounded-lg inline-block leading-relaxed max-w-full break-words transition-all duration-100"></p>
+            </div>
+        </div>
+
+        <!-- Bottom Control Bar -->
+        <div id="bottomControls" class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 to-transparent p-4 z-20 transition-opacity duration-300">
+            
+            <!-- Seekbar & Times -->
+            <div class="flex items-center gap-3 mb-3">
+                <span id="currentTime" class="text-xs text-slate-300">00:00</span>
+                <input type="range" id="seekBar" min="0" value="0" step="0.1" class="flex-grow h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer outline-none">
+                <span id="totalDuration" class="text-xs text-slate-300">00:00</span>
+            </div>
+
+            <!-- Lower Row Buttons -->
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-3 md:gap-4">
+                    <!-- Play/Pause -->
+                    <button id="playPauseBtn" class="p-2 hover:bg-white/10 rounded-full transition">
+                        <i data-lucide="play" class="w-6 h-6 fill-white"></i>
+                    </button>
+                    <!-- Skip Back -->
+                    <button id="skipBackwardBtn" class="p-2 hover:bg-white/10 rounded-full transition">
+                        <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
+                    </button>
+                    <!-- Skip Forward -->
+                    <button id="skipForwardBtn" class="p-2 hover:bg-white/10 rounded-full transition">
+                        <i data-lucide="rotate-cw" class="w-5 h-5"></i>
+                    </button>
+                    <!-- Volume slider inside controls -->
+                    <div class="flex items-center gap-1 group/vol">
+                        <button id="muteBtn" class="p-2 hover:bg-white/10 rounded-full transition">
+                            <i data-lucide="volume-2" class="w-5 h-5"></i>
+                        </button>
+                        <input type="range" id="volumeBar" min="0" max="1" step="0.05" value="1" class="w-0 group-hover/vol:w-16 h-1 bg-slate-600 rounded appearance-none cursor-pointer transition-all duration-300">
+                    </div>
+                </div>
+
+                <!-- Customizations (Speed, Font style, SRT export) -->
+                <div class="flex items-center gap-2 md:gap-3">
+                    
+                    <!-- Export Timestamps to SRT -->
+                    <button id="downloadSrtBtn" class="hidden md:flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-xs text-white px-2.5 py-1.5 rounded transition font-semibold" title="রেকর্ড হওয়া ফাইলটি .srt ফরমেটে নামান">
+                        <i data-lucide="download" class="w-3.5 h-3.5"></i> .SRT নামান
+                    </button>
+
+                    <!-- Playback Speed Control -->
+                    <select id="speedSelect" class="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-300 focus:outline-none">
+                        <option value="0.5">0.5x</option>
+                        <option value="1.0" selected>1.0x (Normal)</option>
+                        <option value="1.25">1.25x</option>
+                        <option value="1.5">1.5x</option>
+                        <option value="2.0">2.0x</option>
+                    </select>
+
+                    <!-- Subtitle Style Adjuster -->
+                    <div class="relative group/style">
+                        <button class="bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-xs text-slate-300 flex items-center gap-1">
+                            <i data-lucide="type" class="w-3.5 h-3.5"></i> সাবটাইল স্টাইল
+                        </button>
+                        <!-- Stylist Panel Hover Menu -->
+                        <div class="absolute bottom-full right-0 mb-2 w-48 bg-slate-900 border border-slate-700 rounded-lg p-3 hidden group-hover/style:block shadow-xl z-30">
+                            <p class="text-xs text-slate-400 mb-2 font-semibold">ফন্ট কালার পরিবর্তন:</p>
+                            <div class="flex gap-2 mb-3">
+                                <button onclick="setSubColor('yellow')" class="w-6 h-6 rounded bg-yellow-400 border border-white/20"></button>
+                                <button onclick="setSubColor('white')" class="w-6 h-6 rounded bg-white border border-white/20"></button>
+                                <button onclick="setSubColor('green')" class="w-6 h-6 rounded bg-green-400 border border-white/20"></button>
+                                <button onclick="setSubColor('cyan')" class="w-6 h-6 rounded bg-cyan-400 border border-white/20"></button>
+                            </div>
+                            <p class="text-xs text-slate-400 mb-2 font-semibold">ফন্ট সাইজ পরিবর্তন:</p>
+                            <select id="subSizeSelect" class="w-full bg-slate-950 text-xs border border-slate-700 rounded p-1 text-slate-300 outline-none">
+                                <option value="text-lg">ছোট (Small)</option>
+                                <option value="text-2xl" selected>মাঝারি (Medium)</option>
+                                <option value="text-3xl">বড় (Large)</option>
+                                <option value="text-4xl">অতিরিক্ত বড় (XL)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Fullscreen -->
+                    <button id="fullscreenBtn" class="p-2 hover:bg-white/10 rounded-full transition">
+                        <i data-lucide="maximize" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS Logic -->
+    <script>
+        // DOM Nodes
+        const fileBrowserScreen = document.getElementById('fileBrowserScreen');
+        const playerScreen = document.getElementById('playerScreen');
+        const videoFileInput = document.getElementById('videoFileInput');
+        const srtFileInput = document.getElementById('srtFileInput');
+        const mainVideo = document.getElementById('mainVideo');
+        
+        const videoTitle = document.getElementById('videoTitle');
+        const backBtn = document.getElementById('backBtn');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const skipBackwardBtn = document.getElementById('skipBackwardBtn');
+        const skipForwardBtn = document.getElementById('skipForwardBtn');
+        const muteBtn = document.getElementById('muteBtn');
+        const volumeBar = document.getElementById('volumeBar');
+        const seekBar = document.getElementById('seekBar');
+        const currentTimeEl = document.getElementById('currentTime');
+        const totalDurationEl = document.getElementById('totalDuration');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const speedSelect = document.getElementById('speedSelect');
+        const subSizeSelect = document.getElementById('subSizeSelect');
+        const downloadSrtBtn = document.getElementById('downloadSrtBtn');
+
+        const subtitleText = document.getElementById('subtitleText');
+        const micToggleBtn = document.getElementById('micToggleBtn');
+        const langSelect = document.getElementById('langSelect');
+        const translateToggleContainer = document.getElementById('translateToggleContainer');
+        const translateCheck = document.getElementById('translateCheck');
+        const brightnessOverlay = document.getElementById('brightnessOverlay');
+
+        // HUD Elements
+        const hudIndicator = document.getElementById('hudIndicator');
+        const hudIcon = document.getElementById('hudIcon');
+        const hudValue = document.getElementById('hudValue');
+
+        // UI Controls Panels for auto-hide
+        const topBar = document.getElementById('topBar');
+        const bottomControls = document.getElementById('bottomControls');
+
+        let recognition;
+        let isListening = false;
+        let controlsTimeout;
+        let subtitleTimeout;
+        let hudTimeout;
+
+        // Custom States
+        let currentBrightness = 100; // 10% to 100%
+        let srtData = []; // Array for generated SRT timestamps
+        let srtCount = 1;
+        let lastBlockEndTime = 0;
+        let loadedSubtitles = []; // Parsed local SRT subtitles
+
+        lucide.createIcons();
+
+        // Check Speech Engine
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+
+            recognition.onstart = () => {
+                micToggleBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
+                micToggleBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+                // Show SRT Download Button when active recording
+                downloadSrtBtn.classList.remove('hidden');
+                lastBlockEndTime = mainVideo.currentTime;
+            };
+
+            recognition.onresult = async (event) => {
+                let interimTranscript = '';
+                let finalTranscript = '';
+
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcript + ' ';
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+
+                // If Final Transcription is ready
+                if (finalTranscript.trim()) {
+                    let textToShow = finalTranscript.trim();
+                    const blockStartTime = lastBlockEndTime;
+                    const blockEndTime = mainVideo.currentTime > blockStartTime ? mainVideo.currentTime : blockStartTime + 1.5;
+
+                    // Handle English-to-Bengali translation via Free Translation API
+                    if (langSelect.value === 'en-US' && translateCheck.checked) {
+                        subtitleText.innerText = "অনুবাদ হচ্ছে...";
+                        textToShow = await translateToBengali(textToShow);
+                    }
+
+                    // Render Subtitle On-Screen
+                    subtitleText.innerText = textToShow;
+
+                    // Store timestamp for generating SRT later
+                    srtData.push({
+                        id: srtCount++,
+                        start: blockStartTime,
+                        end: blockEndTime,
+                        text: textToShow
+                    });
+
+                    lastBlockEndTime = blockEndTime;
+
+                    clearTimeout(subtitleTimeout);
+                    subtitleTimeout = setTimeout(() => { subtitleText.innerText = ''; }, 3500);
+                } 
+                // Display Interim/Realtime text instantly (Slightly blue)
+                else if (interimTranscript.trim()) {
+                    subtitleText.innerText = interimTranscript;
+                }
+            };
+
+            recognition.onerror = () => { stopTranscription(); };
+            recognition.onend = () => {
+                if (isListening) {
+                    recognition.start();
+                } else {
+                    micToggleBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+                    micToggleBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                }
+            };
+        }
+
+        // Toggle Translation Container visibility
+        langSelect.addEventListener('change', () => {
+            if (langSelect.value === 'en-US') {
+                translateToggleContainer.classList.remove('hidden');
+            } else {
+                translateToggleContainer.classList.add('hidden');
+                translateCheck.checked = false;
+            }
+        });
+
+        // Free Translation Handler (MyMemory API API Limit standard apply)
+        async function translateToBengali(text) {
+            try {
+                const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|bn`);
+                const data = await response.json();
+                if (data && data.responseData) {
+                    return data.responseData.translatedText;
+                }
+            } catch (error) {
+                console.error("Translation failed:", error);
+            }
+            return text; // Fallback to raw text
+        }
+
+        function startTranscription() {
+            if (!recognition) return;
+            isListening = true;
+            recognition.lang = langSelect.value;
+            recognition.start();
+        }
+
+        function stopTranscription() {
+            isListening = false;
+            if (recognition) {
+                recognition.stop();
+            }
+            subtitleText.innerText = '';
+        }
+
+        micToggleBtn.addEventListener('click', () => {
+            if (isListening) stopTranscription();
+            else startTranscription();
+        });
+
+        // SRT Parsing Algorithm (Local SRT Upload)
+        function parseSRT(text) {
+            const subs = [];
+            const blocks = text.trim().split('\n\n');
+            for (let block of blocks) {
+                const lines = block.split('\n');
+                if (lines.length >= 3) {
+                    const id = lines[0];
+                    const timeMatch = lines[1].match(/(\d+:\d+:\d+,\d+)\s*-->\s*(\d+:\d+:\d+,\d+)/);
+                    if (timeMatch) {
+                        const start = srtToSeconds(timeMatch[1]);
+                        const end = srtToSeconds(timeMatch[2]);
+                        const text = lines.slice(2).join('\n');
+                        subs.push({ start, end, text });
+                    }
+                }
+            }
+            return subs;
+        }
+
+        function srtToSeconds(timeStr) {
+            const parts = timeStr.replace(',', '.').split(':');
+            return parseFloat(parts[0]) * 3600 + parseFloat(parts[1]) * 60 + parseFloat(parts[2]);
+        }
+
+        // Video File & Subtitle Loader
+        videoFileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                document.getElementById('videoBtnText').innerText = file.name;
+                videoTitle.innerText = file.name;
+                mainVideo.src = URL.createObjectURL(file);
+                checkReadyToPlay();
+            }
+        });
+
+        srtFileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                document.getElementById('srtBtnText').innerText = file.name;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    loadedSubtitles = parseSRT(e.target.result);
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        function checkReadyToPlay() {
+            if (mainVideo.src) {
+                fileBrowserScreen.classList.add('hidden');
+                playerScreen.classList.remove('hidden');
+                mainVideo.play();
+                updatePlayPauseIcon(true);
+                // Listeners start if voice setup enabled
+                startTranscription();
+            }
+        }
+
+        backBtn.addEventListener('click', () => {
+            stopTranscription();
+            mainVideo.pause();
+            mainVideo.src = "";
+            loadedSubtitles = [];
+            srtData = [];
+            srtCount = 1;
+            document.getElementById('videoBtnText').innerText = "ভিডিও ফাইল ওপেন করুন";
+            document.getElementById('srtBtnText').innerText = ".SRT ফাইল ওপেন করুন";
+            playerScreen.classList.add('hidden');
+            fileBrowserScreen.classList.remove('hidden');
+        });
+
+        // Render Loaded Subtitles
+        mainVideo.addEventListener('timeupdate', () => {
+            if (loadedSubtitles.length > 0) {
+                const curTime = mainVideo.currentTime;
+                const match = loadedSubtitles.find(sub => curTime >= sub.start && curTime <= sub.end);
+                if (match) {
+                    subtitleText.innerText = match.text;
+                } else {
+                    subtitleText.innerText = '';
+                }
+            }
+        });
+
+        // Double Click Skip Mechanism
+        let clickTimer;
+        mainVideo.addEventListener('click', (e) => {
+            if (e.detail === 1) {
+                clickTimer = setTimeout(() => {
+                    togglePlay();
+                }, 220);
+            } else if (e.detail === 2) {
+                clearTimeout(clickTimer);
+                const rect = mainVideo.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const width = rect.width;
+
+                if (clickX < width * 0.4) {
+                    mainVideo.currentTime -= 10;
+                    showHUD('rotate-ccw', '-10s');
+                } else if (clickX > width * 0.6) {
+                    mainVideo.currentTime += 10;
+                    showHUD('rotate-cw', '+10s');
+                }
+            }
+        });
+
+        function togglePlay() {
+            if (mainVideo.paused) {
+                mainVideo.play();
+                updatePlayPauseIcon(true);
+            } else {
+                mainVideo.pause();
+                updatePlayPauseIcon(false);
+            }
+        }
+
+        function updatePlayPauseIcon(isPlaying) {
+            playPauseBtn.innerHTML = isPlaying 
+                ? `<i data-lucide="pause" class="w-6 h-6 fill-white"></i>`
+                : `<i data-lucide="play" class="w-6 h-6 fill-white"></i>`;
+            lucide.createIcons();
+        }
+
+        playPauseBtn.addEventListener('click', togglePlay);
+        skipBackwardBtn.addEventListener('click', () => { mainVideo.currentTime -= 10; showHUD('rotate-ccw', '-10s'); });
+        skipForwardBtn.addEventListener('click', () => { mainVideo.currentTime += 10; showHUD('rotate-cw', '+10s'); });
+
+        // Volume & Mute Handling
+        muteBtn.addEventListener('click', () => {
+            mainVideo.muted = !mainVideo.muted;
+            muteBtn.innerHTML = mainVideo.muted 
+                ? `<i data-lucide="volume-x" class="w-5 h-5"></i>`
+                : `<i data-lucide="volume-2" class="w-5 h-5"></i>`;
+            lucide.createIcons();
+        });
+
+        volumeBar.addEventListener('input', (e) => {
+            mainVideo.volume = e.target.value;
+            mainVideo.muted = e.target.value == 0;
+        });
+
+        // Speed Adjustment
+        speedSelect.addEventListener('change', (e) => {
+            mainVideo.playbackRate = parseFloat(e.target.value);
+        });
+
+        // Style Customizer
+        function setSubColor(color) {
+            subtitleText.className = `subtitle-shadow font-semibold bg-black/60 px-4 py-2 rounded-lg inline-block leading-relaxed max-w-full break-words transition-all duration-100`;
+            if (color === 'yellow') subtitleText.classList.add('text-yellow-400');
+            if (color === 'white') subtitleText.classList.add('text-slate-100');
+            if (color === 'green') subtitleText.classList.add('text-green-400');
+            if (color === 'cyan') subtitleText.classList.add('text-cyan-400');
+        }
+
+        subSizeSelect.addEventListener('change', (e) => {
+            subtitleText.classList.remove('text-lg', 'text-2xl', 'text-3xl', 'text-4xl');
+            subtitleText.classList.add(e.target.value);
+        });
+
+        // Seekbar Mechanics
+        mainVideo.addEventListener('loadedmetadata', () => {
+            seekBar.max = mainVideo.duration;
+            totalDurationEl.innerText = formatTime(mainVideo.duration);
+        });
+
+        mainVideo.addEventListener('timeupdate', () => {
+            if (!seekBar.classList.contains('active')) {
+                seekBar.value = mainVideo.currentTime;
+            }
+            currentTimeEl.innerText = formatTime(mainVideo.currentTime);
+        });
+
+        seekBar.addEventListener('input', (e) => {
+            mainVideo.currentTime = e.target.value;
+        });
+
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${minutes < 10 ? '0' : ''}${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        // Gesture Detection: Volume & Brightness Swipes
+        let isDragging = false;
+        let startY = 0;
+        let startValue = 0;
+        let dragType = ''; // 'volume' or 'brightness'
+
+        function handleDragStart(clientX, clientY) {
+            isDragging = true;
+            startY = clientY;
+            const rect = playerScreen.getBoundingClientRect();
+            if (clientX > rect.width / 2) {
+                dragType = 'volume';
+                startValue = mainVideo.volume;
+            } else {
+                dragType = 'brightness';
+                startValue = currentBrightness;
+            }
+        }
+
+        function handleDragMove(clientX, clientY) {
+            if (!isDragging) return;
+            const deltaY = startY - clientY;
+            const rect = playerScreen.getBoundingClientRect();
+            const normalizedDelta = (deltaY / rect.height) * 1.8; // Swipe Sensitivity
+
+            if (dragType === 'volume') {
+                let newVol = Math.max(0, Math.min(1, startValue + normalizedDelta));
+                mainVideo.volume = newVol;
+                volumeBar.value = newVol;
+                showHUD(newVol === 0 ? 'volume-x' : 'volume-2', `Volume: ${Math.round(newVol * 100)}%`);
+            } else if (dragType === 'brightness') {
+                let newBright = Math.max(10, Math.min(100, startValue + normalizedDelta * 100));
+                currentBrightness = newBright;
+                // Update opacity overlay
+                brightnessOverlay.style.opacity = (1 - (newBright / 100)).toFixed(2);
+                showHUD('sun', `Brightness: ${Math.round(newBright)}%`);
+            }
+        }
+
+        // Event hooks for Mouse Drag
+        playerScreen.addEventListener('mousedown', (e) => {
+            if (e.target === mainVideo || e.target === brightnessOverlay) {
+                handleDragStart(e.clientX, e.clientY);
+            }
+        });
+        playerScreen.addEventListener('mousemove', (e) => handleDragMove(e.clientX, e.clientY));
+        window.addEventListener('mouseup', () => { isDragging = false; });
+
+        // Event hooks for Touch Swipe (Mobile devices)
+        playerScreen.addEventListener('touchstart', (e) => {
+            const touch = e.touches[0];
+            if (touch.target === mainVideo || touch.target === brightnessOverlay) {
+                handleDragStart(touch.clientX, touch.clientY);
+            }
+        });
+        playerScreen.addEventListener('touchmove', (e) => {
+            const touch = e.touches[0];
+            handleDragMove(touch.clientX, touch.clientY);
+        });
+        playerScreen.addEventListener('touchend', () => { isDragging = false; });
+
+        // HUD Renderer Helper
+        function showHUD(iconName, value) {
+            hudIcon.setAttribute('data-lucide', iconName);
+            hudValue.innerText = value;
+            lucide.createIcons();
+            hudIndicator.style.opacity = '1';
+            clearTimeout(hudTimeout);
+            hudTimeout = setTimeout(() => { hudIndicator.style.opacity = '0'; }, 800);
+        }
+
+        // Fullscreen Toggle
+        fullscreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                playerScreen.requestFullscreen().catch(err => { alert(err.message); });
+            } else {
+                document.exitFullscreen();
+            }
+        });
+
+        // Controls Auto-Hide
+        function showControls() {
+            topBar.style.opacity = '1';
+            bottomControls.style.opacity = '1';
+            document.body.style.cursor = 'default';
+            
+            clearTimeout(controlsTimeout);
+            if (!mainVideo.paused) {
+                controlsTimeout = setTimeout(hideControls, 3000);
+            }
+        }
+
+        function hideControls() {
+            topBar.style.opacity = '0';
+            bottomControls.style.opacity = '0';
+            document.body.style.cursor = 'none';
+        }
+
+        playerScreen.addEventListener('mousemove', showControls);
+        playerScreen.addEventListener('click', showControls);
+
+        // SRT file generator format functions
+        function formatSRTTime(seconds) {
+            const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
+            const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+            const s = Math.floor(seconds % 60).toString().padStart(2, '0');
+            const ms = Math.floor((seconds % 1) * 1000).toString().padStart(3, '0');
+            return `${h}:${m}:${s},${ms}`;
+        }
+
+        // Save transcripts to .SRT Subtitle File
+        downloadSrtBtn.addEventListener('click', () => {
+            if (srtData.length === 0) {
+                alert("রেকর্ড করা কোনো সাবটাইটেল ডেটা খুঁজে পাওয়া যায়নি।");
+                return;
+            }
+            let srtContent = '';
+            srtData.forEach(item => {
+                srtContent += `${item.id}\n`;
+                srtContent += `${formatSRTTime(item.start)} --> ${formatSRTTime(item.end)}\n`;
+                srtContent += `${item.text}\n\n`;
+            });
+
+            const blob = new Blob([srtContent], { type: 'text/srt;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${videoTitle.innerText.split('.')[0]}_Bengali.srt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+    </script>
+</body>
+</html>
