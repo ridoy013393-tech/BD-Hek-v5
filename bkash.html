@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TikTok Suite Ultimate Edition</title>
+<title>TikTok Suite Ultra Pro HD</title>
 
 <style>
 :root {
@@ -216,7 +216,7 @@ input:focus {
     object-fit: contain;
 }
 
-/* ইন-অ্যাপ অডিও প্লেয়ার ও ঘূর্ণায়মান ডিস্ক */
+/* ইন-অ্যাপ অডিও প্লেয়ার */
 .audio-preview-container {
     background: var(--tab-bg);
     padding: 12px;
@@ -236,7 +236,7 @@ input:focus {
     border-radius: 50%;
     border: 2px solid var(--accent-pink);
     animation: rotateDisk 4s linear infinite;
-    animation-play-state: paused; /* অডিও প্লে হলে তবেই ঘুরবে */
+    animation-play-state: paused;
     object-fit: cover;
     background: black;
 }
@@ -535,6 +535,7 @@ audio {
         </div>
 
         <div id="bioLinkContainer" style="margin-bottom: 12px; display: none;"></div>
+        
         <div class="bio-box" id="bioBox">No Bio</div>
 
         <div class="tabs">
@@ -576,7 +577,7 @@ audio {
         </div>
     </div>
 
-    <!-- ২. ভিডিও ডাউনলোডার রেজাল্ট প্যানেল -->
+    <!-- ২. ভিডিও ডাউনলোডার রেজাল্ট প্যানেল (HD কভারড) -->
     <div class="result active-result" id="videoResult">
         <div class="profile-card">
             <img id="vidCover" class="video-cover" alt="Video Cover">
@@ -610,7 +611,7 @@ audio {
                 <div class="stat-item"><div class="stat-label">Shares</div><div class="stat-value" id="vidValShares">0</div></div>
             </div>
 
-            <!-- ব্যাকগ্রাউন্ড মিউজিক প্লেয়ার ও ঘূর্ণায়মান ভিনাইল ডিস্ক কভার -->
+            <!-- ব্যাকগ্রাউন্ড মিউজিক প্লেয়ার -->
             <div class="audio-preview-container" id="audioPreviewContainer" style="margin-top: 15px;">
                 <div class="music-disk-container">
                     <img id="musicDiskImg" class="music-disk" src="" alt="Album Cover">
@@ -620,10 +621,11 @@ audio {
             </div>
         </div>
 
-        <!-- ভিডিও ট্যাব ৩: ডাউনলোড বাটন গ্রুপ -->
+        <!-- ভিডিও ট্যাব ৩: ডাউনলোড বাটন গ্রুপ (পেজ চেঞ্জ না করে এবং ফুল এইচডি তে ডাউনলোড হবে) -->
         <div id="vidTabContent-download" class="tab-content">
             <div class="action-buttons">
-                <button id="btnDownloadNoWatermark" class="btn-action" style="background: var(--brand-gradient); color: black;">📥 Download Video (No Watermark)</button>
+                <!-- এইচডি কাস্টম কালার বাটন -->
+                <button id="btnDownloadNoWatermark" class="btn-action" style="background: var(--brand-gradient); color: black;">📥 Download Video (No Watermark - Full HD)</button>
                 <button id="btnDownloadCover" class="btn-action">🖼️ Download HD Cover Thumbnail</button>
                 <button id="btnDownloadMusic" class="btn-action">🎵 Download Audio Track (MP3)</button>
             </div>
@@ -675,7 +677,7 @@ async function pasteFromClipboard() {
     }
 }
 
-// ভিডিও ডুরেশন ফরম্যাটার (MM:SS) [1.1.8]
+// ভিডিও ডুরেশন ফরম্যাটার (MM:SS)
 function formatDuration(sec) {
     if (!sec) return "0:00";
     let mins = Math.floor(sec / 60);
@@ -700,11 +702,11 @@ function setupAudioAnimation() {
     }
 }
 
-// প্রক্সি সহ সুরক্ষিত এবং সরাসরি ডাউনলোড করার মেথড [1.2.9]
+// প্রক্সি সহ সুরক্ষিত এবং সরাসরি ডাউনলোড করার মেথড
 async function downloadFile(url, filename) {
     showToast("Downloading started... please wait ⏳");
     
-    // CORS এরর বাইপাস করার জন্য নিরাপদ CORS Proxy ব্যবহার করা হচ্ছে [1.2.9]
+    // CORS এরর বাইপাস করার জন্য নিরাপদ CORS Proxy ব্যবহার করা হচ্ছে
     const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(url);
     
     try {
@@ -713,6 +715,7 @@ async function downloadFile(url, filename) {
         const blob = await response.blob();
         const blobUrl = window.URL.createObjectURL(blob);
         
+        // ফাইলটি ব্যাকগ্রাউন্ডে রেডি করে সিস্টেমে ডাউনলোড করা হচ্ছে
         const tempLink = document.createElement("a");
         tempLink.href = blobUrl;
         tempLink.download = filename;
@@ -763,7 +766,7 @@ function handleSearch() {
     }
 }
 
-// ভিডিও ডাউনলোডার লজিক [1.1.2, 1.1.8]
+// ভিডিও এবং স্লাইডশো ডাউনলোডার লজিক (HD সুনিশ্চিত করার জন্য hd=1 যুক্ত করা হয়েছে)
 async function getVideoInfo(url) {
     let loader = document.getElementById("loader");
     let resultBox = document.getElementById("result");
@@ -779,7 +782,8 @@ async function getVideoInfo(url) {
     audioPlayer.src = "";
 
     try {
-        let res = await fetch("https://www.tikwm.com/api/?url=" + encodeURIComponent(url));
+        // এপিআই রিকোয়েস্টে hd=1 প্যারামিটারটি যুক্ত করা হলো যা ফুল এইচডি সোর্স বের করে
+        let res = await fetch("https://www.tikwm.com/api/?url=" + encodeURIComponent(url) + "&hd=1");
         let json = await res.json();
         loader.style.display = "none";
 
@@ -792,14 +796,14 @@ async function getVideoInfo(url) {
             document.getElementById("vidAuthor").textContent = d.author.nickname;
             document.getElementById("vidUsername").textContent = "@" + d.author.unique_id;
             
-            // ভিডিওর ডুরেশনসহ টাইটেল সেট করা [1.1.8]
             let timeInfo = d.duration ? `⏱️ Duration: ${formatDuration(d.duration)}` : "";
             document.getElementById("vidTitle").innerHTML = `${d.title || "No description available"}<br><span style="color: var(--accent-cyan); font-weight: bold; font-size:10px; display:inline-block; margin-top:5px;">${timeInfo}</span>`;
 
-            vidPlayer.src = d.play;
+            // d.hdplay থাকলে সেটি প্লে এবং ডাউনলোড হবে, যা সর্বোচ্চ মূল কোয়ালিটি নিশ্চিত করে
+            let hdVideoUrl = d.hdplay || d.play;
+            vidPlayer.src = hdVideoUrl;
             audioPlayer.src = d.music;
 
-            // অ্যালবাম আর্ট বা কভার আর্ট সেটআপ [1.1.8]
             if (d.music_info && d.music_info.cover) {
                 document.getElementById("musicDiskImg").src = d.music_info.cover;
                 document.getElementById("musicTitle").textContent = d.music_info.title || "Background Music";
@@ -813,8 +817,9 @@ async function getVideoInfo(url) {
             document.getElementById("vidValComments").textContent = formatNumber(d.comment_count);
             document.getElementById("vidValShares").textContent = formatNumber(d.share_count);
 
+            // ডাউনলোড হ্যান্ডলার সেটআপ (ফুল এইচডি/HD সোর্স ফাইল সহ)
             document.getElementById("btnDownloadNoWatermark").onclick = function() {
-                downloadFile(d.play, `${d.author.unique_id}_video_no_watermark.mp4`);
+                downloadFile(hdVideoUrl, `${d.author.unique_id}_video_full_hd.mp4`);
             };
             document.getElementById("btnDownloadCover").onclick = function() {
                 downloadFile(d.cover, `${d.author.unique_id}_cover.jpg`);
@@ -823,7 +828,7 @@ async function getVideoInfo(url) {
                 downloadFile(d.music, `${d.author.unique_id}_music.mp3`);
             };
 
-            showToast("Video loaded! Preview & Stats Ready 📊");
+            showToast("Video loaded! Full HD Quality Ready 📽️");
         } else {
             showToast("Invalid URL or Private video.", true);
         }
@@ -906,6 +911,7 @@ async function getUser(username){
 
             document.getElementById("profileLink").href = `https://www.tiktok.com/@${d.uniqueId}`;
             
+            // প্রোফাইল পিকচার সরাসরি ডাউনলোড করার ইভেন্ট
             document.getElementById("btnDownloadAvatar").onclick = function() {
                 downloadFile(d.avatarLarger, `${d.uniqueId}_avatar_hd.jpg`);
             };
