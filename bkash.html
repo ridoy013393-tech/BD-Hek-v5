@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TikTok Suite Ultra Pro</title>
+<title>TikTok Suite Ultimate Edition</title>
 
 <style>
 :root {
@@ -216,7 +216,7 @@ input:focus {
     object-fit: contain;
 }
 
-/* ইন-অ্যাপ অডিও প্লেয়ার */
+/* ইন-অ্যাপ অডিও প্লেয়ার ও ঘূর্ণায়মান ডিস্ক */
 .audio-preview-container {
     background: var(--tab-bg);
     padding: 12px;
@@ -224,11 +224,30 @@ input:focus {
     margin-bottom: 18px;
     border: 1px dashed var(--card-border);
 }
-.audio-preview-container p {
+.music-disk-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+.music-disk {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 2px solid var(--accent-pink);
+    animation: rotateDisk 4s linear infinite;
+    animation-play-state: paused; /* অডিও প্লে হলে তবেই ঘুরবে */
+    object-fit: cover;
+    background: black;
+}
+@keyframes rotateDisk {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+.music-title-text {
     font-size: 12px;
     font-weight: bold;
-    margin-bottom: 8px;
-    color: var(--text-secondary);
+    color: var(--text-primary);
 }
 audio {
     width: 100%;
@@ -516,7 +535,6 @@ audio {
         </div>
 
         <div id="bioLinkContainer" style="margin-bottom: 12px; display: none;"></div>
-        
         <div class="bio-box" id="bioBox">No Bio</div>
 
         <div class="tabs">
@@ -592,14 +610,17 @@ audio {
                 <div class="stat-item"><div class="stat-label">Shares</div><div class="stat-value" id="vidValShares">0</div></div>
             </div>
 
-            <!-- ব্যাকগ্রাউন্ড মিউজিক প্লেয়ার -->
+            <!-- ব্যাকগ্রাউন্ড মিউজিক প্লেয়ার ও ঘূর্ণায়মান ভিনাইল ডিস্ক কভার -->
             <div class="audio-preview-container" id="audioPreviewContainer" style="margin-top: 15px;">
-                <p>🎵 Background Music Preview:</p>
+                <div class="music-disk-container">
+                    <img id="musicDiskImg" class="music-disk" src="" alt="Album Cover">
+                    <div class="music-title-text" id="musicTitle">Original Background Audio</div>
+                </div>
                 <audio id="musicPlayer" controls></audio>
             </div>
         </div>
 
-        <!-- ভিডিও ট্যাব ৩: ডাউনলোড বাটন গ্রুপ (পেজ চেঞ্জ না করে ডাউনলোড হবে) -->
+        <!-- ভিডিও ট্যাব ৩: ডাউনলোড বাটন গ্রুপ -->
         <div id="vidTabContent-download" class="tab-content">
             <div class="action-buttons">
                 <button id="btnDownloadNoWatermark" class="btn-action" style="background: var(--brand-gradient); color: black;">📥 Download Video (No Watermark)</button>
@@ -625,6 +646,15 @@ audio {
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     renderWatchlist();
+    setupAudioAnimation();
+});
+
+// অফলাইন ও অনলাইন ডিটেক্টর লজিক
+window.addEventListener('offline', () => {
+    showToast("You are offline! Check your internet connection. 📡", true);
+});
+window.addEventListener('online', () => {
+    showToast("Back online! ✨");
 });
 
 let currentProfileData = null;
@@ -645,11 +675,36 @@ async function pasteFromClipboard() {
     }
 }
 
-// প্রক্সি সহ সুরক্ষিত এবং সরাসরি ডাউনলোড করার মেথড
+// ভিডিও ডুরেশন ফরম্যাটার (MM:SS) [1.1.8]
+function formatDuration(sec) {
+    if (!sec) return "0:00";
+    let mins = Math.floor(sec / 60);
+    let secs = sec % 60;
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+}
+
+// মিউজিক প্লে হলে অ্যালবাম ডিস্ক ঘোরার লজিক
+function setupAudioAnimation() {
+    const audio = document.getElementById("musicPlayer");
+    const disk = document.getElementById("musicDiskImg");
+    if(audio && disk) {
+        audio.addEventListener("play", () => {
+            disk.style.animationPlayState = "running";
+        });
+        audio.addEventListener("pause", () => {
+            disk.style.animationPlayState = "paused";
+        });
+        audio.addEventListener("ended", () => {
+            disk.style.animationPlayState = "paused";
+        });
+    }
+}
+
+// প্রক্সি সহ সুরক্ষিত এবং সরাসরি ডাউনলোড করার মেথড [1.2.9]
 async function downloadFile(url, filename) {
     showToast("Downloading started... please wait ⏳");
     
-    // CORS এরর বাইপাস করার জন্য নিরাপদ CORS Proxy ব্যবহার করা হচ্ছে
+    // CORS এরর বাইপাস করার জন্য নিরাপদ CORS Proxy ব্যবহার করা হচ্ছে [1.2.9]
     const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(url);
     
     try {
@@ -658,7 +713,6 @@ async function downloadFile(url, filename) {
         const blob = await response.blob();
         const blobUrl = window.URL.createObjectURL(blob);
         
-        // ফাইলটি ব্যাকগ্রাউন্ডে রেডি করে সিস্টেমে ডাউনলোড করা হচ্ছে
         const tempLink = document.createElement("a");
         tempLink.href = blobUrl;
         tempLink.download = filename;
@@ -670,7 +724,6 @@ async function downloadFile(url, filename) {
         showToast("File saved to device successfully! ✅");
     } catch (error) {
         console.warn("Proxy download failed, trying direct fallback...", error);
-        // ব্যাকআপ ১: প্রক্সি ফেইল করলে সরাসরি ডাউনলোড ট্রাই করা হবে
         try {
             const directResponse = await fetch(url);
             const blob = await directResponse.blob();
@@ -685,7 +738,6 @@ async function downloadFile(url, filename) {
             showToast("File saved to device successfully! ✅");
         } catch (directError) {
             console.error("All download methods failed, opening link", directError);
-            // ব্যাকআপ ২: ব্রাউজার সম্পূর্ণ ব্লক করলে শেষ উপায় হিসেবে নতুন ট্যাবে ওপেন হবে
             window.open(url, "_blank");
             showToast("Opening link in browser tab (Fallback)...", true);
         }
@@ -711,7 +763,7 @@ function handleSearch() {
     }
 }
 
-// ভিডিও এবং স্লাইডশো ডাউনলোডার লজিক
+// ভিডিও ডাউনলোডার লজিক [1.1.2, 1.1.8]
 async function getVideoInfo(url) {
     let loader = document.getElementById("loader");
     let resultBox = document.getElementById("result");
@@ -739,17 +791,28 @@ async function getVideoInfo(url) {
             document.getElementById("vidCover").src = d.cover;
             document.getElementById("vidAuthor").textContent = d.author.nickname;
             document.getElementById("vidUsername").textContent = "@" + d.author.unique_id;
-            document.getElementById("vidTitle").textContent = d.title ? d.title : "No description available";
+            
+            // ভিডিওর ডুরেশনসহ টাইটেল সেট করা [1.1.8]
+            let timeInfo = d.duration ? `⏱️ Duration: ${formatDuration(d.duration)}` : "";
+            document.getElementById("vidTitle").innerHTML = `${d.title || "No description available"}<br><span style="color: var(--accent-cyan); font-weight: bold; font-size:10px; display:inline-block; margin-top:5px;">${timeInfo}</span>`;
 
             vidPlayer.src = d.play;
             audioPlayer.src = d.music;
+
+            // অ্যালবাম আর্ট বা কভার আর্ট সেটআপ [1.1.8]
+            if (d.music_info && d.music_info.cover) {
+                document.getElementById("musicDiskImg").src = d.music_info.cover;
+                document.getElementById("musicTitle").textContent = d.music_info.title || "Background Music";
+            } else {
+                document.getElementById("musicDiskImg").src = "https://via.placeholder.com/42";
+                document.getElementById("musicTitle").textContent = "Original Audio";
+            }
 
             document.getElementById("vidValPlays").textContent = formatNumber(d.play_count);
             document.getElementById("vidValLikes").textContent = formatNumber(d.digg_count);
             document.getElementById("vidValComments").textContent = formatNumber(d.comment_count);
             document.getElementById("vidValShares").textContent = formatNumber(d.share_count);
 
-            // ডাউনলোড হ্যান্ডলার সেটআপ (যা পেজ রিডাইরেক্ট করে না)
             document.getElementById("btnDownloadNoWatermark").onclick = function() {
                 downloadFile(d.play, `${d.author.unique_id}_video_no_watermark.mp4`);
             };
@@ -843,7 +906,6 @@ async function getUser(username){
 
             document.getElementById("profileLink").href = `https://www.tiktok.com/@${d.uniqueId}`;
             
-            // প্রোফাইল পিকচার সরাসরি ডাউনলোড করার ইভেন্ট
             document.getElementById("btnDownloadAvatar").onclick = function() {
                 downloadFile(d.avatarLarger, `${d.uniqueId}_avatar_hd.jpg`);
             };
