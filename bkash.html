@@ -1,849 +1,983 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MX Player Pro - Ultimate Media Center</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Google Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Hind Siliguri', sans-serif;
-            background-color: #0b0f19;
-        }
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            height: 14px;
-            width: 14px;
-            border-radius: 50%;
-            background: #2563eb;
-            cursor: pointer;
-        }
-        .subtitle-shadow {
-            text-shadow: 2px 2px 4px rgba(0,0,0,1), -1px -1px 4px rgba(0,0,0,1);
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TikTok Suite Ultra Pro</title>
+
+<style>
+:root {
+    --bg-dark: #080c14;
+    --card-bg: #0f172a;
+    --card-border: #1e293b;
+    --accent-cyan: #00f2fe;
+    --accent-pink: #fe0979;
+    --text-primary: #f3f4f6;
+    --text-secondary: #9ca3af;
+    --brand-gradient: linear-gradient(135deg, #fe0979 0%, #00f2fe 100%);
+    --tab-bg: #1e293b;
+    --neon-shadow: 0 0 15px rgba(0, 242, 254, 0.15);
+}
+
+body.light-mode {
+    --bg-dark: #f1f5f9;
+    --card-bg: #ffffff;
+    --card-border: #cbd5e1;
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --tab-bg: #e2e8f0;
+    --neon-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+body{
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 16px 8px;
+}
+
+.container{
+    width: 100%;
+    max-width: 440px;
+    background: var(--card-bg);
+    padding: 24px 18px;
+    border-radius: 28px;
+    border: 1px solid var(--card-border);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    position: relative;
+}
+
+/* লাইট/ডার্ক মোড বাটন */
+.theme-toggle {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: var(--tab-bg);
+    border: none;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-primary);
+}
+
+h1{
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 24px;
+    font-weight: 800;
+    background: var(--brand-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* স্মার্ট ইনপুট বক্স ও বাটনসমূহ */
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+input{
+    width: 100%;
+    padding: 16px 90px 16px 16px;
+    border: 2px solid var(--card-border);
+    border-radius: 16px;
+    background: var(--tab-bg);
+    color: var(--text-primary);
+    font-size: 14px;
+    outline: none;
+}
+
+input:focus {
+    border-color: var(--accent-cyan);
+}
+
+/* পেস্ট বাটন */
+.paste-btn-icon {
+    position: absolute;
+    right: 50px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+/* সার্চ বাটন */
+.search-btn-icon {
+    position: absolute;
+    right: 10px;
+    background: var(--brand-gradient);
+    border: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+/* ওয়াচলিস্ট ট্র্যাকার */
+.watchlist-section {
+    margin-top: 20px;
+    border-top: 1px dashed var(--card-border);
+    padding-top: 15px;
+}
+.watchlist-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+}
+.watchlist-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.watchlist-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--tab-bg);
+    padding: 10px;
+    border-radius: 14px;
+    cursor: pointer;
+    position: relative;
+    border: 1px solid transparent;
+}
+.watchlist-card:hover {
+    border-color: var(--accent-cyan);
+}
+.watchlist-card img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--accent-cyan);
+}
+.watchlist-details h4 {
+    font-size: 13px;
+    font-weight: bold;
+}
+.watchlist-details p {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+.btn-remove-watchlist {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    color: var(--accent-pink);
+    font-size: 18px;
+    cursor: pointer;
+}
+
+/* ইন-অ্যাপ ভিডিও প্লেয়ার ফ্রেম */
+.video-preview-container {
+    margin: 15px 0;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 3px solid var(--card-border);
+    background: black;
+    aspect-ratio: 9/16;
+    max-height: 380px;
+    box-shadow: var(--neon-shadow);
+}
+.video-preview-container video {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+}
+
+/* ইন-অ্যাপ অডিও প্লেয়ার */
+.audio-preview-container {
+    background: var(--tab-bg);
+    padding: 12px;
+    border-radius: 14px;
+    margin-bottom: 18px;
+    border: 1px dashed var(--card-border);
+}
+.audio-preview-container p {
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: var(--text-secondary);
+}
+audio {
+    width: 100%;
+    height: 34px;
+    border-radius: 8px;
+    outline: none;
+}
+
+.loader-container {
+    display: none;
+    margin: 20px 0;
+}
+.loader {
+    width: 32px;
+    height: 32px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    border-top-color: var(--accent-cyan);
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.result {
+    margin-top: 24px;
+    display: none;
+    animation: slideUp 0.4s ease-out;
+}
+
+.result.active-result {
+    border-radius: 20px;
+    box-shadow: var(--neon-shadow);
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.profile-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--tab-bg);
+    padding: 16px;
+    border-radius: 20px;
+    margin-bottom: 18px;
+}
+
+.profile-card img {
+    width: 75px;
+    height: 75px;
+    border-radius: 50%;
+    border: 2px solid var(--accent-cyan);
+    object-fit: cover;
+}
+
+.video-cover {
+    width: 70px;
+    height: 95px;
+    border-radius: 12px !important;
+    border: 2px solid var(--accent-pink) !important;
+    object-fit: cover;
+}
+
+.profile-names h2 {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.creator-badge {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 50px;
+    font-weight: bold;
+    color: white;
+    margin-top: 4px;
+}
+
+.profile-username {
+    font-size: 13px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+}
+
+.bio-box {
+    font-size: 13px;
+    background: var(--tab-bg);
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    border-left: 3px solid var(--accent-pink);
+    line-height: 1.4;
+}
+
+.tabs {
+    display: flex;
+    background: var(--tab-bg);
+    border-radius: 14px;
+    padding: 4px;
+    margin-bottom: 18px;
+}
+
+.tab-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 10px;
+    color: var(--text-secondary);
+    font-weight: bold;
+    font-size: 13px;
+    cursor: pointer;
+    border-radius: 10px;
+}
+
+.tab-btn.active {
+    background: var(--brand-gradient);
+    color: black;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.stat-item {
+    background: var(--tab-bg);
+    padding: 14px;
+    border-radius: 14px;
+    text-align: center;
+}
+
+.stat-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.stat-value {
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.extra-meta {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: var(--tab-bg);
+    padding: 12px;
+    border-radius: 12px;
+    font-size: 12px;
+}
+
+.meta-row {
+    display: flex;
+    justify-content: space-between;
+}
+
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.btn-action {
+    background: var(--tab-bg);
+    color: var(--text-primary);
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    text-decoration: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-action:hover {
+    opacity: 0.9;
+}
+
+.qr-container {
+    text-align: center;
+    background: var(--tab-bg);
+    padding: 20px;
+    border-radius: 16px;
+}
+
+.qr-code-img {
+    width: 140px;
+    height: 140px;
+    background: white;
+    padding: 8px;
+    border-radius: 12px;
+    margin: 0 auto 12px;
+    display: block;
+}
+
+.toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #10b981;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-size: 14px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    z-index: 1000;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.toast.show {
+    transform: translateX(-50%) translateY(0);
+}
+.toast.error {
+    background: #ef4444;
+}
+
+.footer {
+    margin-top: 24px;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 11px;
+    text-transform: uppercase;
+}
+</style>
 </head>
-<body class="text-slate-100 min-h-screen flex flex-col justify-between overflow-x-hidden select-none">
+<body>
 
-    <!-- Splash Screen (ফেইড আউট হবে) -->
-    <div id="splashScreen" class="fixed inset-0 bg-slate-950 flex flex-col justify-center items-center z-50 transition-opacity duration-700">
-        <div class="w-20 h-20 bg-blue-600 rounded-3xl flex items-center justify-center mb-4 shadow-lg shadow-blue-900/50">
-            <i data-lucide="play" class="w-10 h-10 text-white fill-white"></i>
+<div class="container">
+
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle Theme">🌓</button>
+
+    <h1>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="color: var(--accent-cyan)"><path d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.89-.74-3.94-1.74-.22-.22-.44-.47-.63-.73v7.3c0 4.26-2.52 7.79-6.78 8.12-4.45.35-8.62-2.73-9.04-7.18-.46-4.96 3.86-9.48 8.92-8.91.13.01.27.04.4.06V.02z"/></svg>
+        TikTok Suite Pro
+    </h1>
+
+    <div class="search-box">
+        <input type="text" id="username" placeholder="Paste link or type username here...">
+        <button onclick="pasteFromClipboard()" class="paste-btn-icon" title="Paste Link">📋</button>
+        <button onclick="handleSearch()" class="search-btn-icon" aria-label="Search">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </button>
+    </div>
+
+    <div class="loader-container" id="loader">
+        <div class="loader"></div>
+    </div>
+
+    <!-- ১. প্রোফাইল রেজাল্ট প্যানেল -->
+    <div class="result active-result" id="result">
+        <div class="profile-card">
+            <img id="avatar" alt="Avatar">
+            <div class="profile-names">
+                <h2 id="nickname">Nickname</h2>
+                <div id="creatorBadge" class="creator-badge">Level</div>
+                <div class="profile-username">
+                    <span id="displayUsername">@user</span>
+                </div>
+            </div>
         </div>
-        <h1 class="text-3xl font-bold tracking-wider">MX PLAYER</h1>
-        <p class="text-blue-500 text-xs font-semibold uppercase mt-1 tracking-widest">Ultimate Edition</p>
-    </div>
 
-    <!-- Screen 1: MX Player Dashboard (Homescreen) -->
-    <div id="mainDashboard" class="flex-grow flex flex-col">
-        <!-- Dashboard Header -->
-        <header class="bg-slate-900 border-b border-slate-800 p-4 sticky top-0 z-40">
-            <div class="max-w-6xl mx-auto flex justify-between items-center">
-                <div class="flex items-center gap-3">
-                    <button class="p-1 hover:bg-slate-800 rounded-lg"><i data-lucide="menu" class="w-6 h-6 text-slate-300"></i></button>
-                    <span class="text-xl font-bold text-white">MX Player</span>
-                </div>
-                <!-- Navigation Tabs -->
-                <div class="flex bg-slate-950 p-1 rounded-lg border border-slate-800">
-                    <button id="tabLocal" class="px-4 py-1.5 rounded-md text-xs font-semibold bg-blue-600 text-white transition">লোকাল ফোল্ডার</button>
-                    <button id="tabOnline" class="px-4 py-1.5 rounded-md text-xs font-semibold text-slate-400 hover:text-white transition">অনলাইন ক্যাটাগরি</button>
-                </div>
-            </div>
-        </header>
-
-        <!-- Main Content Area -->
-        <main class="max-w-6xl w-full mx-auto p-4 flex-grow">
-            
-            <!-- LOCAL TAB CONTENT -->
-            <div id="localContent" class="space-y-6">
-                <!-- Directory Scanner Section -->
-                <div class="bg-gradient-to-r from-blue-900/30 to-slate-900 border border-blue-950 rounded-2xl p-5 flex flex-col md:flex-row justify-between items-center gap-4">
-                    <div class="text-center md:text-left">
-                        <h3 class="text-md font-bold text-blue-400">আপনার মেমোরির ভিডিও ফোল্ডারটি অ্যাড করুন</h3>
-                        <p class="text-xs text-slate-400 mt-1">ফোল্ডারটি সিলেক্ট করলেই অ্যাপটি স্বয়ংক্রিয়ভাবে ক্যাটাগরি তৈরি করে ফেলবে।</p>
-                    </div>
-                    <label class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold py-2.5 px-5 rounded-xl cursor-pointer transition flex items-center gap-2 shadow-lg shadow-blue-900/30">
-                        <i data-lucide="folder-open" class="w-4 h-4"></i> ফোল্ডার স্ক্যান করুন
-                        <input type="file" id="directoryInput" webkitdirectory directory multiple class="hidden">
-                    </label>
-                </div>
-
-                <!-- Folder Grid (MX Player Style Folders list) -->
-                <div>
-                    <h4 class="text-sm font-semibold text-slate-400 mb-4 uppercase tracking-wider">মিডিয়া ফোল্ডারসমূহ</h4>
-                    <div id="localFolderGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                        <!-- Default Mock folders showing MX Player feel -->
-                        <div onclick="alert('ভিডিও দেখার জন্য দয়া করে ওপরে থাকা \'ফোল্ডার স্ক্যান করুন\' বাটনে ক্লিক করে আপনার ডিভাইসের ভিডিও ফোল্ডারটি দেখান।')" class="bg-slate-900 hover:bg-slate-850 p-4 rounded-xl border border-slate-800 cursor-pointer transition flex items-center gap-3">
-                            <div class="p-3 bg-blue-950 rounded-lg text-blue-500"><i data-lucide="folder" class="w-6 h-6"></i></div>
-                            <div>
-                                <h5 class="text-sm font-bold">Camera</h5>
-                                <p class="text-[10px] text-slate-500">০টি ভিডিও</p>
-                            </div>
-                        </div>
-                        <div onclick="alert('ভিডিও দেখার জন্য দয়া করে ওপরে থাকা \'ফোল্ডার স্ক্যান করুন\' বাটনে ক্লিক করে আপনার ডিভাইসের ভিডিও ফোল্ডারটি দেখান।')" class="bg-slate-900 hover:bg-slate-850 p-4 rounded-xl border border-slate-800 cursor-pointer transition flex items-center gap-3">
-                            <div class="p-3 bg-blue-950 rounded-lg text-blue-500"><i data-lucide="folder" class="w-6 h-6"></i></div>
-                            <div>
-                                <h5 class="text-sm font-bold">WhatsApp Video</h5>
-                                <p class="text-[10px] text-slate-500">০টি ভিডিও</p>
-                            </div>
-                        </div>
-                        <div onclick="alert('ভিডিও দেখার জন্য দয়া করে ওপরে থাকা \'ফোল্ডার স্ক্যান করুন\' বাটনে ক্লিক করে আপনার ডিভাইসের ভিডিও ফোল্ডারটি দেখান।')" class="bg-slate-900 hover:bg-slate-850 p-4 rounded-xl border border-slate-800 cursor-pointer transition flex items-center gap-3">
-                            <div class="p-3 bg-blue-950 rounded-lg text-blue-500"><i data-lucide="folder" class="w-6 h-6"></i></div>
-                            <div>
-                                <h5 class="text-sm font-bold">Downloads</h5>
-                                <p class="text-[10px] text-slate-500">০টি ভিডিও</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Video list inside active folder (Hidden until folder clicked) -->
-                <div id="localVideoListSection" class="hidden pt-4">
-                    <div class="flex items-center gap-2 mb-4">
-                        <button id="backToFoldersBtn" class="p-1 hover:bg-slate-800 rounded"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
-                        <h4 id="activeFolderName" class="text-md font-bold text-white">ফোল্ডারের নাম</h4>
-                    </div>
-                    <div id="localVideoGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                        <!-- Dynamic videos go here -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- ONLINE TAB CONTENT (Pre-loaded with videos - No selection required!) -->
-            <div id="onlineContent" class="hidden space-y-8">
-                <!-- Category 1: Drama & Movies -->
-                <div>
-                    <h3 class="text-md font-bold text-blue-400 mb-3 flex items-center gap-2"><i data-lucide="film" class="w-5 h-5"></i> নাটক ও অ্যানিমেশন ফিল্ম</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                        <div onclick="playOnlineVideo('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4', 'Big Buck Bunny (Animation)')" class="bg-slate-900 rounded-xl overflow-hidden border border-slate-800 cursor-pointer hover:border-blue-600 transition group">
-                            <div class="aspect-video bg-slate-950 relative flex items-center justify-center">
-                                <i data-lucide="play" class="w-10 h-10 text-white/50 group-hover:text-white transition"></i>
-                            </div>
-                            <div class="p-3">
-                                <h4 class="text-sm font-semibold truncate">Big Buck Bunny (অ্যানিমেশন ফিল্ম)</h4>
-                                <p class="text-[10px] text-slate-500 mt-1">ক্যাটাগরি: কার্টুন • ১০ মিনিট</p>
-                            </div>
-                        </div>
-                        <div onclick="playOnlineVideo('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4', 'Elephants Dream (Sci-Fi Animation)')" class="bg-slate-900 rounded-xl overflow-hidden border border-slate-800 cursor-pointer hover:border-blue-600 transition group">
-                            <div class="aspect-video bg-slate-950 relative flex items-center justify-center">
-                                <i data-lucide="play" class="w-10 h-10 text-white/50 group-hover:text-white transition"></i>
-                            </div>
-                            <div class="p-3">
-                                <h4 class="text-sm font-semibold truncate">Elephants Dream (সায়েন্স ফিকশন)</h4>
-                                <p class="text-[10px] text-slate-500 mt-1">ক্যাটাগরি: সায়েন্স ফিকশন • ১১ মিনিট</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Category 2: Nature & Travel -->
-                <div>
-                    <h3 class="text-md font-bold text-emerald-400 mb-3 flex items-center gap-2"><i data-lucide="compass" class="w-5 h-5"></i> প্রকৃতি ও ভ্রমণ</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                        <div onclick="playOnlineVideo('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4', 'For Bigger Blazes (Nature Clip)')" class="bg-slate-900 rounded-xl overflow-hidden border border-slate-800 cursor-pointer hover:border-blue-600 transition group">
-                            <div class="aspect-video bg-slate-950 relative flex items-center justify-center">
-                                <i data-lucide="play" class="w-10 h-10 text-white/50 group-hover:text-white transition"></i>
-                            </div>
-                            <div class="p-3">
-                                <h4 class="text-sm font-semibold truncate">প্রাকৃতিক সৌন্দর্য ও এডভেঞ্চার</h4>
-                                <p class="text-[10px] text-slate-500 mt-1">ক্যাটাগরি: প্রকৃতি • ৫ মিনিট</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </main>
-    </div>
-
-    <!-- Screen 3: MX Player Screen (Hidden Initially) -->
-    <div id="playerScreen" class="hidden fixed inset-0 bg-black flex flex-col justify-between group">
+        <div id="bioLinkContainer" style="margin-bottom: 12px; display: none;"></div>
         
-        <!-- Brightness Overlay Screen -->
-        <div id="brightnessOverlay" class="absolute inset-0 bg-black pointer-events-none z-10 opacity-0 transition-opacity"></div>
+        <div class="bio-box" id="bioBox">No Bio</div>
 
-        <!-- Local File Running Alert (Only visible if browser speech recognition is blocked) -->
-        <div id="localFileAlert" class="absolute top-16 left-1/2 -translate-x-1/2 bg-amber-600/95 text-white text-xs px-4 py-2 rounded-lg shadow-xl z-35 hidden max-w-sm text-center">
-            <p class="font-bold">লোকাল ফাইল ওয়ার্নিং!</p>
-            <p class="text-[10px] mt-0.5">রিয়েল-টাইম বাংলা সাবটাইটেল বা অনুবাদের জন্য ফাইলটিকে Live Server বা অনলাইনে আপলোড করে চালান।</p>
+        <div class="tabs">
+            <button class="tab-btn active" id="btnStats" onclick="switchTab('stats')">📊 Stats</button>
+            <button class="tab-btn" id="btnActions" onclick="switchTab('actions')">⚙️ Tools</button>
+            <button class="tab-btn" id="btnQr" onclick="switchTab('qr')">📲 QR Code</button>
         </div>
 
-        <!-- Gesture HUD Indicators -->
-        <div id="hudIndicator" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/80 px-4 py-3 rounded-2xl flex flex-col items-center justify-center gap-2 pointer-events-none z-30 opacity-0 transition-opacity duration-200">
-            <i id="hudIcon" data-lucide="volume-2" class="w-8 h-8 text-blue-500"></i>
-            <span id="hudValue" class="text-sm font-bold">50%</span>
-        </div>
-
-        <!-- Top Control Bar -->
-        <div id="topBar" class="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/90 to-transparent p-4 flex justify-between items-center z-20 transition-opacity duration-300">
-            <button id="backBtn" class="p-2 hover:bg-white/10 rounded-full transition">
-                <i data-lucide="arrow-left" class="w-6 h-6"></i>
-            </button>
-            <div class="flex-grow mx-4">
-                <h2 id="videoTitle" class="text-sm font-semibold truncate text-slate-200">ভিডিওর নাম</h2>
+        <div id="tabContent-stats" class="tab-content active">
+            <div class="stats-grid">
+                <div class="stat-item"><div class="stat-label">Followers</div><div class="stat-value" id="valFollowers">0</div></div>
+                <div class="stat-item"><div class="stat-label">Likes</div><div class="stat-value" id="valLikes">0</div></div>
+                <div class="stat-item"><div class="stat-label">Following</div><div class="stat-value" id="valFollowing">0</div></div>
+                <div class="stat-item"><div class="stat-label">Videos</div><div class="stat-value" id="valVideos">0</div></div>
             </div>
-            <div class="flex items-center gap-2">
-                <!-- Language Selector -->
-                <select id="langSelect" class="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-200 focus:outline-none">
-                    <option value="bn-BD" selected>বাংলা ভয়েস</option>
-                    <option value="en-US">English (ভয়েস)</option>
-                </select>
-                <!-- Auto Translate Toggle -->
-                <div id="translateToggleContainer" class="hidden flex items-center bg-slate-900 px-2 py-1 rounded border border-slate-700 text-xs text-slate-300 gap-1.5">
-                    <input type="checkbox" id="translateCheck" class="cursor-pointer">
-                    <label for="translateCheck" class="cursor-pointer">অনুবাদ (বাংলা)</label>
-                </div>
-                <!-- Mic Button -->
-                <button id="micToggleBtn" class="p-2 bg-red-600 hover:bg-red-700 text-white rounded-full transition" title="অনুলিপি শুরু/বন্ধ">
-                    <i data-lucide="mic" class="w-5 h-5"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- Video Display Area -->
-        <div class="relative w-full h-full flex items-center justify-center">
-            <video id="mainVideo" class="w-full h-full object-contain pointer-events-auto"></video>
-
-            <!-- Subtitle Overlay -->
-            <div id="subtitleContainer" class="absolute bottom-24 left-1/2 -translate-x-1/2 w-11/12 max-w-3xl text-center pointer-events-none z-20">
-                <p id="subtitleText" class="subtitle-shadow text-yellow-400 font-semibold text-lg md:text-2xl bg-black/60 px-4 py-2 rounded-lg inline-block leading-relaxed max-w-full break-words transition-all duration-100"></p>
-            </div>
-        </div>
-
-        <!-- Bottom Control Bar -->
-        <div id="bottomControls" class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 to-transparent p-4 z-20 transition-opacity duration-300">
             
-            <!-- Seekbar & Times -->
-            <div class="flex items-center gap-3 mb-3">
-                <span id="currentTime" class="text-xs text-slate-300">00:00</span>
-                <input type="range" id="seekBar" min="0" value="0" step="0.1" class="flex-grow h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer outline-none">
-                <span id="totalDuration" class="text-xs text-slate-300">00:00</span>
+            <div class="extra-meta">
+                <div class="meta-row"><span>🌍 Region:</span> <b id="valRegion">N/A</b></div>
+                <div class="meta-row"><span>🔥 Engagement Ratio:</span> <b id="valEngagement">0%</b></div>
+                <div class="meta-row"><span>📈 Avg Likes/Video:</span> <b id="valAvgLikes">0</b></div>
+                <div class="meta-row"><span>🔓 Account Status:</span> <b id="valPrivacy">Public</b></div>
             </div>
+        </div>
 
-            <!-- Controls Row -->
-            <div class="flex justify-between items-center">
-                <div class="flex items-center gap-3 md:gap-4">
-                    <button id="playPauseBtn" class="p-2 hover:bg-white/10 rounded-full transition">
-                        <i data-lucide="play" class="w-6 h-6 fill-white"></i>
-                    </button>
-                    <button id="skipBackwardBtn" class="p-2 hover:bg-white/10 rounded-full transition">
-                        <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
-                    </button>
-                    <button id="skipForwardBtn" class="p-2 hover:bg-white/10 rounded-full transition">
-                        <i data-lucide="rotate-cw" class="w-5 h-5"></i>
-                    </button>
-                    <div class="flex items-center gap-1 group/vol">
-                        <button id="muteBtn" class="p-2 hover:bg-white/10 rounded-full transition">
-                            <i data-lucide="volume-2" class="w-5 h-5"></i>
-                        </button>
-                        <input type="range" id="volumeBar" min="0" max="1" step="0.05" value="1" class="w-0 group-hover/vol:w-16 h-1 bg-slate-600 rounded appearance-none cursor-pointer transition-all duration-300">
-                    </div>
-                </div>
+        <div id="tabContent-actions" class="tab-content">
+            <div class="action-buttons">
+                <button onclick="toggleWatchlist()" id="btnWatchlistToggle" class="btn-action" style="background: #10b981; color: white;">⭐ Add to Watchlist</button>
+                <a id="profileLink" target="_blank" class="btn-action">🌐 Open Profile</a>
+                <button id="btnDownloadAvatar" class="btn-action">🖼️ Download HD Profile Pic</button>
+                <button onclick="copyProfileSummary()" class="btn-action">📋 Copy Profile Info</button>
+                <button onclick="downloadReport()" class="btn-action">📄 Download Text Report</button>
+            </div>
+        </div>
 
-                <!-- Right Side Customizations -->
-                <div class="flex items-center gap-2 md:gap-3">
-                    <button id="downloadSrtBtn" class="hidden md:flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-xs text-white px-2.5 py-1.5 rounded transition font-semibold">
-                        <i data-lucide="download" class="w-3.5 h-3.5"></i> .SRT নামান
-                    </button>
-
-                    <select id="speedSelect" class="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-300 focus:outline-none">
-                        <option value="0.5">0.5x</option>
-                        <option value="1.0" selected>1.0x (Normal)</option>
-                        <option value="1.25">1.25x</option>
-                        <option value="1.5">1.5x</option>
-                        <option value="2.0">2.0x</option>
-                    </select>
-
-                    <div class="relative group/style">
-                        <button class="bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-xs text-slate-300 flex items-center gap-1">
-                            <i data-lucide="type" class="w-3.5 h-3.5"></i> স্টাইল
-                        </button>
-                        <div class="absolute bottom-full right-0 mb-2 w-48 bg-slate-900 border border-slate-700 rounded-lg p-3 hidden group-hover/style:block shadow-xl z-30">
-                            <p class="text-xs text-slate-400 mb-2 font-semibold">ফন্ট কালার:</p>
-                            <div class="flex gap-2 mb-3">
-                                <button onclick="setSubColor('yellow')" class="w-6 h-6 rounded bg-yellow-400 border border-white/20"></button>
-                                <button onclick="setSubColor('white')" class="w-6 h-6 rounded bg-white border border-white/20"></button>
-                                <button onclick="setSubColor('green')" class="w-6 h-6 rounded bg-green-400 border border-white/20"></button>
-                                <button onclick="setSubColor('cyan')" class="w-6 h-6 rounded bg-cyan-400 border border-white/20"></button>
-                            </div>
-                            <p class="text-xs text-slate-400 mb-2 font-semibold">ফন্ট সাইজ:</p>
-                            <select id="subSizeSelect" class="w-full bg-slate-950 text-xs border border-slate-700 rounded p-1 text-slate-300 outline-none">
-                                <option value="text-lg">ছোট</option>
-                                <option value="text-2xl" selected>মাঝারি</option>
-                                <option value="text-3xl">বড়</option>
-                                <option value="text-4xl">অতিরিক্ত বড়</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <button id="fullscreenBtn" class="p-2 hover:bg-white/10 rounded-full transition">
-                        <i data-lucide="maximize" class="w-5 h-5"></i>
-                    </button>
-                </div>
+        <div id="tabContent-qr" class="tab-content">
+            <div class="qr-container">
+                <img id="qrCode" class="qr-code-img" src="" alt="QR Code">
             </div>
         </div>
     </div>
 
-    <!-- JS Logic -->
-    <script>
-        // DOM Handles
-        const splashScreen = document.getElementById('splashScreen');
-        const mainDashboard = document.getElementById('mainDashboard');
-        const playerScreen = document.getElementById('playerScreen');
-        const directoryInput = document.getElementById('directoryInput');
-        const mainVideo = document.getElementById('mainVideo');
-        const videoTitle = document.getElementById('videoTitle');
-        const backBtn = document.getElementById('backBtn');
-        const playPauseBtn = document.getElementById('playPauseBtn');
-        const skipBackwardBtn = document.getElementById('skipBackwardBtn');
-        const skipForwardBtn = document.getElementById('skipForwardBtn');
-        const muteBtn = document.getElementById('muteBtn');
-        const volumeBar = document.getElementById('volumeBar');
-        const seekBar = document.getElementById('seekBar');
-        const currentTimeEl = document.getElementById('currentTime');
-        const totalDurationEl = document.getElementById('totalDuration');
-        const fullscreenBtn = document.getElementById('fullscreenBtn');
-        const speedSelect = document.getElementById('speedSelect');
-        const subSizeSelect = document.getElementById('subSizeSelect');
-        const downloadSrtBtn = document.getElementById('downloadSrtBtn');
+    <!-- ২. ভিডিও ডাউনলোডার রেজাল্ট প্যানেল -->
+    <div class="result active-result" id="videoResult">
+        <div class="profile-card">
+            <img id="vidCover" class="video-cover" alt="Video Cover">
+            <div class="profile-names">
+                <h2 id="vidAuthor">Creator Name</h2>
+                <div class="profile-username" id="vidUsername">@user</div>
+                <p id="vidTitle" style="font-size: 12px; color: var(--text-secondary); margin-top: 5px; line-height: 1.3; font-weight: 500;"></p>
+            </div>
+        </div>
 
-        const subtitleText = document.getElementById('subtitleText');
-        const micToggleBtn = document.getElementById('micToggleBtn');
-        const langSelect = document.getElementById('langSelect');
-        const translateToggleContainer = document.getElementById('translateToggleContainer');
-        const translateCheck = document.getElementById('translateCheck');
-        const brightnessOverlay = document.getElementById('brightnessOverlay');
-        const localFileAlert = document.getElementById('localFileAlert');
+        <!-- ট্যাব বাটনসমূহ (ভিডিওর জন্য) -->
+        <div class="tabs">
+            <button class="tab-btn active" id="btnVidWatch" onclick="switchVideoTab('watch')">📽️ Preview</button>
+            <button class="tab-btn" id="btnVidStats" onclick="switchVideoTab('stats')">📊 Stats</button>
+            <button class="tab-btn" id="btnVidDownload" onclick="switchVideoTab('download')">📥 Download</button>
+        </div>
 
-        // Tabs
-        const tabLocal = document.getElementById('tabLocal');
-        const tabOnline = document.getElementById('tabOnline');
-        const localContent = document.getElementById('localContent');
-        const onlineContent = document.getElementById('onlineContent');
+        <!-- ভিডিও ট্যাব ১: ইন-অ্যাপ ভিডিও প্লেয়ার -->
+        <div id="vidTabContent-watch" class="tab-content active">
+            <div class="video-preview-container" id="videoPreviewContainer">
+                <video id="vidPlayer" controls playsinline></video>
+            </div>
+        </div>
 
-        // Folder Elements
-        const localFolderGrid = document.getElementById('localFolderGrid');
-        const localVideoListSection = document.getElementById('localVideoListSection');
-        const activeFolderName = document.getElementById('activeFolderName');
-        const localVideoGrid = document.getElementById('localVideoGrid');
-        const backToFoldersBtn = document.getElementById('backToFoldersBtn');
+        <!-- ভিডিও ট্যাব ২: ভিডিও এনালাইটিক্স স্ট্যাটস -->
+        <div id="vidTabContent-stats" class="tab-content">
+            <div class="stats-grid">
+                <div class="stat-item"><div class="stat-label">Views / Plays</div><div class="stat-value" id="vidValPlays" style="color: var(--accent-cyan);">0</div></div>
+                <div class="stat-item"><div class="stat-label">Likes / Hearts</div><div class="stat-value" id="vidValLikes" style="color: var(--accent-pink);">0</div></div>
+                <div class="stat-item"><div class="stat-label">Comments</div><div class="stat-value" id="vidValComments">0</div></div>
+                <div class="stat-item"><div class="stat-label">Shares</div><div class="stat-value" id="vidValShares">0</div></div>
+            </div>
 
-        // HUD
-        const hudIndicator = document.getElementById('hudIndicator');
-        const hudIcon = document.getElementById('hudIcon');
-        const hudValue = document.getElementById('hudValue');
-        const topBar = document.getElementById('topBar');
-        const bottomControls = document.getElementById('bottomControls');
+            <!-- ব্যাকগ্রাউন্ড মিউজিক প্লেয়ার -->
+            <div class="audio-preview-container" id="audioPreviewContainer" style="margin-top: 15px;">
+                <p>🎵 Background Music Preview:</p>
+                <audio id="musicPlayer" controls></audio>
+            </div>
+        </div>
 
-        let recognition;
-        let isListening = false;
-        let controlsTimeout;
-        let subtitleTimeout;
-        let hudTimeout;
+        <!-- ভিডিও ট্যাব ৩: ডাউনলোড বাটন গ্রুপ (পেজ চেঞ্জ না করে ডাউনলোড হবে) -->
+        <div id="vidTabContent-download" class="tab-content">
+            <div class="action-buttons">
+                <button id="btnDownloadNoWatermark" class="btn-action" style="background: var(--brand-gradient); color: black;">📥 Download Video (No Watermark)</button>
+                <button id="btnDownloadCover" class="btn-action">🖼️ Download HD Cover Thumbnail</button>
+                <button id="btnDownloadMusic" class="btn-action">🎵 Download Audio Track (MP3)</button>
+            </div>
+        </div>
+    </div>
 
-        // Custom States
-        let currentBrightness = 100;
-        let srtData = [];
-        let srtCount = 1;
-        let lastBlockEndTime = 0;
-        let localFilesMap = {}; // Will hold files categorized by folder name
+    <!-- ৩. ট্র্যাকার ড্যাশবোর্ড -->
+    <div class="watchlist-section" id="watchlistSection" style="display: none;">
+        <div class="watchlist-title">
+            <span>Influencer Watchlist (Tracker)</span>
+        </div>
+        <div class="watchlist-grid" id="watchlistGrid"></div>
+    </div>
 
-        // Fade out splash screen after 1.5 seconds
-        setTimeout(() => {
-            splashScreen.classList.add('opacity-0');
-            setTimeout(() => splashScreen.classList.add('hidden'), 700);
-        }, 1500);
+    <div class="footer">TikTok Tool Suite Pro</div>
+</div>
 
-        lucide.createIcons();
+<div id="toast" class="toast"></div>
 
-        // Check if app is opened locally via file://
-        if (window.location.protocol === 'file:') {
-            localFileAlert.classList.remove('hidden');
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    renderWatchlist();
+});
+
+let currentProfileData = null;
+
+function toggleTheme() {
+    document.body.classList.toggle("light-mode");
+    showToast("Theme updated!");
+}
+
+// ওয়ান-ট্যাপ পেস্ট বাটন
+async function pasteFromClipboard() {
+    try {
+        const text = await navigator.clipboard.readText();
+        document.getElementById("username").value = text;
+        showToast("Link pasted successfully! 📋");
+    } catch (err) {
+        showToast("Clipboard read permission denied.", true);
+    }
+}
+
+// প্রক্সি সহ সুরক্ষিত এবং সরাসরি ডাউনলোড করার মেথড
+async function downloadFile(url, filename) {
+    showToast("Downloading started... please wait ⏳");
+    
+    // CORS এরর বাইপাস করার জন্য নিরাপদ CORS Proxy ব্যবহার করা হচ্ছে
+    const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(url);
+    
+    try {
+        const response = await fetch(proxyUrl);
+        if (!response.ok) throw new Error("CORS Proxy error");
+        const blob = await response.blob();
+        const blobUrl = window.URL.createObjectURL(blob);
+        
+        // ফাইলটি ব্যাকগ্রাউন্ডে রেডি করে সিস্টেমে ডাউনলোড করা হচ্ছে
+        const tempLink = document.createElement("a");
+        tempLink.href = blobUrl;
+        tempLink.download = filename;
+        document.body.appendChild(tempLink);
+        tempLink.click();
+        document.body.removeChild(tempLink);
+        window.URL.revokeObjectURL(blobUrl);
+        
+        showToast("File saved to device successfully! ✅");
+    } catch (error) {
+        console.warn("Proxy download failed, trying direct fallback...", error);
+        // ব্যাকআপ ১: প্রক্সি ফেইল করলে সরাসরি ডাউনলোড ট্রাই করা হবে
+        try {
+            const directResponse = await fetch(url);
+            const blob = await directResponse.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+            const tempLink = document.createElement("a");
+            tempLink.href = blobUrl;
+            tempLink.download = filename;
+            document.body.appendChild(tempLink);
+            tempLink.click();
+            document.body.removeChild(tempLink);
+            window.URL.revokeObjectURL(blobUrl);
+            showToast("File saved to device successfully! ✅");
+        } catch (directError) {
+            console.error("All download methods failed, opening link", directError);
+            // ব্যাকআপ ২: ব্রাউজার সম্পূর্ণ ব্লক করলে শেষ উপায় হিসেবে নতুন ট্যাবে ওপেন হবে
+            window.open(url, "_blank");
+            showToast("Opening link in browser tab (Fallback)...", true);
         }
+    }
+}
 
-        // Tab Switching
-        tabLocal.addEventListener('click', () => {
-            tabLocal.className = "px-4 py-1.5 rounded-md text-xs font-semibold bg-blue-600 text-white transition";
-            tabOnline.className = "px-4 py-1.5 rounded-md text-xs font-semibold text-slate-400 hover:text-white transition";
-            localContent.classList.remove('hidden');
-            onlineContent.classList.add('hidden');
-        });
+function handleSearch() {
+    let inputVal = document.getElementById("username").value.trim();
+    if(inputVal === "") {
+        showToast("Enter a username or link!", true);
+        return;
+    }
 
-        tabOnline.addEventListener('click', () => {
-            tabOnline.className = "px-4 py-1.5 rounded-md text-xs font-semibold bg-blue-600 text-white transition";
-            tabLocal.className = "px-4 py-1.5 rounded-md text-xs font-semibold text-slate-400 hover:text-white transition";
-            onlineContent.classList.remove('hidden');
-            localContent.classList.add('hidden');
-        });
-
-        // ----------------------------------------
-        // Directory Scanner / Folder logic
-        // ----------------------------------------
-        directoryInput.addEventListener('change', function(e) {
-            const files = e.target.files;
-            if (files.length === 0) return;
-
-            localFilesMap = {}; // Reset
-
-            for (let file of files) {
-                // Check if file is a video
-                if (file.type.startsWith('video/') || file.name.endsWith('.mp4') || file.name.endsWith('.mkv') || file.name.endsWith('.webm')) {
-                    // Extract folder name from path
-                    let relativePath = file.webkitRelativePath || "";
-                    let pathParts = relativePath.split('/');
-                    let folderName = "Other Videos";
-                    
-                    if (pathParts.length > 1) {
-                        folderName = pathParts[pathParts.length - 2]; // Parent directory name
-                    }
-
-                    if (!localFilesMap[folderName]) {
-                        localFilesMap[folderName] = [];
-                    }
-                    localFilesMap[folderName].push(file);
-                }
-            }
-
-            renderLocalFolders();
-        });
-
-        function renderLocalFolders() {
-            localFolderGrid.innerHTML = ''; // Clear defaults
-            localFolderGrid.classList.remove('hidden');
-            localVideoListSection.classList.add('hidden');
-
-            const folders = Object.keys(localFilesMap);
-            if (folders.length === 0) {
-                localFolderGrid.innerHTML = `<div class="col-span-full text-center text-slate-500 py-8">কোনো ভিডিও ফাইল খুঁজে পাওয়া যায়নি।</div>`;
-                return;
-            }
-
-            folders.forEach(folder => {
-                const count = localFilesMap[folder].length;
-                const folderDiv = document.createElement('div');
-                folderDiv.className = "bg-slate-900 hover:bg-slate-850 p-4 rounded-xl border border-slate-800 cursor-pointer transition flex items-center gap-3";
-                folderDiv.innerHTML = `
-                    <div class="p-3 bg-blue-950 rounded-lg text-blue-500"><i data-lucide="folder" class="w-6 h-6"></i></div>
-                    <div>
-                        <h5 class="text-sm font-bold truncate max-w-[120px]">${folder}</h5>
-                        <p class="text-[10px] text-slate-500">${count}টি ভিডিও</p>
-                    </div>
-                `;
-                folderDiv.addEventListener('click', () => openFolder(folder));
-                localFolderGrid.appendChild(folderDiv);
-            });
-            lucide.createIcons();
+    if (inputVal.includes("tiktok.com") && (inputVal.includes("/video/") || inputVal.includes("vt.tiktok.com"))) {
+        getVideoInfo(inputVal);
+    } else {
+        let username = inputVal;
+        if (inputVal.includes("tiktok.com/@")) {
+            username = inputVal.split("/@")[1].split("?")[0].split("/")[0];
         }
+        username = username.startsWith("@") ? username.substring(1) : username;
+        getUser(username);
+    }
+}
 
-        function openFolder(folderName) {
-            localFolderGrid.classList.add('hidden');
-            localVideoListSection.classList.remove('hidden');
-            activeFolderName.innerText = folderName;
+// ভিডিও এবং স্লাইডশো ডাউনলোডার লজিক
+async function getVideoInfo(url) {
+    let loader = document.getElementById("loader");
+    let resultBox = document.getElementById("result");
+    let videoBox = document.getElementById("videoResult");
+    let vidPlayer = document.getElementById("vidPlayer");
+    let audioPlayer = document.getElementById("musicPlayer");
 
-            localVideoGrid.innerHTML = '';
-            const files = localFilesMap[folderName];
+    resultBox.style.display = "none";
+    videoBox.style.display = "none";
+    loader.style.display = "block";
+    
+    vidPlayer.src = ""; 
+    audioPlayer.src = "";
 
-            files.forEach((file, index) => {
-                const videoDiv = document.createElement('div');
-                videoDiv.className = "bg-slate-900 rounded-xl overflow-hidden border border-slate-800 cursor-pointer hover:border-blue-600 transition group";
-                videoDiv.innerHTML = `
-                    <div class="aspect-video bg-slate-950 relative flex items-center justify-center">
-                        <i data-lucide="play" class="w-10 h-10 text-white/50 group-hover:text-white transition"></i>
-                    </div>
-                    <div class="p-3">
-                        <h4 class="text-sm font-semibold truncate">${file.name}</h4>
-                        <p class="text-[10px] text-slate-500 mt-1">আকার: ${(file.size / (1024*1024)).toFixed(1)} MB</p>
-                    </div>
-                `;
-                videoDiv.addEventListener('click', () => playLocalVideo(file));
-                localVideoGrid.appendChild(videoDiv);
-            });
-            lucide.createIcons();
-        }
+    try {
+        let res = await fetch("https://www.tikwm.com/api/?url=" + encodeURIComponent(url));
+        let json = await res.json();
+        loader.style.display = "none";
 
-        backToFoldersBtn.addEventListener('click', () => {
-            localVideoListSection.classList.add('hidden');
-            localFolderGrid.classList.remove('hidden');
-        });
+        if(json.data) {
+            let d = json.data;
+            videoBox.style.display = "block";
+            switchVideoTab('watch');
 
-        // ----------------------------------------
-        // Player Triggering
-        // ----------------------------------------
-        function playLocalVideo(file) {
-            mainVideo.src = URL.createObjectURL(file);
-            videoTitle.innerText = file.name;
-            startPlayer();
-        }
+            document.getElementById("vidCover").src = d.cover;
+            document.getElementById("vidAuthor").textContent = d.author.nickname;
+            document.getElementById("vidUsername").textContent = "@" + d.author.unique_id;
+            document.getElementById("vidTitle").textContent = d.title ? d.title : "No description available";
 
-        function playOnlineVideo(url, title) {
-            mainVideo.src = url;
-            videoTitle.innerText = title;
-            startPlayer();
-        }
+            vidPlayer.src = d.play;
+            audioPlayer.src = d.music;
 
-        function startPlayer() {
-            mainDashboard.classList.add('hidden');
-            playerScreen.classList.remove('hidden');
-            mainVideo.play();
-            updatePlayPauseIcon(true);
-            startTranscription();
-        }
+            document.getElementById("vidValPlays").textContent = formatNumber(d.play_count);
+            document.getElementById("vidValLikes").textContent = formatNumber(d.digg_count);
+            document.getElementById("vidValComments").textContent = formatNumber(d.comment_count);
+            document.getElementById("vidValShares").textContent = formatNumber(d.share_count);
 
-        // ----------------------------------------
-        // Custom Speech Engine (Whisper Web / Speech API style)
-        // ----------------------------------------
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (SpeechRecognition) {
-            recognition = new SpeechRecognition();
-            recognition.continuous = true;
-            recognition.interimResults = true;
-
-            recognition.onstart = () => {
-                micToggleBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
-                micToggleBtn.classList.add('bg-green-600', 'hover:bg-green-700');
-                downloadSrtBtn.classList.remove('hidden');
-                lastBlockEndTime = mainVideo.currentTime;
+            // ডাউনলোড হ্যান্ডলার সেটআপ (যা পেজ রিডাইরেক্ট করে না)
+            document.getElementById("btnDownloadNoWatermark").onclick = function() {
+                downloadFile(d.play, `${d.author.unique_id}_video_no_watermark.mp4`);
+            };
+            document.getElementById("btnDownloadCover").onclick = function() {
+                downloadFile(d.cover, `${d.author.unique_id}_cover.jpg`);
+            };
+            document.getElementById("btnDownloadMusic").onclick = function() {
+                downloadFile(d.music, `${d.author.unique_id}_music.mp3`);
             };
 
-            recognition.onresult = async (event) => {
-                let interimTranscript = '';
-                let finalTranscript = '';
-
-                for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    const transcript = event.results[i][0].transcript;
-                    if (event.results[i].isFinal) {
-                        finalTranscript += transcript + ' ';
-                    } else {
-                        interimTranscript += transcript;
-                    }
-                }
-
-                if (finalTranscript.trim()) {
-                    let textToShow = finalTranscript.trim();
-                    const blockStartTime = lastBlockEndTime;
-                    const blockEndTime = mainVideo.currentTime > blockStartTime ? mainVideo.currentTime : blockStartTime + 1.5;
-
-                    // Enable auto translation
-                    if (langSelect.value === 'en-US' && translateCheck.checked) {
-                        subtitleText.innerText = "অনুবাদ হচ্ছে...";
-                        textToShow = await translateToBengali(textToShow);
-                    }
-
-                    subtitleText.innerText = textToShow;
-
-                    // Add to SRT Data stack
-                    srtData.push({
-                        id: srtCount++,
-                        start: blockStartTime,
-                        end: blockEndTime,
-                        text: textToShow
-                    });
-
-                    lastBlockEndTime = blockEndTime;
-
-                    clearTimeout(subtitleTimeout);
-                    subtitleTimeout = setTimeout(() => { subtitleText.innerText = ''; }, 3500);
-                } 
-                else if (interimTranscript.trim()) {
-                    subtitleText.innerText = interimTranscript;
-                }
-            };
-
-            recognition.onerror = () => { stopTranscription(); };
-            recognition.onend = () => {
-                if (isListening) {
-                    recognition.start();
-                } else {
-                    micToggleBtn.classList.add('bg-red-600', 'hover:bg-red-700');
-                    micToggleBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
-                }
-            };
+            showToast("Video loaded! Preview & Stats Ready 📊");
+        } else {
+            showToast("Invalid URL or Private video.", true);
         }
+    } catch(e) {
+        loader.style.display = "none";
+        showToast("Error loading video data", true);
+    }
+}
 
-        langSelect.addEventListener('change', () => {
-            if (langSelect.value === 'en-US') {
-                translateToggleContainer.classList.remove('hidden');
-            } else {
-                translateToggleContainer.classList.add('hidden');
-                translateCheck.checked = false;
+function getCreatorLevel(followers) {
+    if (followers < 10000) return { name: "🥑 Nano Creator", color: "#10b981" };
+    if (followers < 100000) return { name: "🚀 Micro Creator", color: "#3b82f6" };
+    if (followers < 1000000) return { name: "🌟 Mid-Tier Star", color: "#8b5cf6" };
+    if (followers < 10000000) return { name: "👑 Macro Star", color: "#ec4899" };
+    return { name: "💎 Mega Legend", color: "#f59e0b" };
+}
+
+function formatNumber(num) {
+    if (!num) return "0";
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+    return new Intl.NumberFormat().format(num);
+}
+
+function switchTab(tabId) {
+    document.querySelectorAll('#result .tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('#result .tab-content').forEach(content => content.classList.remove('active'));
+    
+    document.getElementById('btn' + tabId.charAt(0).toUpperCase() + tabId.slice(1)).classList.add('active');
+    document.getElementById('tabContent-' + tabId).classList.add('active');
+}
+
+function switchVideoTab(tabId) {
+    document.querySelectorAll('#videoResult .tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('#videoResult .tab-content').forEach(content => content.classList.remove('active'));
+    
+    document.getElementById('btnVid' + tabId.charAt(0).toUpperCase() + tabId.slice(1)).classList.add('active');
+    document.getElementById('vidTabContent-' + tabId).classList.add('active');
+}
+
+// প্রোফাইল এনালাইজার
+async function getUser(username){
+    let loader = document.getElementById("loader");
+    let resultBox = document.getElementById("result");
+    let videoBox = document.getElementById("videoResult");
+    let bioLinkContainer = document.getElementById("bioLinkContainer");
+
+    resultBox.style.display = "none";
+    videoBox.style.display = "none";
+    bioLinkContainer.style.display = "none";
+    loader.style.display = "block";
+
+    try{
+        let res = await fetch("https://www.tikwm.com/api/user/info?unique_id=" + encodeURIComponent(username));
+        let json = await res.json();
+        loader.style.display = "none";
+
+        if(json.data){
+            let d = json.data.user;
+            let s = json.data.stats;
+            currentProfileData = json.data;
+
+            resultBox.style.display = "block";
+            switchTab('stats');
+
+            document.getElementById("avatar").src = d.avatarLarger || "https://via.placeholder.com/120";
+            document.getElementById("nickname").innerHTML = `${d.nickname || 'N/A'} ${d.verified ? '✅' : ''}`;
+            document.getElementById("displayUsername").textContent = `@${d.uniqueId}`;
+            document.getElementById("bioBox").innerHTML = d.signature ? `"${d.signature}"` : '"No bio written."';
+
+            let badge = getCreatorLevel(s.followerCount);
+            let badgeEl = document.getElementById("creatorBadge");
+            badgeEl.textContent = badge.name;
+            badgeEl.style.backgroundColor = badge.color;
+
+            if (d.bioLink && d.bioLink.link) {
+                bioLinkContainer.style.display = "block";
+                bioLinkContainer.innerHTML = `<a href="${d.bioLink.link}" target="_blank" class="btn-action" style="background: #10b981; color: white;">🔗 Website: ${d.bioLink.link.replace(/^https?:\/\//i, '')}</a>`;
             }
-        });
 
-        async function translateToBengali(text) {
-            try {
-                const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|bn`);
-                const data = await response.json();
-                if (data && data.responseData) {
-                    return data.responseData.translatedText;
-                }
-            } catch (error) {
-                console.error("Translation failed:", error);
-            }
-            return text;
-        }
-
-        function startTranscription() {
-            if (!recognition) return;
-            isListening = true;
-            recognition.lang = langSelect.value;
-            try {
-                recognition.start();
-            } catch (e) { console.log("Recognizer start blocked: requires server"); }
-        }
-
-        function stopTranscription() {
-            isListening = false;
-            if (recognition) {
-                try { recognition.stop(); } catch(e){}
-            }
-            subtitleText.innerText = '';
-        }
-
-        micToggleBtn.addEventListener('click', () => {
-            if (isListening) stopTranscription();
-            else startTranscription();
-        });
-
-        // Exit Player Screen
-        backBtn.addEventListener('click', () => {
-            stopTranscription();
-            mainVideo.pause();
-            mainVideo.src = "";
-            srtData = [];
-            srtCount = 1;
-            playerScreen.classList.add('hidden');
-            mainDashboard.classList.remove('hidden');
-        });
-
-        // ----------------------------------------
-        // Player Navigation & Controls Logic
-        // ----------------------------------------
-        let clickTimer;
-        mainVideo.addEventListener('click', (e) => {
-            if (e.detail === 1) {
-                clickTimer = setTimeout(() => {
-                    togglePlay();
-                }, 220);
-            } else if (e.detail === 2) {
-                clearTimeout(clickTimer);
-                const rect = mainVideo.getBoundingClientRect();
-                const clickX = e.clientX - rect.left;
-                const width = rect.width;
-
-                if (clickX < width * 0.4) {
-                    mainVideo.currentTime -= 10;
-                    showHUD('rotate-ccw', '-10s');
-                } else if (clickX > width * 0.6) {
-                    mainVideo.currentTime += 10;
-                    showHUD('rotate-cw', '+10s');
-                }
-            }
-        });
-
-        function togglePlay() {
-            if (mainVideo.paused) {
-                mainVideo.play();
-                updatePlayPauseIcon(true);
-            } else {
-                mainVideo.pause();
-                updatePlayPauseIcon(false);
-            }
-        }
-
-        function updatePlayPauseIcon(isPlaying) {
-            playPauseBtn.innerHTML = isPlaying 
-                ? `<i data-lucide="pause" class="w-6 h-6 fill-white"></i>`
-                : `<i data-lucide="play" class="w-6 h-6 fill-white"></i>`;
-            lucide.createIcons();
-        }
-
-        playPauseBtn.addEventListener('click', togglePlay);
-        skipBackwardBtn.addEventListener('click', () => { mainVideo.currentTime -= 10; showHUD('rotate-ccw', '-10s'); });
-        skipForwardBtn.addEventListener('click', () => { mainVideo.currentTime += 10; showHUD('rotate-cw', '+10s'); });
-
-        muteBtn.addEventListener('click', () => {
-            mainVideo.muted = !mainVideo.muted;
-            muteBtn.innerHTML = mainVideo.muted 
-                ? `<i data-lucide="volume-x" class="w-5 h-5"></i>`
-                : `<i data-lucide="volume-2" class="w-5 h-5"></i>`;
-            lucide.createIcons();
-        });
-
-        volumeBar.addEventListener('input', (e) => {
-            mainVideo.volume = e.target.value;
-            mainVideo.muted = e.target.value == 0;
-        });
-
-        speedSelect.addEventListener('change', (e) => {
-            mainVideo.playbackRate = parseFloat(e.target.value);
-        });
-
-        function setSubColor(color) {
-            subtitleText.className = `subtitle-shadow font-semibold bg-black/60 px-4 py-2 rounded-lg inline-block leading-relaxed max-w-full break-words transition-all duration-100`;
-            if (color === 'yellow') subtitleText.classList.add('text-yellow-400');
-            if (color === 'white') subtitleText.classList.add('text-slate-100');
-            if (color === 'green') subtitleText.classList.add('text-green-400');
-            if (color === 'cyan') subtitleText.classList.add('text-cyan-400');
-        }
-
-        subSizeSelect.addEventListener('change', (e) => {
-            subtitleText.classList.remove('text-lg', 'text-2xl', 'text-3xl', 'text-4xl');
-            subtitleText.classList.add(e.target.value);
-        });
-
-        mainVideo.addEventListener('loadedmetadata', () => {
-            seekBar.max = mainVideo.duration;
-            totalDurationEl.innerText = formatTime(mainVideo.duration);
-        });
-
-        mainVideo.addEventListener('timeupdate', () => {
-            if (!seekBar.classList.contains('active')) {
-                seekBar.value = mainVideo.currentTime;
-            }
-            currentTimeEl.innerText = formatTime(mainVideo.currentTime);
-        });
-
-        seekBar.addEventListener('input', (e) => {
-            mainVideo.currentTime = e.target.value;
-        });
-
-        function formatTime(seconds) {
-            const minutes = Math.floor(seconds / 60);
-            const secs = Math.floor(seconds % 60);
-            return `${minutes < 10 ? '0' : ''}${minutes}:${secs < 10 ? '0' : ''}${secs}`;
-        }
-
-        // ----------------------------------------
-        // Swipe Drag Gestures (Volume & Brightness)
-        // ----------------------------------------
-        let isDragging = false;
-        let startY = 0;
-        let startValue = 0;
-        let dragType = ''; 
-
-        function handleDragStart(clientX, clientY) {
-            isDragging = true;
-            startY = clientY;
-            const rect = playerScreen.getBoundingClientRect();
-            if (clientX > rect.width / 2) {
-                dragType = 'volume';
-                startValue = mainVideo.volume;
-            } else {
-                dragType = 'brightness';
-                startValue = currentBrightness;
-            }
-        }
-
-        function handleDragMove(clientX, clientY) {
-            if (!isDragging) return;
-            const deltaY = startY - clientY;
-            const rect = playerScreen.getBoundingClientRect();
-            const normalizedDelta = (deltaY / rect.height) * 1.8;
-
-            if (dragType === 'volume') {
-                let newVol = Math.max(0, Math.min(1, startValue + normalizedDelta));
-                mainVideo.volume = newVol;
-                volumeBar.value = newVol;
-                showHUD(newVol === 0 ? 'volume-x' : 'volume-2', `Volume: ${Math.round(newVol * 100)}%`);
-            } else if (dragType === 'brightness') {
-                let newBright = Math.max(10, Math.min(100, startValue + normalizedDelta * 100));
-                currentBrightness = newBright;
-                brightnessOverlay.style.opacity = (1 - (newBright / 100)).toFixed(2);
-                showHUD('sun', `Brightness: ${Math.round(newBright)}%`);
-            }
-        }
-
-        playerScreen.addEventListener('mousedown', (e) => {
-            if (e.target === mainVideo || e.target === brightnessOverlay) {
-                handleDragStart(e.clientX, e.clientY);
-            }
-        });
-        playerScreen.addEventListener('mousemove', (e) => handleDragMove(e.clientX, e.clientY));
-        window.addEventListener('mouseup', () => { isDragging = false; });
-
-        playerScreen.addEventListener('touchstart', (e) => {
-            const touch = e.touches[0];
-            if (touch.target === mainVideo || touch.target === brightnessOverlay) {
-                handleDragStart(touch.clientX, touch.clientY);
-            }
-        });
-        playerScreen.addEventListener('touchmove', (e) => {
-            const touch = e.touches[0];
-            handleDragMove(touch.clientX, touch.clientY);
-        });
-        playerScreen.addEventListener('touchend', () => { isDragging = false; });
-
-        function showHUD(iconName, value) {
-            hudIcon.setAttribute('data-lucide', iconName);
-            hudValue.innerText = value;
-            lucide.createIcons();
-            hudIndicator.style.opacity = '1';
-            clearTimeout(hudTimeout);
-            hudTimeout = setTimeout(() => { hudIndicator.style.opacity = '0'; }, 800);
-        }
-
-        fullscreenBtn.addEventListener('click', () => {
-            if (!document.fullscreenElement) {
-                playerScreen.requestFullscreen().catch(err => { alert(err.message); });
-            } else {
-                document.exitFullscreen();
-            }
-        });
-
-        function showControls() {
-            topBar.style.opacity = '1';
-            bottomControls.style.opacity = '1';
-            document.body.style.cursor = 'default';
+            document.getElementById("profileLink").href = `https://www.tiktok.com/@${d.uniqueId}`;
             
-            clearTimeout(controlsTimeout);
-            if (!mainVideo.paused) {
-                controlsTimeout = setTimeout(hideControls, 3000);
-            }
+            // প্রোফাইল পিকচার সরাসরি ডাউনলোড করার ইভেন্ট
+            document.getElementById("btnDownloadAvatar").onclick = function() {
+                downloadFile(d.avatarLarger, `${d.uniqueId}_avatar_hd.jpg`);
+            };
+
+            document.getElementById("valFollowers").textContent = formatNumber(s.followerCount);
+            document.getElementById("valLikes").textContent = formatNumber(s.heartCount);
+            document.getElementById("valFollowing").textContent = formatNumber(s.followingCount);
+            document.getElementById("valVideos").textContent = formatNumber(s.videoCount);
+            document.getElementById("valRegion").textContent = d.region || 'Unknown';
+
+            let ratio = s.followerCount > 0 ? (s.heartCount / s.followerCount).toFixed(1) + "x likes/fan" : "0%";
+            document.getElementById("valEngagement").textContent = ratio;
+
+            let avgLikes = s.videoCount > 0 ? formatNumber(Math.round(s.heartCount / s.videoCount)) : "0";
+            document.getElementById("valAvgLikes").textContent = avgLikes + " / video";
+
+            let privacy = d.privateAccount || d.secret ? "Private 🔒" : "Public 🔓";
+            document.getElementById("valPrivacy").textContent = privacy;
+
+            document.getElementById("qrCode").src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://www.tiktok.com/@${d.uniqueId}`;
+
+            updateWatchlistBtnState(d.uniqueId);
+
+            showToast("Profile analyzed successfully! 📊");
+        } else {
+            showToast("Profile not found", true);
         }
+    } catch(e) {
+        loader.style.display = "none";
+        showToast("Network Error", true);
+    }
+}
 
-        function hideControls() {
-            topBar.style.opacity = '0';
-            bottomControls.style.opacity = '0';
-            document.body.style.cursor = 'none';
-        }
+function updateWatchlistBtnState(username) {
+    let watchlist = JSON.parse(localStorage.getItem("tt_watchlist")) || [];
+    let exists = watchlist.some(item => item.uniqueId.toLowerCase() === username.toLowerCase());
+    document.getElementById("btnWatchlistToggle").innerHTML = exists ? "➖ Remove from Watchlist" : "⭐ Add to Watchlist";
+}
 
-        playerScreen.addEventListener('mousemove', showControls);
-        playerScreen.addEventListener('click', showControls);
-
-        // Download Timestamps to SRT
-        function formatSRTTime(seconds) {
-            const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
-            const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
-            const s = Math.floor(seconds % 60).toString().padStart(2, '0');
-            const ms = Math.floor((seconds % 1) * 1000).toString().padStart(3, '0');
-            return `${h}:${m}:${s},${ms}`;
-        }
-
-        downloadSrtBtn.addEventListener('click', () => {
-            if (srtData.length === 0) {
-                alert("রেকর্ড করার মতো কোনো সাবটাইটেল ডেটা পাওয়া যায়নি।");
-                return;
-            }
-            let srtContent = '';
-            srtData.forEach(item => {
-                srtContent += `${item.id}\n`;
-                srtContent += `${formatSRTTime(item.start)} --> ${formatSRTTime(item.end)}\n`;
-                srtContent += `${item.text}\n\n`;
-            });
-
-            const blob = new Blob([srtContent], { type: 'text/srt;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${videoTitle.innerText.split('.')[0]}_Bengali.srt`;
-            a.click();
-            URL.revokeObjectURL(url);
+function toggleWatchlist() {
+    if (!currentProfileData) return;
+    let d = currentProfileData.user;
+    let s = currentProfileData.stats;
+    let watchlist = JSON.parse(localStorage.getItem("tt_watchlist")) || [];
+    
+    let existsIdx = watchlist.findIndex(item => item.uniqueId.toLowerCase() === d.uniqueId.toLowerCase());
+    
+    if (existsIdx > -1) {
+        watchlist.splice(existsIdx, 1);
+        showToast("Removed from Watchlist! ❌");
+    } else {
+        watchlist.push({
+            uniqueId: d.uniqueId,
+            nickname: d.nickname,
+            avatar: d.avatarLarger,
+            followers: s.followerCount
         });
-    </script>
+        showToast("Added to Watchlist! ⭐");
+    }
+    
+    localStorage.setItem("tt_watchlist", JSON.stringify(watchlist));
+    updateWatchlistBtnState(d.uniqueId);
+    renderWatchlist();
+}
+
+function renderWatchlist() {
+    let watchlist = JSON.parse(localStorage.getItem("tt_watchlist")) || [];
+    let section = document.getElementById("watchlistSection");
+    let grid = document.getElementById("watchlistGrid");
+
+    if (watchlist.length > 0) {
+        section.style.display = "block";
+        grid.innerHTML = "";
+        watchlist.forEach(item => {
+            let card = document.createElement("div");
+            card.className = "watchlist-card";
+            card.innerHTML = `
+                <img src="${item.avatar || 'https://via.placeholder.com/40'}" alt="Avatar">
+                <div class="watchlist-details" onclick="getUser('${item.uniqueId}')">
+                    <h4>${item.nickname || item.uniqueId}</h4>
+                    <p>@${item.uniqueId} • 👥 ${formatNumber(item.followers)} Followers</p>
+                </div>
+                <button class="btn-remove-watchlist" onclick="removeFromWatchlistDirect('${item.uniqueId}')" title="Remove">×</button>
+            `;
+            grid.appendChild(card);
+        });
+    } else {
+        section.style.display = "none";
+    }
+}
+
+function removeFromWatchlistDirect(username) {
+    let watchlist = JSON.parse(localStorage.getItem("tt_watchlist")) || [];
+    watchlist = watchlist.filter(item => item.uniqueId.toLowerCase() !== username.toLowerCase());
+    localStorage.setItem("tt_watchlist", JSON.stringify(watchlist));
+    
+    if (currentProfileData && currentProfileData.user.uniqueId.toLowerCase() === username.toLowerCase()) {
+        updateWatchlistBtnState(username);
+    }
+    
+    showToast("Removed from Watchlist Tracker! ❌");
+    renderWatchlist();
+}
+
+function downloadReport() {
+    if (!currentProfileData) return;
+    let d = currentProfileData.user;
+    let s = currentProfileData.stats;
+    let reportText = `TikTok User: @${d.uniqueId}\nFollowers: ${s.followerCount}\nLikes: ${s.heartCount}`;
+    let blob = new Blob([reportText], { type: "text/plain;charset=utf-8" });
+    let link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `${d.uniqueId}_TikTok_Report.txt`;
+    link.click();
+    showToast("Report downloaded! 📄");
+}
+
+function copyProfileSummary() {
+    if (!currentProfileData) return;
+    let d = currentProfileData.user;
+    let s = currentProfileData.stats;
+    let text = `TikTok User: @${d.uniqueId}\nFollowers: ${s.followerCount}\nLikes: ${s.heartCount}`;
+    navigator.clipboard.writeText(text).then(() => {
+        showToast("Summary copied! 📋");
+    });
+}
+
+function showToast(msg, isError = false) {
+    let toast = document.getElementById("toast");
+    toast.textContent = msg;
+    toast.className = isError ? "toast error show" : "toast show";
+    setTimeout(() => { toast.className = "toast"; }, 2500);
+}
+</script>
+
 </body>
 </html>
