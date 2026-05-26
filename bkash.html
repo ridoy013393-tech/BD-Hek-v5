@@ -539,23 +539,30 @@ audio {
     margin-top: 6px;
 }
 
+/* ফ্লোটিং মডার্ন টপ নোটিফিকেশন/টোস্ট */
 .toast {
     position: fixed;
-    bottom: 85px; /* নিচের মেনুর ঠিক উপরে ভাসমান থাকবে */
+    top: 24px;
     left: 50%;
-    transform: translateX(-50%) translateY(100px);
+    transform: translateX(-50%) translateY(-100px);
     background: #10b981;
     color: white;
-    padding: 12px 24px;
+    padding: 14px 28px;
     border-radius: 50px;
     font-size: 14px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-    z-index: 1000;
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    font-weight: 700;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    z-index: 10000;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+    opacity: 0;
+    pointer-events: none; /* নোটিফিকেশন যেন ক্লিকে বাধা না দেয় */
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
-
 .toast.show {
     transform: translateX(-50%) translateY(0);
+    opacity: 1;
 }
 .toast.error {
     background: #ef4444;
@@ -960,13 +967,70 @@ window.addEventListener('online', () => {
 
 let currentProfileData = null;
 
+// ব্রাউজার অডিও সিন্থেসাইজার ইঞ্জিন (Web Audio API)
+let audioCtx = null;
+function getAudioContext() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    return audioCtx;
+}
+
+function playTone(freq, type, duration, volume) {
+    try {
+        let ctx = getAudioContext();
+        if (ctx.state === 'suspended') {
+            ctx.resume();
+        }
+        let osc = ctx.createOscillator();
+        let gain = ctx.createGain();
+        
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        
+        gain.gain.setValueAtTime(volume, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + duration);
+        
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        
+        osc.start();
+        osc.stop(ctx.currentTime + duration);
+    } catch (e) {
+        console.warn("Audio Context error", e);
+    }
+}
+
+// ইন্টারেক্টিভ সাউন্ড ইফেক্টসমূহ
+function playClickSound() {
+    playTone(700, 'sine', 0.08, 0.08); // মৃদু বাটন ক্লিক সাউন্ড
+}
+
+function playSuccessSound() {
+    // সফল কাজের জন্য ডাবল চিম্প সাউন্ড
+    try {
+        let ctx = getAudioContext();
+        if (ctx.state === 'suspended') ctx.resume();
+        playTone(523.25, 'sine', 0.12, 0.12); // C5
+        setTimeout(() => {
+            playTone(659.25, 'sine', 0.2, 0.12); // E5
+        }, 70);
+    } catch (e) {}
+}
+
+function playErrorSound() {
+    playTone(190, 'triangle', 0.25, 0.15); // সতর্ক বার্তা বা ব্যর্থ সাউন্ড
+}
+
 function toggleTheme() {
+    playClickSound();
     document.body.classList.toggle("light-mode");
     showToast("Theme updated!");
 }
 
 // ফিক্সড নিচের নেভিগেশন ট্যাব পরিবর্তনের লজিক
 function switchMainTab(tabId) {
+    playClickSound();
     document.querySelectorAll('.bottom-nav-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.main-section').forEach(sec => sec.style.display = 'none');
     
@@ -976,6 +1040,7 @@ function switchMainTab(tabId) {
 
 // ওয়ান-ট্যাপ পেস্ট বাটন
 async function pasteFromClipboard() {
+    playClickSound();
     try {
         const text = await navigator.clipboard.readText();
         document.getElementById("username").value = text;
@@ -1012,6 +1077,7 @@ function setupAudioAnimation() {
 
 // প্রক্সি দিয়ে সরাসরি ডাউনলোড মেথড
 async function downloadFile(url, filename) {
+    playClickSound();
     showToast("Downloading started... please wait ⏳");
     const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(url);
     
@@ -1053,6 +1119,7 @@ async function downloadFile(url, filename) {
 }
 
 function handleSearch() {
+    playClickSound();
     let inputVal = document.getElementById("username").value.trim();
     if(inputVal === "") {
         showToast("Enter a username or link!", true);
@@ -1142,6 +1209,7 @@ async function getVideoInfo(url) {
 
 // বাল্ক ডাউনলোডার
 async function startBulkDownload() {
+    playClickSound();
     let bulkInput = document.getElementById("bulkLinks").value.trim();
     if(!bulkInput) {
         showToast("Please enter at least one TikTok URL!", true);
@@ -1181,6 +1249,7 @@ async function startBulkDownload() {
 
 // সাইড-বাই-সাইড কম্পেয়ার
 async function runComparison() {
+    playClickSound();
     let user1 = document.getElementById("compUser1").value.trim();
     let user2 = document.getElementById("compUser2").value.trim();
     
@@ -1273,6 +1342,7 @@ async function runComparison() {
 
 // সরাসরি টেক্সট কপি করার ফাংশন
 function copyDirectText(text) {
+    playClickSound();
     navigator.clipboard.writeText(text).then(() => {
         showToast("Report text copied! 📋");
     }).catch(() => {
@@ -1282,6 +1352,7 @@ function copyDirectText(text) {
 
 // ওয়াচলিস্ট CSV ফাইল এক্সপোর্ট
 function exportWatchlistToCSV() {
+    playClickSound();
     let watchlist = JSON.parse(localStorage.getItem("tt_watchlist")) || [];
     if(watchlist.length === 0) {
         showToast("Your watchlist tracker is empty!", true);
@@ -1322,6 +1393,7 @@ function formatNumber(num) {
 }
 
 function switchTab(tabId) {
+    playClickSound();
     document.querySelectorAll('#result .tab-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('#result .tab-content').forEach(content => content.classList.remove('active'));
     
@@ -1330,6 +1402,7 @@ function switchTab(tabId) {
 }
 
 function switchVideoTab(tabId) {
+    playClickSound();
     document.querySelectorAll('#videoResult .tab-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('#videoResult .tab-content').forEach(content => content.classList.remove('active'));
     
@@ -1419,6 +1492,7 @@ function updateWatchlistBtnState(username) {
 }
 
 function toggleWatchlist() {
+    playClickSound();
     if (!currentProfileData) return;
     let d = currentProfileData.user;
     let s = currentProfileData.stats;
@@ -1471,6 +1545,7 @@ function renderWatchlist() {
 }
 
 function removeFromWatchlistDirect(username) {
+    playClickSound();
     let watchlist = JSON.parse(localStorage.getItem("tt_watchlist")) || [];
     watchlist = watchlist.filter(item => item.uniqueId.toLowerCase() !== username.toLowerCase());
     localStorage.setItem("tt_watchlist", JSON.stringify(watchlist));
@@ -1484,6 +1559,7 @@ function removeFromWatchlistDirect(username) {
 }
 
 function downloadReport() {
+    playClickSound();
     if (!currentProfileData) return;
     let d = currentProfileData.user;
     let s = currentProfileData.stats;
@@ -1497,6 +1573,7 @@ function downloadReport() {
 }
 
 function copyProfileSummary() {
+    playClickSound();
     if (!currentProfileData) return;
     let d = currentProfileData.user;
     let s = currentProfileData.stats;
@@ -1506,11 +1583,31 @@ function copyProfileSummary() {
     });
 }
 
+// উন্নত টোস্ট নোটিফিকেশন ইঞ্জিন
+let toastTimeout = null;
 function showToast(msg, isError = false) {
     let toast = document.getElementById("toast");
     toast.textContent = msg;
-    toast.className = isError ? "toast error show" : "toast show";
-    setTimeout(() => { toast.className = "toast"; }, 2500);
+    
+    // নির্দিষ্ট সাউন্ড এবং এরর ক্লাস যোগ করা
+    if (isError) {
+        toast.classList.add("error");
+        playErrorSound();
+    } else {
+        toast.classList.remove("error");
+        playSuccessSound();
+    }
+    
+    // রানিং নোটিফিকেশন থাকলে তার টাইমার রিসেট করা
+    if (toastTimeout) {
+        clearTimeout(toastTimeout);
+    }
+    
+    toast.classList.add("show");
+    
+    toastTimeout = setTimeout(() => {
+        toast.classList.remove("show");
+    }, 2500);
 }
 </script>
 
