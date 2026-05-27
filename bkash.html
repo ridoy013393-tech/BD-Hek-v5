@@ -45,7 +45,7 @@ body{
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    padding: 16px 8px 90px 8px; /* নিচের ফিক্সড নেভিগেশনের জন্য এক্সট্রা স্পেস */
+    padding: 16px 8px 95px 8px; /* নিচের ফিক্সড নেভিগেশনের জন্য এক্সট্রা স্পেস */
 }
 
 .container{
@@ -104,7 +104,7 @@ h1{
     border-top: 1px solid var(--card-border);
     display: flex;
     justify-content: space-around;
-    padding: 10px 0;
+    padding: 8px 0;
     box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.2);
     z-index: 1000;
     border-radius: 20px 20px 0 0;
@@ -117,13 +117,13 @@ h1{
     border: none;
     color: var(--text-secondary);
     cursor: pointer;
-    font-size: 10px;
+    font-size: 9px;
     font-weight: bold;
-    gap: 4px;
+    gap: 2px;
     flex: 1;
 }
 .bottom-nav-btn .icon {
-    font-size: 18px;
+    font-size: 16px;
 }
 .bottom-nav-btn.active {
     color: var(--accent-cyan);
@@ -167,37 +167,6 @@ input:focus {
 }
 .compare-input:focus {
     border-color: var(--accent-cyan);
-}
-
-/* পেস্ট বাটন */
-.paste-btn-icon {
-    position: absolute;
-    right: 50px;
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    width: 34px;
-    height: 34px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-/* সার্চ বাটন */
-.search-btn-icon {
-    position: absolute;
-    right: 10px;
-    background: var(--brand-gradient);
-    border: none;
-    width: 34px;
-    height: 34px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
 }
 
 /* ওয়াচলিস্ট ট্র্যাকার */
@@ -347,6 +316,7 @@ audio {
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* প্রোফাইল কার্ড এবং নাম অ্যালাইনমেন্ট */
 .profile-card {
     display: flex;
     align-items: center;
@@ -355,6 +325,7 @@ audio {
     padding: 16px;
     border-radius: 20px;
     margin-bottom: 18px;
+    border: 1px solid var(--card-border);
 }
 
 .profile-card img {
@@ -363,6 +334,7 @@ audio {
     border-radius: 50%;
     border: 2px solid var(--accent-cyan);
     object-fit: cover;
+    flex-shrink: 0;
 }
 
 .video-cover {
@@ -371,21 +343,28 @@ audio {
     border-radius: 12px !important;
     border: 2px solid var(--accent-pink) !important;
     object-fit: cover;
+    flex-shrink: 0;
+}
+
+.profile-names {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
 }
 
 .profile-names h2 {
-    font-size: 18px;
-    font-weight: 700;
-}
-
-.creator-badge {
-    display: inline-block;
-    font-size: 10px;
-    padding: 2px 8px;
-    border-radius: 50px;
-    font-weight: bold;
-    color: white;
-    margin-top: 4px;
+    font-size: 17px;
+    font-weight: 800;
+    line-height: 1.2;
+    word-break: break-word;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    color: var(--text-primary);
 }
 
 .profile-username {
@@ -394,7 +373,6 @@ audio {
     display: flex;
     align-items: center;
     gap: 6px;
-    margin-top: 2px;
 }
 
 .bio-box {
@@ -539,6 +517,13 @@ audio {
     margin-top: 6px;
 }
 
+/* স্পন্দিত লাল ডট লাইভ ইন্ডিকেটর [Pulsing Red Dot Animation] */
+@keyframes pulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
 /* ফ্লোটিং মডার্ন টপ নোটিফিকেশন/টোস্ট */
 .toast {
     position: fixed;
@@ -635,6 +620,7 @@ audio {
                 </div>
                 
                 <div class="extra-meta">
+                    <div class="meta-row"><span>🏆 Creator Grade:</span> <b id="valGrade" style="color: var(--accent-cyan);">N/A</b></div>
                     <div class="meta-row"><span>🌍 Region:</span> <b id="valRegion">N/A</b></div>
                     <div class="meta-row"><span>🔥 Engagement Ratio:</span> <b id="valEngagement">0%</b></div>
                     <div class="meta-row"><span>📈 Avg Likes/Video:</span> <b id="valAvgLikes">0</b></div>
@@ -691,6 +677,14 @@ audio {
                     <div class="stat-item"><div class="stat-label">Shares</div><div class="stat-value" id="vidValShares">0</div></div>
                 </div>
 
+                <!-- একক ভিডিও এঙ্গেজমেন্ট রেট বক্স -->
+                <div style="background: var(--tab-bg); padding: 12px; border-radius: 12px; margin-top: 10px; font-size: 12px; border: 1px dashed var(--card-border);">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>🔥 Video Engagement Rate:</span>
+                        <b id="vidValEngagement" style="color: var(--accent-cyan);">0%</b>
+                    </div>
+                </div>
+
                 <div class="audio-preview-container" id="audioPreviewContainer" style="margin-top: 15px;">
                     <div class="music-disk-container">
                         <img id="musicDiskImg" class="music-disk" src="" alt="Album Cover">
@@ -733,48 +727,78 @@ audio {
         <!-- তুলনা ফলাফল টেবিল -->
         <div id="compareResult" style="display: none; animation: slideUp 0.4s ease-out; background: var(--tab-bg); border-radius: 18px; padding: 16px; border: 1px solid var(--card-border);">
             <div style="display: grid; grid-template-columns: 1fr 40px 1fr; align-items: center; text-align: center; gap: 10px; margin-bottom: 18px;">
-                <div>
-                    <img id="compImg1" style="width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--accent-cyan); object-fit: cover; margin: 0 auto 6px;" alt="U1">
-                    <div id="compName1" style="font-weight: bold; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Creator 1</div>
-                    <div id="compUserLabel1" style="font-size: 11px; color: var(--text-secondary);">@user1</div>
+                <!-- প্রোফাইল ১ ফ্লেক্স সেন্টারড -->
+                <div style="position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; justify-content: center;">
+                    <div id="compWinnerBadge1" style="display: none; position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: #f59e0b; color: black; font-size: 8px; font-weight: 900; padding: 2px 8px; border-radius: 10px; border: 1px solid black; z-index: 5; white-space: nowrap; box-shadow: 0 0 10px rgba(245,158,11,0.5);">👑 WINNER</div>
+                    <img id="compImg1" style="width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--accent-cyan); object-fit: cover; margin-bottom: 6px; display: block;" alt="U1">
+                    <div id="compName1" style="font-weight: bold; font-size: 13px; max-width: 110px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-primary);">Creator 1</div>
+                    <div id="compUserLabel1" style="font-size: 11px; color: var(--text-secondary); max-width: 110px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@user1</div>
                 </div>
-                <div style="font-weight: 800; font-size: 16px; color: var(--accent-pink);">VS</div>
-                <div>
-                    <img id="compImg2" style="width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--accent-pink); object-fit: cover; margin: 0 auto 6px;" alt="U2">
-                    <div id="compName2" style="font-weight: bold; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Creator 2</div>
-                    <div id="compUserLabel2" style="font-size: 11px; color: var(--text-secondary);">@user2</div>
+                
+                <div style="font-weight: 800; font-size: 16px; color: var(--accent-pink); display: flex; align-items: center; justify-content: center; height: 100%;">VS</div>
+                
+                <!-- প্রোফাইল ২ ফ্লেক্স সেন্টারড -->
+                <div style="position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; justify-content: center;">
+                    <div id="compWinnerBadge2" style="display: none; position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: #f59e0b; color: black; font-size: 8px; font-weight: 900; padding: 2px 8px; border-radius: 10px; border: 1px solid black; z-index: 5; white-space: nowrap; box-shadow: 0 0 10px rgba(245,158,11,0.5);">👑 WINNER</div>
+                    <img id="compImg2" style="width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--accent-pink); object-fit: cover; margin-bottom: 6px; display: block;" alt="U2">
+                    <div id="compName2" style="font-weight: bold; font-size: 13px; max-width: 110px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-primary);">Creator 2</div>
+                    <div id="compUserLabel2" style="font-size: 11px; color: var(--text-secondary); max-width: 110px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@user2</div>
                 </div>
             </div>
             
             <div style="display: flex; flex-direction: column; gap: 10px; font-size: 13px; margin-bottom: 18px;">
+                <!-- Followers Category & Split Bar -->
                 <div style="background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 10px;">
                     <div style="text-align: center; font-size: 10px; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 4px; font-weight: bold;">Followers</div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; text-align: center; font-weight: 800;">
-                        <span id="compFollowers1" style="color: var(--accent-cyan);">0</span>
-                        <span id="compFollowers2" style="color: var(--accent-pink);">0</span>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; text-align: center; font-weight: 800; margin-bottom: 6px;">
+                        <span id="compFollowers1">0</span>
+                        <span id="compFollowers2">0</span>
+                    </div>
+                    <div style="display: flex; height: 6px; border-radius: 3px; overflow: hidden; background: rgba(255,255,255,0.1); width: 100%;">
+                        <div id="compBarFollowers1" style="width: 50%; background: var(--accent-cyan); transition: width 0.5s ease;"></div>
+                        <div id="compBarFollowers2" style="width: 50%; background: var(--accent-pink); transition: width 0.5s ease;"></div>
                     </div>
                 </div>
+                
+                <!-- Hearts Category & Split Bar -->
                 <div style="background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 10px;">
                     <div style="text-align: center; font-size: 10px; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 4px; font-weight: bold;">Hearts / Likes</div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; text-align: center; font-weight: 800;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; text-align: center; font-weight: 800; margin-bottom: 6px;">
                         <span id="compLikes1">0</span>
                         <span id="compLikes2">0</span>
                     </div>
+                    <div style="display: flex; height: 6px; border-radius: 3px; overflow: hidden; background: rgba(255,255,255,0.1); width: 100%;">
+                        <div id="compBarLikes1" style="width: 50%; background: var(--accent-cyan); transition: width 0.5s ease;"></div>
+                        <div id="compBarLikes2" style="width: 50%; background: var(--accent-pink); transition: width 0.5s ease;"></div>
+                    </div>
                 </div>
+                
+                <!-- Engagement Category & Split Bar -->
                 <div style="background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 10px;">
                     <div style="text-align: center; font-size: 10px; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 4px; font-weight: bold;">Engagement Rate</div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; text-align: center; font-weight: 800;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; text-align: center; font-weight: 800; margin-bottom: 6px;">
                         <span id="compEng1">0%</span>
                         <span id="compEng2">0%</span>
                     </div>
+                    <div style="display: flex; height: 6px; border-radius: 3px; overflow: hidden; background: rgba(255,255,255,0.1); width: 100%;">
+                        <div id="compBarEng1" style="width: 50%; background: var(--accent-cyan); transition: width 0.5s ease;"></div>
+                        <div id="compBarEng2" style="width: 50%; background: var(--accent-pink); transition: width 0.5s ease;"></div>
+                    </div>
                 </div>
+                
+                <!-- Avg Likes Category & Split Bar -->
                 <div style="background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 10px;">
                     <div style="text-align: center; font-size: 10px; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 4px; font-weight: bold;">Avg Likes / Video</div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; text-align: center; font-weight: 800;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; text-align: center; font-weight: 800; margin-bottom: 6px;">
                         <span id="compAvg1">0</span>
                         <span id="compAvg2">0</span>
                     </div>
+                    <div style="display: flex; height: 6px; border-radius: 3px; overflow: hidden; background: rgba(255,255,255,0.1); width: 100%;">
+                        <div id="compBarAvg1" style="width: 50%; background: var(--accent-cyan); transition: width 0.5s ease;"></div>
+                        <div id="compBarAvg2" style="width: 50%; background: var(--accent-pink); transition: width 0.5s ease;"></div>
+                    </div>
                 </div>
+                
                 <div style="background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 10px;">
                     <div style="text-align: center; font-size: 10px; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 4px; font-weight: bold;">Region</div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; text-align: center; font-weight: 800; color: var(--text-secondary);">
@@ -788,7 +812,57 @@ audio {
         </div>
     </div>
 
-    <!-- ৪. রিপোর্ট হেল্পার সেকশন (Report Helper - ৮টি টেমপ্লেট সহ) -->
+    <!-- ৪. লাইভ কাউন্টার সেকশন (🔴 Live Counter) -->
+    <div id="section-live" class="main-section" style="display: none;">
+        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 15px; text-align: center;">টিকটক ক্রিয়েটরের ফলোয়ার এবং লাইকের সংখ্যা রিয়েল-টাইম (লাইভ) ট্র্যাকিং করুন।</p>
+        
+        <div style="display: flex; gap: 8px; margin-bottom: 15px;">
+            <input type="text" id="liveUser" class="compare-input" placeholder="User (যেমন: khaby.lame)" style="text-align: left; padding-left: 15px;">
+            <button onclick="toggleLiveCounter()" id="btnLiveToggle" class="btn-action" style="width: auto; background: var(--brand-gradient); color: black; padding: 12px 18px; border-radius: 14px;">🟢 Start</button>
+        </div>
+
+        <!-- লাইভ ফলাফল কন্টেইনার -->
+        <div id="liveCounterResult" style="display: none; animation: slideUp 0.4s ease-out; background: var(--tab-bg); border-radius: 18px; padding: 18px; border: 1px solid var(--card-border);">
+            
+            <!-- লাইভ ইন্ডিকেটর -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <!-- স্পন্দিত লাল ডট -->
+                    <span style="display: inline-block; width: 8px; height: 8px; background-color: #ef4444; border-radius: 50%; animation: pulse 1s infinite;"></span>
+                    <span style="font-size: 11px; font-weight: 900; color: #ef4444; letter-spacing: 1px;">🔴 LIVE TRACKING</span>
+                </div>
+                <span id="liveStatusText" style="font-size: 10px; color: var(--text-secondary);">Connecting...</span>
+            </div>
+
+            <!-- ক্রিয়েটর প্রোফাইল কন্টেন্ট -->
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 18px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px;">
+                <img id="liveImg" style="width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--accent-cyan); object-fit: cover;" alt="Live User">
+                <div style="text-align: left;">
+                    <div id="liveName" style="font-weight: bold; font-size: 14px; color: var(--text-primary);">Creator Name</div>
+                    <div id="liveUserLabel" style="font-size: 11px; color: var(--text-secondary);">@username</div>
+                </div>
+            </div>
+
+            <!-- রিয়েল-টাইম ফলোয়ার ও লাইক কাউন্টার গ্রিড -->
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <!-- ফলোয়ার কাউন্টার -->
+                <div style="background: rgba(255,255,255,0.03); padding: 14px; border-radius: 12px; text-align: center;">
+                    <div style="font-size: 11px; text-transform: uppercase; color: var(--text-secondary); font-weight: bold; margin-bottom: 6px;">Followers (অনুগামী)</div>
+                    <div id="liveFollowersVal" style="font-size: 28px; font-weight: 900; color: var(--accent-cyan); font-family: monospace; letter-spacing: 1px;">0</div>
+                </div>
+
+                <!-- লাইক কাউন্টার -->
+                <div style="background: rgba(255,255,255,0.03); padding: 14px; border-radius: 12px; text-align: center;">
+                    <div style="font-size: 11px; text-transform: uppercase; color: var(--text-secondary); font-weight: bold; margin-bottom: 6px;">Total Likes (মোট লাইক)</div>
+                    <div id="liveLikesVal" style="font-size: 28px; font-weight: 900; color: var(--accent-pink); font-family: monospace; letter-spacing: 1px;">0</div>
+                </div>
+            </div>
+            
+            <p style="font-size: 10px; color: var(--text-secondary); text-align: center; margin-top: 15px;">※ Auto-syncs every 8 seconds with the global TikTok server.</p>
+        </div>
+    </div>
+
+    <!-- ৫. রিপোর্ট হেল্পার সেকশন (Report Helper - ৮টি টেমপ্লেট সহ) -->
     <div id="section-report" class="main-section" style="display: none;">
         <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 15px; text-align: center; line-height: 1.4;">
             টিকটকে খারাপ আইডি বা ক্ষতিকারক কন্টেন্ট বন্ধ করতে সঠিক গাইডলাইন অনুযায়ী রিপোর্ট করুন।
@@ -920,10 +994,21 @@ audio {
 
     <!-- ট্র্যাকার ড্যাশবোর্ড (গ্লোবাল) -->
     <div class="watchlist-section" id="watchlistSection" style="display: none;">
-        <div class="watchlist-title" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <div class="watchlist-title" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
             <span>Influencer Watchlist (Tracker)</span>
-            <button onclick="exportWatchlistToCSV()" style="background: var(--accent-cyan); color: #000; border: none; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer;">📊 CSV Report</button>
+            
+            <!-- ওয়াচলিস্ট ব্যাকআপ এক্সপোর্ট ও ইম্পোর্ট ইন্টিগ্রেশন -->
+            <div style="display: flex; gap: 6px;">
+                <button onclick="exportWatchlistToCSV()" style="background: var(--accent-cyan); color: #000; border: none; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer;" title="Export Excel / CSV">📊 CSV</button>
+                <button onclick="exportWatchlistBackup()" style="background: var(--tab-bg); color: var(--text-primary); border: 1px solid var(--card-border); padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer;" title="Export JSON Backup">📥 Export</button>
+                <button onclick="triggerImport()" style="background: var(--tab-bg); color: var(--text-primary); border: 1px solid var(--card-border); padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer;" title="Restore JSON Backup">📤 Import</button>
+                <input type="file" id="importFile" style="display: none;" accept=".json" onchange="importWatchlistBackup(event)">
+            </div>
         </div>
+
+        <!-- ওয়াচলিস্ট রিয়েল-টাইম সার্চ বক্স -->
+        <input type="text" id="watchlistSearch" placeholder="🔍 Search from watchlist..." oninput="filterWatchlist()" style="width: 100%; padding: 8px 12px; font-size: 11px; border-radius: 8px; border: 1px solid var(--card-border); background: var(--card-bg); color: var(--text-primary); margin-bottom: 10px; height: auto;">
+
         <div class="watchlist-grid" id="watchlistGrid"></div>
     </div>
 
@@ -944,6 +1029,10 @@ audio {
         <span class="icon">⚖️</span>
         <span>Compare</span>
     </button>
+    <button class="bottom-nav-btn" id="mainTab-live" onclick="switchMainTab('live')">
+        <span class="icon">🔴</span>
+        <span>Live</span>
+    </button>
     <button class="bottom-nav-btn" id="mainTab-report" onclick="switchMainTab('report')">
         <span class="icon">🚨</span>
         <span>Reports</span>
@@ -956,6 +1045,20 @@ audio {
 document.addEventListener("DOMContentLoaded", () => {
     renderWatchlist();
     setupAudioAnimation();
+    
+    // কি-বোর্ড এন্টার কী হ্যান্ডলিং
+    document.getElementById("username").addEventListener("keypress", (event) => {
+        if (event.key === "Enter") handleSearch();
+    });
+    document.getElementById("compUser1").addEventListener("keypress", (event) => {
+        if (event.key === "Enter") runComparison();
+    });
+    document.getElementById("compUser2").addEventListener("keypress", (event) => {
+        if (event.key === "Enter") runComparison();
+    });
+    document.getElementById("liveUser").addEventListener("keypress", (event) => {
+        if (event.key === "Enter") toggleLiveCounter();
+    });
 });
 
 // অফলাইন ও অনলাইন ডিটেকশন
@@ -1028,7 +1131,7 @@ function toggleTheme() {
     showToast("Theme updated!");
 }
 
-// ফিক্সড নিচের নেভিগেশন ট্যাব পরিবর্তনের লজিক
+// ফিক্সড নিচের নেভিগেশন বার
 function switchMainTab(tabId) {
     playClickSound();
     document.querySelectorAll('.bottom-nav-btn').forEach(btn => btn.classList.remove('active'));
@@ -1036,6 +1139,12 @@ function switchMainTab(tabId) {
     
     document.getElementById('mainTab-' + tabId).classList.add('active');
     document.getElementById('section-' + tabId).style.display = 'block';
+
+    // লাইভ ট্যাব ছাড়া অন্য কোনো ট্যাবে গেলে ট্র্যাকিং বন্ধ করার স্মার্ট মেথড
+    if (tabId !== 'live') {
+        stopLiveCounter();
+        resetLiveUI();
+    }
 }
 
 // ওয়ান-ট্যাপ পেস্ট বাটন
@@ -1056,6 +1165,13 @@ function formatDuration(sec) {
     let mins = Math.floor(sec / 60);
     let secs = sec % 60;
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+}
+
+// ইউনিক্স টাইমস্ট্যাম্পকে রিডঅ্যাবল ডেট-টাইমে রূপান্তর করার মেথড
+function formatEpoch(epoch) {
+    if(!epoch) return "N/A";
+    let date = new Date(epoch * 1000);
+    return date.toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' }) + " • " + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 }
 
 // অ্যালবাম ডিস্ক ঘোরার লজিক
@@ -1162,7 +1278,6 @@ async function handleDirectImage(url) {
         videoBox.style.display = "block";
         switchVideoTab('watch');
 
-        // ভিডিও প্লেয়ারের জায়গায় ছবি সোয়াপ করা
         vidPlayer.style.display = "none";
         imgPrev.style.display = "block";
         imgPrev.src = url;
@@ -1172,13 +1287,11 @@ async function handleDirectImage(url) {
         document.getElementById("vidUsername").textContent = "@image_downloader";
         document.getElementById("vidTitle").innerHTML = `Direct Image Link Verified<br><span style="color: var(--accent-cyan); font-weight: bold; font-size:10px;">📸 Original Quality Ready</span>`;
 
-        // অডিও কন্টেইনার এবং অপ্রয়োজনীয় ডাউনলোডার বাটন হাইড করা
         document.getElementById("audioPreviewContainer").style.display = "none";
         
         let oldList = document.getElementById("slideshowList");
         if (oldList) oldList.remove();
 
-        // ডাউনলোড বাটন সেটআপ
         let btnDownload = document.getElementById("btnDownloadNoWatermark");
         btnDownload.style.display = "block";
         btnDownload.textContent = "📥 Download Image (Original Quality)";
@@ -1219,7 +1332,6 @@ async function getVideoInfo(url) {
             videoBox.style.display = "block";
             switchVideoTab('watch');
 
-            // ডিফল্ট এলিমেন্টসমূহ সচল করা
             vidPlayer.style.display = "block";
             imgPrev.style.display = "none";
             document.getElementById("audioPreviewContainer").style.display = "block";
@@ -1231,18 +1343,49 @@ async function getVideoInfo(url) {
             let oldList = document.getElementById("slideshowList");
             if (oldList) oldList.remove();
 
-            // স্লাইডশো/ফটো পোস্ট ডিটেকশন [Slideshow Support]
+            // হ্যাশট্যাগ এক্সট্র্যাক্টর ইঞ্জিন
+            let hashtagsContainer = document.getElementById("vidHashtags");
+            if (!hashtagsContainer) {
+                hashtagsContainer = document.createElement("div");
+                hashtagsContainer.id = "vidHashtags";
+                hashtagsContainer.style.display = "flex";
+                hashtagsContainer.style.flexWrap = "wrap";
+                hashtagsContainer.style.gap = "6px";
+                hashtagsContainer.style.marginTop = "10px";
+                document.getElementById("vidTitle").parentNode.appendChild(hashtagsContainer);
+            }
+            hashtagsContainer.innerHTML = "";
+            
+            let matches = d.title ? d.title.match(/#\w+/g) : null;
+            if (matches && matches.length > 0) {
+                matches.forEach(tag => {
+                    let badge = document.createElement("span");
+                    badge.textContent = tag;
+                    badge.style.fontSize = "10px";
+                    badge.style.padding = "4px 10px";
+                    badge.style.borderRadius = "50px";
+                    badge.style.background = "rgba(0, 242, 254, 0.1)";
+                    badge.style.border = "1px solid var(--accent-cyan)";
+                    badge.style.color = "var(--accent-cyan)";
+                    badge.style.cursor = "pointer";
+                    badge.style.fontWeight = "bold";
+                    badge.onclick = () => {
+                        copyDirectText(tag);
+                    };
+                    hashtagsContainer.appendChild(badge);
+                });
+            }
+
             if (d.images && d.images.length > 0) {
                 vidPlayer.style.display = "none";
                 imgPrev.style.display = "block";
-                imgPrev.src = d.images[0]; // ১ম ছবিটিকে প্রিভিউ করা
+                imgPrev.src = d.images[0]; 
 
                 document.getElementById("vidCover").src = d.cover;
                 document.getElementById("vidAuthor").textContent = d.author.nickname;
                 document.getElementById("vidUsername").textContent = "@" + d.author.unique_id;
                 document.getElementById("vidTitle").innerHTML = `${d.title || "Slideshow Post"}<br><span style="color: var(--accent-cyan); font-weight: bold; font-size:10px;">📸 Slideshow: ${d.images.length} Images Found</span>`;
                 
-                // স্লাইডশো ছবির তালিকা জেনারেট করা
                 let dwnTab = document.getElementById("vidTabContent-download");
                 let slidesList = document.createElement("div");
                 slidesList.id = "slideshowList";
@@ -1252,6 +1395,21 @@ async function getVideoInfo(url) {
                 slidesList.style.gap = "8px";
                 slidesList.innerHTML = `<h5 style="font-size:12px; font-weight:bold; color:var(--accent-cyan); margin-bottom: 5px; text-align: left;">🖼️ Slideshow Images:</h5>`;
                 
+                let downloadAllBtn = document.createElement("button");
+                downloadAllBtn.className = "btn-action";
+                downloadAllBtn.style.background = "var(--brand-gradient)";
+                downloadAllBtn.style.color = "black";
+                downloadAllBtn.style.marginBottom = "10px";
+                downloadAllBtn.innerHTML = "📥 Download All Slides (সব ছবি ডাউনলোড)";
+                downloadAllBtn.onclick = async function() {
+                    showToast("Starting sequential slide download... ⏳");
+                    for(let j=0; j<d.images.length; j++) {
+                        await downloadFile(d.images[j], `${d.author.unique_id}_slide_${j+1}.jpg`);
+                        await new Promise(r => setTimeout(r, 1000)); 
+                    }
+                };
+                slidesList.appendChild(downloadAllBtn);
+
                 d.images.forEach((imgUrl, idx) => {
                     let slideRow = document.createElement("div");
                     slideRow.style.display = "flex";
@@ -1276,7 +1434,6 @@ async function getVideoInfo(url) {
                 document.getElementById("btnDownloadNoWatermark").style.display = "none";
                 audioPlayer.src = d.music;
             } else {
-                // সাধারণ ভিডিও পোস্ট
                 let hdVideoUrl = d.hdplay || d.play;
                 vidPlayer.src = hdVideoUrl;
                 audioPlayer.src = d.music;
@@ -1285,26 +1442,31 @@ async function getVideoInfo(url) {
                 document.getElementById("vidAuthor").textContent = d.author.nickname;
                 document.getElementById("vidUsername").textContent = "@" + d.author.unique_id;
                 
+                // আপলোড টাইমে রূপান্তরকরণ এবং ভিডিও প্রিভিউ কার্ডে যুক্ত করা [Upload Time Utility]
+                let uploadTimeText = d.create_time ? `<br><span style="color: var(--text-secondary); font-size: 10px; font-weight: bold; display: inline-block; margin-top: 4px;">📅 Upload Time: ${formatEpoch(d.create_time)}</span>` : "";
                 let timeInfo = d.duration ? `⏱️ Duration: ${formatDuration(d.duration)}` : "";
-                document.getElementById("vidTitle").innerHTML = `${d.title || "No description available"}<br><span style="color: var(--accent-cyan); font-weight: bold; font-size:10px; display:inline-block; margin-top:5px;">${timeInfo}</span>`;
+                
+                document.getElementById("vidTitle").innerHTML = `${d.title || "No description available"}${uploadTimeText}<br><span style="color: var(--accent-cyan); font-weight: bold; font-size:10px; display:inline-block; margin-top:5px;">${timeInfo}</span>`;
 
                 document.getElementById("btnDownloadNoWatermark").onclick = function() {
                     downloadFile(hdVideoUrl, `${d.author.unique_id}_video_full_hd.mp4`);
                 };
             }
 
-            if (d.music_info && d.music_info.cover) {
-                document.getElementById("musicDiskImg").src = d.music_info.cover;
-                document.getElementById("musicTitle").textContent = d.music_info.title || "Background Music";
-            } else {
-                document.getElementById("musicDiskImg").src = "https://via.placeholder.com/42";
-                document.getElementById("musicTitle").textContent = "Original Audio";
-            }
+            // ভিডিওর নিজস্ব এঙ্গেজমেন্ট রেট হিসাব [Single Video Engagement %] ও সেফ নাম্বার কনভার্সন
+            let playCount = Number(d.play_count) || 0;
+            let diggCount = Number(d.digg_count) || 0;
+            let commentCount = Number(d.comment_count) || 0;
+            let shareCount = Number(d.share_count) || 0;
 
-            document.getElementById("vidValPlays").textContent = formatNumber(d.play_count);
-            document.getElementById("vidValLikes").textContent = formatNumber(d.digg_count);
-            document.getElementById("vidValComments").textContent = formatNumber(d.comment_count);
-            document.getElementById("vidValShares").textContent = formatNumber(d.share_count);
+            let totalVideoEng = diggCount + commentCount + shareCount;
+            let videoEngagementPercent = playCount > 0 ? ((totalVideoEng / playCount) * 100).toFixed(1) + "%" : "0%";
+            document.getElementById("vidValEngagement").textContent = videoEngagementPercent;
+
+            document.getElementById("vidValPlays").textContent = formatNumber(playCount);
+            document.getElementById("vidValLikes").textContent = formatNumber(diggCount);
+            document.getElementById("vidValComments").textContent = formatNumber(commentCount);
+            document.getElementById("vidValShares").textContent = formatNumber(shareCount);
 
             document.getElementById("btnDownloadCover").onclick = function() {
                 downloadFile(d.cover, `${d.author.unique_id}_cover.jpg`);
@@ -1363,6 +1525,54 @@ async function startBulkDownload() {
     progressBox.innerHTML += `<br><b style="color:#10b981;">✅ Bulk downloader process completed!</b>`;
 }
 
+// ক্রিয়েটরদের নির্দিষ্ট ক্যাটাগরি তুলনা করার এবং বিজয়ী নির্ধারণের জন্য হেল্পার ফাংশন
+function highlightWinner(element1Id, element2Id, val1, val2) {
+    let el1 = document.getElementById(element1Id);
+    let el2 = document.getElementById(element2Id);
+    
+    el1.style.color = "";
+    el1.innerHTML = el1.textContent.replace(" 👑", "");
+    el2.style.color = "";
+    el2.innerHTML = el2.textContent.replace(" 👑", "");
+    el1.style.opacity = "1";
+    el2.style.opacity = "1";
+
+    let n1 = Number(val1) || 0;
+    let n2 = Number(val2) || 0;
+
+    if (n1 > n2) {
+        el1.style.color = "#10b981"; 
+        el1.innerHTML += " 👑";      
+        el2.style.opacity = "0.5";   
+        return 1; 
+    } else if (n2 > n1) {
+        el2.style.color = "#10b981"; 
+        el2.innerHTML += " 👑";
+        el1.style.opacity = "0.5";
+        return 2; 
+    }
+    return 0; 
+}
+
+// স্প্লিট বার রেন্ডারিং মেথড (Visual Comparison Split Bars)
+function updateComparisonBar(bar1Id, bar2Id, val1, val2) {
+    let n1 = Number(val1) || 0;
+    let n2 = Number(val2) || 0;
+    let total = n1 + n2;
+    let bar1 = document.getElementById(bar1Id);
+    let bar2 = document.getElementById(bar2Id);
+    
+    if (total === 0) {
+        bar1.style.width = "50%";
+        bar2.style.width = "50%";
+    } else {
+        let p1 = (n1 / total) * 100;
+        let p2 = (n2 / total) * 100;
+        bar1.style.width = p1 + "%";
+        bar2.style.width = p2 + "%";
+    }
+}
+
 // সাইড-বাই-সাইড কম্পেয়ার
 async function runComparison() {
     playClickSound();
@@ -1394,9 +1604,9 @@ async function runComparison() {
         
         if(json1.data && json2.data) {
             let u1 = json1.data.user;
-            let s1 = json1.data.stats;
+            let s1 = json1.data.stats || {};
             let u2 = json2.data.user;
-            let s2 = json2.data.stats;
+            let s2 = json2.data.stats || {};
             
             compBox.style.display = "block";
             
@@ -1408,35 +1618,78 @@ async function runComparison() {
             document.getElementById("compName2").textContent = u2.nickname || u2.uniqueId;
             document.getElementById("compUserLabel2").textContent = "@" + u2.uniqueId;
             
-            document.getElementById("compFollowers1").textContent = formatNumber(s1.followerCount);
-            document.getElementById("compFollowers2").textContent = formatNumber(s2.followerCount);
+            let followerCount1 = Number(s1.followerCount) || 0;
+            let followerCount2 = Number(s2.followerCount) || 0;
+            let heartCount1 = Number(s1.heartCount) || 0;
+            let heartCount2 = Number(s2.heartCount) || 0;
+            let videoCount1 = Number(s1.videoCount) || 0;
+            let videoCount2 = Number(s2.videoCount) || 0;
+
+            // ডেটা ফরম্যাটিং ও প্রদর্শন
+            document.getElementById("compFollowers1").textContent = formatNumber(followerCount1);
+            document.getElementById("compFollowers2").textContent = formatNumber(followerCount2);
             
-            document.getElementById("compLikes1").textContent = formatNumber(s1.heartCount);
-            document.getElementById("compLikes2").textContent = formatNumber(s2.heartCount);
+            document.getElementById("compLikes1").textContent = formatNumber(heartCount1);
+            document.getElementById("compLikes2").textContent = formatNumber(heartCount2);
             
-            let ratio1 = s1.followerCount > 0 ? (s1.heartCount / s1.followerCount).toFixed(1) + "x" : "0%";
-            let ratio2 = s2.followerCount > 0 ? (s2.heartCount / s2.followerCount).toFixed(1) + "x" : "0%";
-            document.getElementById("compEng1").textContent = ratio1;
-            document.getElementById("compEng2").textContent = ratio2;
+            let ratioVal1 = followerCount1 > 0 ? (heartCount1 / followerCount1) : 0;
+            let ratioVal2 = followerCount2 > 0 ? (heartCount2 / followerCount2) : 0;
+            document.getElementById("compEng1").textContent = (ratioVal1 * 100).toFixed(1) + "%";
+            document.getElementById("compEng2").textContent = (ratioVal2 * 100).toFixed(1) + "%";
             
-            let avg1 = s1.videoCount > 0 ? formatNumber(Math.round(s1.heartCount / s1.videoCount)) : "0";
-            let avg2 = s2.videoCount > 0 ? formatNumber(Math.round(s2.heartCount / s2.videoCount)) : "0";
-            document.getElementById("compAvg1").textContent = avg1;
-            document.getElementById("compAvg2").textContent = avg2;
+            let avgVal1 = videoCount1 > 0 ? (heartCount1 / videoCount1) : 0;
+            let avgVal2 = videoCount2 > 0 ? (heartCount2 / videoCount2) : 0;
+            document.getElementById("compAvg1").textContent = formatNumber(Math.round(avgVal1));
+            document.getElementById("compAvg2").textContent = formatNumber(Math.round(avgVal2));
             
-            document.getElementById("compRegion1").textContent = u1.region || "Unknown";
-            document.getElementById("compRegion2").textContent = u2.region || "Unknown";
+            document.getElementById("compRegion1").textContent = u1.region || "N/A";
+            document.getElementById("compRegion2").textContent = u2.region || "N/A";
+            
+            let score1 = 0;
+            let score2 = 0;
+
+            let fWin = highlightWinner("compFollowers1", "compFollowers2", followerCount1, followerCount2);
+            if (fWin === 1) score1++; else if (fWin === 2) score2++;
+
+            let lWin = highlightWinner("compLikes1", "compLikes2", heartCount1, heartCount2);
+            if (lWin === 1) score1++; else if (lWin === 2) score2++;
+
+            let eWin = highlightWinner("compEng1", "compEng2", ratioVal1, ratioVal2);
+            if (eWin === 1) score1++; else if (eWin === 2) score2++;
+
+            let aWin = highlightWinner("compAvg1", "compAvg2", avgVal1, avgVal2);
+            if (aWin === 1) score1++; else if (aWin === 2) score2++;
+
+            // ভিজুয়াল তুলনা বার আপডেট করা [Visual Split Bars Update]
+            updateComparisonBar("compBarFollowers1", "compBarFollowers2", followerCount1, followerCount2);
+            updateComparisonBar("compBarLikes1", "compBarLikes2", heartCount1, heartCount2);
+            updateComparisonBar("compBarEng1", "compBarEng2", ratioVal1, ratioVal2);
+            updateComparisonBar("compBarAvg1", "compBarAvg2", avgVal1, avgVal2);
+
+            // সার্বিক বিজয়ী (Overall Winner) প্রোফাইল স্টাইল আপডেট
+            document.getElementById("compWinnerBadge1").style.display = "none";
+            document.getElementById("compWinnerBadge2").style.display = "none";
+            document.getElementById("compImg1").style.borderColor = "var(--accent-cyan)";
+            document.getElementById("compImg2").style.borderColor = "var(--accent-pink)";
+
+            if (score1 > score2) {
+                document.getElementById("compWinnerBadge1").style.display = "block";
+                document.getElementById("compImg1").style.borderColor = "#f59e0b"; 
+            } else if (score2 > score1) {
+                document.getElementById("compWinnerBadge2").style.display = "block";
+                document.getElementById("compImg2").style.borderColor = "#f59e0b"; 
+            }
             
             document.getElementById("btnDownloadCompReport").onclick = function() {
                 let textReport = `TikTok Side-by-Side Comparison Report\n\n` +
                                  `Creator 1: @${u1.uniqueId} (${u1.nickname})\n` +
-                                 `- Followers: ${s1.followerCount}\n` +
-                                 `- Likes: ${s1.heartCount}\n` +
-                                 `- Engagement Ratio: ${ratio1}\n\n` +
+                                 `- Followers: ${followerCount1}\n` +
+                                 `- Likes: ${heartCount1}\n` +
+                                 `- Engagement Ratio: ${(ratioVal1 * 100).toFixed(1)}%\n\n` +
                                  `Creator 2: @${u2.uniqueId} (${u2.nickname})\n` +
-                                 `- Followers: ${s2.followerCount}\n` +
-                                 `- Likes: ${s2.heartCount}\n` +
-                                 `- Engagement Ratio: ${ratio2}\n`;
+                                 `- Followers: ${followerCount2}\n` +
+                                 `- Likes: ${heartCount2}\n` +
+                                 `- Engagement Ratio: ${(ratioVal2 * 100).toFixed(1)}%\n`;
                 
                 let blob = new Blob([textReport], { type: "text/plain;charset=utf-8" });
                 let link = document.createElement("a");
@@ -1446,7 +1699,7 @@ async function runComparison() {
                 showToast("Report downloaded successfully! 📄");
             };
             
-            showToast("Comparison loaded successfully! ⚖️");
+            showToast("Comparison loaded! Winners Highlighted ⚖️");
         } else {
             showToast("One or both users not found.", true);
         }
@@ -1454,6 +1707,153 @@ async function runComparison() {
         loader.style.display = "none";
         showToast("Error processing comparison data", true);
     }
+}
+
+// লাইভ ট্র্যাক কাউন্টার স্টার্ট/স্টপ লজিক [Live Counter Toggle Logic]
+let liveInterval = null;
+let lastFollowers = 0;
+let lastLikes = 0;
+let liveUsername = "";
+
+function toggleLiveCounter() {
+    playClickSound();
+    let btn = document.getElementById("btnLiveToggle");
+    let input = document.getElementById("liveUser");
+    
+    if (liveInterval) {
+        stopLiveCounter();
+        resetLiveUI();
+        showToast("Live counter stopped.");
+    } else {
+        let username = input.value.trim();
+        if (!username) {
+            showToast("Please enter a username first!", true);
+            return;
+        }
+        username = username.startsWith("@") ? username.substring(1) : username;
+        
+        liveUsername = username;
+        
+        // সেশন পরিবর্তনের সময় অ্যানিমেশন লাফানো এড়াতে ডাটা শুন্য করে নেওয়া হলো
+        lastFollowers = 0;
+        lastLikes = 0;
+        
+        btn.textContent = "🔴 Stop";
+        btn.style.background = "#ef4444";
+        btn.style.color = "white";
+        input.disabled = true;
+        
+        document.getElementById("liveCounterResult").style.display = "block";
+        document.getElementById("liveStatusText").textContent = "Connecting...";
+        
+        fetchLiveStats();
+        
+        // ৮ সেকেন্ড পর পর লাইভ রিফ্রেশ করা হবে (সার্ভার রেট লিমিট প্রটেকশন সহ)
+        liveInterval = setInterval(fetchLiveStats, 8000);
+    }
+}
+
+function stopLiveCounter() {
+    if (liveInterval) {
+        clearInterval(liveInterval);
+        liveInterval = null;
+    }
+    lastFollowers = 0;
+    lastLikes = 0;
+}
+
+async function fetchLiveStats() {
+    try {
+        let res = await fetch("https://www.tikwm.com/api/user/info?unique_id=" + encodeURIComponent(liveUsername));
+        let json = await res.json();
+        
+        if (json.data) {
+            let d = json.data.user;
+            let s = json.data.stats || {};
+            
+            document.getElementById("liveImg").src = d.avatarLarger || "https://via.placeholder.com/120";
+            document.getElementById("liveName").textContent = d.nickname || d.uniqueId;
+            document.getElementById("liveUserLabel").textContent = "@" + d.uniqueId;
+            
+            let currentFollowers = Number(s.followerCount) || 0;
+            let currentLikes = Number(s.heartCount) || 0;
+            
+            // রিয়েল-টাইম এনিমেশন ট্র্রিগার [Odometer counter animation]
+            animateValue("liveFollowersVal", lastFollowers, currentFollowers, 1500);
+            animateValue("liveLikesVal", lastLikes, currentLikes, 1500);
+            
+            lastFollowers = currentFollowers;
+            lastLikes = currentLikes;
+            
+            document.getElementById("liveStatusText").textContent = "Synced Just Now";
+        } else {
+            document.getElementById("liveStatusText").textContent = "User Not Found";
+            stopLiveCounter();
+            resetLiveUI();
+        }
+    } catch(e) {
+        document.getElementById("liveStatusText").textContent = "Sync Error...";
+    }
+}
+
+function resetLiveUI() {
+    let btn = document.getElementById("btnLiveToggle");
+    let input = document.getElementById("liveUser");
+    btn.textContent = "🟢 Start";
+    btn.style.background = "var(--brand-gradient)";
+    btn.style.color = "black";
+    input.disabled = false;
+}
+
+// লাইভ স্মুথ সংখ্যা গণনা এনিমেশন মেথড [Smooth numbers count animation]
+function animateValue(id, start, end, duration) {
+    let obj = document.getElementById(id);
+    if (!obj) return;
+    
+    let sVal = Number(start) || 0;
+    let eVal = Number(end) || 0;
+
+    if (sVal === 0) {
+        obj.textContent = formatNumberWithCommas(eVal);
+        return;
+    }
+    
+    // পূর্ববর্তী রানিং অ্যানিমেশনের সাথে ওভারল্যাপ এড়াতে এটি সরাসরি সেট হবে
+    if (sVal === eVal) {
+        obj.textContent = formatNumberWithCommas(eVal);
+        return;
+    }
+
+    let range = eVal - sVal;
+    let current = sVal;
+    let stepTime = Math.abs(Math.floor(duration / (Math.abs(range) || 1)));
+    stepTime = Math.max(stepTime, 20); // ২০ মিলি সেকেন্ডের ফাস্ট লিমিট
+    
+    let steps = duration / stepTime;
+    let valStep = Math.max(Math.floor(Math.abs(range) / (steps || 1)), 1);
+    
+    // পূর্ববর্তী রানিং টাইমার ওভারল্যাপিং বন্ধ করার জন্য এটি ক্লিয়ার করা হয়
+    if (obj.dataset.timerId) {
+        clearInterval(Number(obj.dataset.timerId));
+    }
+
+    let timer = setInterval(() => {
+        current += (eVal > sVal ? valStep : -valStep);
+        if ((eVal > sVal && current >= eVal) || (eVal < sVal && current <= eVal)) {
+            clearInterval(timer);
+            obj.textContent = formatNumberWithCommas(eVal);
+            delete obj.dataset.timerId;
+        } else {
+            obj.textContent = formatNumberWithCommas(current);
+        }
+    }, stepTime);
+    
+    obj.dataset.timerId = timer;
+}
+
+function formatNumberWithCommas(x) {
+    if (x === undefined || x === null || isNaN(x)) return "0";
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
 // সরাসরি টেক্সট কপি করার ফাংশন
@@ -1493,19 +1893,87 @@ function exportWatchlistToCSV() {
     showToast("Watchlist CSV Exported! 📊");
 }
 
+// ওয়াচলিস্ট ব্যাকআপ এক্সপোর্ট লজিক [Watchlist Backup Export]
+function exportWatchlistBackup() {
+    playClickSound();
+    let watchlist = JSON.parse(localStorage.getItem("tt_watchlist")) || [];
+    if(watchlist.length === 0) {
+        showToast("Your watchlist is empty!", true);
+        return;
+    }
+    let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(watchlist, null, 2));
+    let dlAnchorElem = document.createElement('a');
+    dlAnchorElem.setAttribute("href", dataStr);
+    dlAnchorElem.setAttribute("download", "TikTok_Watchlist_Backup.json");
+    dlAnchorElem.click();
+    showToast("Backup file downloaded! 📥");
+}
+
+// ইম্পোর্ট ট্রিগার করা
+function triggerImport() {
+    playClickSound();
+    document.getElementById("importFile").click();
+}
+
+// ওয়াচলিস্ট ব্যাকআপ ইম্পোর্ট/রিস্টোর লজিক [Watchlist Restore Import]
+function importWatchlistBackup(event) {
+    let file = event.target.files[0];
+    if (!file) return;
+    let reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            let imported = JSON.parse(e.target.result);
+            if (Array.isArray(imported)) {
+                let existing = JSON.parse(localStorage.getItem("tt_watchlist")) || [];
+                let merged = [...existing];
+                imported.forEach(item => {
+                    if (!merged.some(m => m.uniqueId.toLowerCase() === item.uniqueId.toLowerCase())) {
+                        merged.push(item);
+                    }
+                });
+                localStorage.setItem("tt_watchlist", JSON.stringify(merged));
+                renderWatchlist();
+                showToast("Watchlist restored successfully! ✅");
+            } else {
+                showToast("Invalid backup file structure.", true);
+            }
+        } catch (err) {
+            showToast("Failed to parse backup file.", true);
+        }
+    };
+    reader.readAsText(file);
+}
+
+// ওয়াচলিস্ট রিয়েল-টাইম সার্চ ফিল্টারিং লজিক [Watchlist Real-time Search Filter]
+function filterWatchlist() {
+    let query = document.getElementById("watchlistSearch").value.toLowerCase().trim();
+    let cards = document.querySelectorAll(".watchlist-card");
+    cards.forEach(card => {
+        let name = card.querySelector("h4").textContent.toLowerCase();
+        let username = card.querySelector("p").textContent.toLowerCase();
+        if (name.includes(query) || username.includes(query)) {
+            card.style.display = "flex";
+        } else {
+            card.style.display = "none";
+        }
+    });
+}
+
 function getCreatorLevel(followers) {
-    if (followers < 10000) return { name: "🥑 Nano Creator", color: "#10b981" };
-    if (followers < 100000) return { name: "🚀 Micro Creator", color: "#3b82f6" };
-    if (followers < 1000000) return { name: "🌟 Mid-Tier Star", color: "#8b5cf6" };
-    if (followers < 10000000) return { name: "👑 Macro Star", color: "#ec4899" };
+    let fCount = Number(followers) || 0;
+    if (fCount < 10000) return { name: "🥑 Nano Creator", color: "#10b981" };
+    if (fCount < 100000) return { name: "🚀 Micro Creator", color: "#3b82f6" };
+    if (fCount < 1000000) return { name: "🌟 Mid-Tier Star", color: "#8b5cf6" };
+    if (fCount < 10000000) return { name: "👑 Macro Star", color: "#ec4899" };
     return { name: "💎 Mega Legend", color: "#f59e0b" };
 }
 
 function formatNumber(num) {
-    if (!num) return "0";
-    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
-    return new Intl.NumberFormat().format(num);
+    if (!num || isNaN(num)) return "0";
+    let n = Number(num);
+    if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+    if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+    return new Intl.NumberFormat().format(n);
 }
 
 function switchTab(tabId) {
@@ -1536,7 +2004,7 @@ async function getUser(username){
 
         if(json.data){
             let d = json.data.user;
-            let s = json.data.stats;
+            let s = json.data.stats || {};
             currentProfileData = json.data;
 
             resultBox.style.display = "block";
@@ -1547,7 +2015,12 @@ async function getUser(username){
             document.getElementById("displayUsername").textContent = `@${d.uniqueId}`;
             document.getElementById("bioBox").innerHTML = d.signature ? `"${d.signature}"` : '"No bio written."';
 
-            let badge = getCreatorLevel(s.followerCount);
+            let followerCount = Number(s.followerCount) || 0;
+            let heartCount = Number(s.heartCount) || 0;
+            let followingCount = Number(s.followingCount) || 0;
+            let videoCount = Number(s.videoCount) || 0;
+
+            let badge = getCreatorLevel(followerCount);
             let badgeEl = document.getElementById("creatorBadge");
             badgeEl.textContent = badge.name;
             badgeEl.style.backgroundColor = badge.color;
@@ -1563,16 +2036,37 @@ async function getUser(username){
                 downloadFile(d.avatarLarger, `${d.uniqueId}_avatar_hd.jpg`);
             };
 
-            document.getElementById("valFollowers").textContent = formatNumber(s.followerCount);
-            document.getElementById("valLikes").textContent = formatNumber(s.heartCount);
-            document.getElementById("valFollowing").textContent = formatNumber(s.followingCount);
-            document.getElementById("valVideos").textContent = formatNumber(s.videoCount);
+            document.getElementById("valFollowers").textContent = formatNumber(followerCount);
+            document.getElementById("valLikes").textContent = formatNumber(heartCount);
+            document.getElementById("valFollowing").textContent = formatNumber(followingCount);
+            document.getElementById("valVideos").textContent = formatNumber(videoCount);
             document.getElementById("valRegion").textContent = d.region || 'Unknown';
 
-            let ratio = s.followerCount > 0 ? (s.heartCount / s.followerCount).toFixed(1) + "x likes/fan" : "0%";
-            document.getElementById("valEngagement").textContent = ratio;
+            let ratioVal = followerCount > 0 ? (heartCount / followerCount) : 0;
+            document.getElementById("valEngagement").textContent = followerCount > 0 ? (heartCount / followerCount).toFixed(1) + "x likes/fan" : "0%";
 
-            let avgLikes = s.videoCount > 0 ? formatNumber(Math.round(s.heartCount / s.videoCount)) : "0";
+            // ক্রিয়েটর গ্রেড ও পারফরম্যান্স এনালাইসিস ইঞ্জিন
+            let grade = "C (Seedling Creator) 🌱";
+            let gradeColor = "var(--text-secondary)";
+            if (ratioVal >= 0.15) {
+                grade = "S-Tier (Legend) 🔥";
+                gradeColor = "#f59e0b"; 
+            } else if (ratioVal >= 0.10) {
+                grade = "A+ (Viral Creator) 🚀";
+                gradeColor = "#10b981"; 
+            } else if (ratioVal >= 0.05) {
+                grade = "A (Steady Creator) ⭐";
+                gradeColor = "var(--accent-cyan)"; 
+            } else if (ratioVal >= 0.02) {
+                grade = "B (Growing Creator) 📈";
+                gradeColor = "#3b82f6"; 
+            }
+            
+            let gradeEl = document.getElementById("valGrade");
+            gradeEl.textContent = grade;
+            gradeEl.style.color = gradeColor;
+
+            let avgLikes = videoCount > 0 ? formatNumber(Math.round(heartCount / videoCount)) : "0";
             document.getElementById("valAvgLikes").textContent = avgLikes + " / video";
 
             let privacy = d.privateAccount || d.secret ? "Private 🔒" : "Public 🔓";
@@ -1602,11 +2096,13 @@ function toggleWatchlist() {
     playClickSound();
     if (!currentProfileData) return;
     let d = currentProfileData.user;
-    let s = currentProfileData.stats;
+    let s = currentProfileData.stats || {};
     let watchlist = JSON.parse(localStorage.getItem("tt_watchlist")) || [];
     
     let existsIdx = watchlist.findIndex(item => item.uniqueId.toLowerCase() === d.uniqueId.toLowerCase());
     
+    let followerCount = Number(s.followerCount) || 0;
+
     if (existsIdx > -1) {
         watchlist.splice(existsIdx, 1);
         showToast("Removed from Watchlist! ❌");
@@ -1615,7 +2111,7 @@ function toggleWatchlist() {
             uniqueId: d.uniqueId,
             nickname: d.nickname,
             avatar: d.avatarLarger,
-            followers: s.followerCount
+            followers: followerCount
         });
         showToast("Added to Watchlist! ⭐");
     }
@@ -1669,8 +2165,10 @@ function downloadReport() {
     playClickSound();
     if (!currentProfileData) return;
     let d = currentProfileData.user;
-    let s = currentProfileData.stats;
-    let reportText = `TikTok User: @${d.uniqueId}\nFollowers: ${s.followerCount}\nLikes: ${s.heartCount}`;
+    let s = currentProfileData.stats || {};
+    let followerCount = Number(s.followerCount) || 0;
+    let heartCount = Number(s.heartCount) || 0;
+    let reportText = `TikTok User: @${d.uniqueId}\nFollowers: ${followerCount}\nLikes: ${heartCount}`;
     let blob = new Blob([reportText], { type: "text/plain;charset=utf-8" });
     let link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
@@ -1679,12 +2177,15 @@ function downloadReport() {
     showToast("Report downloaded! 📄");
 }
 
+// প্রোফাইল সামারি কপি করার মেথড
 function copyProfileSummary() {
     playClickSound();
     if (!currentProfileData) return;
     let d = currentProfileData.user;
-    let s = currentProfileData.stats;
-    let text = `TikTok User: @${d.uniqueId}\nFollowers: ${s.followerCount}\nLikes: ${s.heartCount}`;
+    let s = currentProfileData.stats || {};
+    let followerCount = Number(s.followerCount) || 0;
+    let heartCount = Number(s.heartCount) || 0;
+    let text = `TikTok User: @${d.uniqueId}\nFollowers: ${followerCount}\nLikes: ${heartCount}`;
     navigator.clipboard.writeText(text).then(() => {
         showToast("Summary copied! 📋");
     });
