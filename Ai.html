@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pollinations Pro AI Chatbot</title>
+    <!-- FontAwesome আইকন লাইব্রেরি -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* সিএসএস ভেরিয়েবল (লাইট ও ডার্ক থিম) */
+        :root {
+            --bg-main: #0b0f19;
+            --bg-sidebar: #090d16;
+            --bg-card: #151f32;
+            --bg-chat-user: #4f46e5;
+            --bg-chat-ai: #1e293b;
+            --text-main: #f1f5f9;
+            --text-sub: #94a3b8;
+            --border: #1e293b;
+            --accent: #10b981;
+            --sidebar-width: 280px;
+        }
+
+        .light-theme {
+            --bg-main: #f8fafc;
+            --bg-sidebar: #0f172a;
+            --bg-card: #ffffff;
+            --bg-chat-user: #4f46e5;
+            --bg-chat-ai: #f1f5f9;
+            --text-main: #0f172a;
+            --text-sub: #475569;
+            --border: #e2e8f0;
+            --accent: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* সাইডবার */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--bg-sidebar);
+            padding: 15px 12px;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border);
+            z-index: 100;
+        }
+
+        .sidebar h2 {
+            font-size: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #38bdf8;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .new-chat-btn {
+            background-color: transparent;
+            color: #fff;
+            border: 1px solid #334155;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            transition: all 0.2s;
+        }
+
+        .new-chat-btn:hover {
+            background-color: var(--bg-chat-user);
+            border-color: var(--bg-chat-user);
+        }
+
+        /* এআই পারসোনা বা ড্রপডাউন সিলেক্টর */
+        .persona-container {
+            margin-bottom: 20px;
+        }
+
+        .persona-select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background-color: var(--bg-card);
+            color: var(--text-main);
+            font-size: 14px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .category-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #475569;
+            margin: 15px 10px 5px 10px;
+            font-weight: bold;
+        }
+
+        .history-list {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+
+        .history-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 5px;
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        .history-item:hover, .history-item.active {
+            background-color: var(--bg-card);
+            color: #fff;
+        }
+
+        .history-item div {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 180px;
+        }
+
+        .history-item i.delete-btn {
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .history-item:hover i.delete-btn {
+            opacity: 1;
+            color: #ef4444;
+        }
+
+        .sidebar-footer {
+            border-top: 1px solid var(--border);
+            padding-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .footer-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            padding: 10px;
+            text-align: left;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .footer-btn:hover {
+            background-color: var(--bg-card);
+            color: #fff;
+        }
+
+        /* প্রধান চ্যাট এরিয়া */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: relative;
+        }
+
+        .chat-header {
+            background-color: var(--bg-sidebar);
+            border-bottom: 1px solid var(--border);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 99;
+        }
+
+        .chat-header h3 {
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--accent);
+        }
+
+        .menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-main);
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: relative;
+        }
+
+        /* এম্পটি স্ক্রিন */
+        .welcome-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            height: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .welcome-logo {
+            font-size: 60px;
+            color: var(--accent);
+            margin-bottom: 15px;
+        }
+
+        .welcome-screen h2 {
+            font-size: 26px;
+            margin-bottom: 10px;
+        }
+
+        .welcome-screen p {
+            color: var(--text-sub);
+            margin-bottom: 30px;
+        }
+
+        .suggestion-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .suggestion-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: left;
+        }
+
+        .suggestion-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        /* চ্যাট বাবল */
+        .message {
+            display: flex;
+            gap: 15px;
+            max-width: 850px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .avatar.user-avatar { background-color: var(--bg-chat-user); }
+        .avatar.ai-avatar { background-color: var(--accent); }
+
+        .bubble-container {
+            display: flex;
+            flex-direction: column;
+            max-width: 80%;
+        }
+
+        .bubble {
+            padding: 14px 18px;
+            border-radius: 12px;
+            font-size: 15px;
+            line-height: 1.6;
+            word-wrap: break-word;
+        }
+
+        .user .bubble {
+            background-color: var(--bg-chat-user);
+            color: white;
+            border-top-right-radius: 2px;
+        }
+
+        .ai .bubble {
+            background-color: var(--bg-chat-ai);
+            color: var(--text-main);
+            border-top-left-radius: 2px;
+            border: 1px solid var(--border);
+        }
+
+        .typing::after {
+            content: "▮";
+            animation: blink 0.8s infinite;
+            color: var(--accent);
+            margin-left: 3px;
+        }
+
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* কোড ব্লক স্টাইলিং */
+        .code-block {
+            background: #0f172a;
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            margin: 12px 0;
+            overflow: hidden;
+        }
+
+        .code-header {
+            background: #1e293b;
+            padding: 8px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: 600;
+            border-bottom: 1px solid #0f172a;
+        }
+
+        .copy-code-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .copy-code-btn:hover {
+            color: #fff;
+        }
+
+        pre {
+            padding: 15px;
+            overflow-x: auto;
+            color: #e2e8f0;
+            margin: 0;
+        }
+
+        code {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+        }
+
+        /* ফ্লোটিং বটম স্ক্রল বাটন */
+        .scroll-bottom-btn {
+            position: absolute;
+            bottom: 110px;
+            right: 30px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+            z-index: 99;
+        }
+
+        .scroll-bottom-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* বটম ইনপুট এরিয়া */
+        .input-area {
+            padding: 20px;
+            background-image: linear-gradient(180deg, rgba(0,0,0,0) 0%, var(--bg-main) 50%);
+        }
+
+        .input-container {
+            max-width: 850px;
+            margin: 0 auto;
+            position: relative;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            gap: 10px;
+        }
+
+        .input-container textarea {
+            flex: 1;
+            background: none;
+            border: none;
+            color: var(--text-main);
+            font-size: 15px;
+            outline: none;
+            resize: none;
+            max-height: 200px;
+            height: 24px;
+            line-height: 24px;
+        }
+
+        .action-btn {
+            background-color: transparent;
+            color: var(--text-sub);
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover, .action-btn.active {
+            background-color: var(--border);
+            color: var(--accent);
+        }
+
+        .send-btn {
+            background-color: var(--bg-chat-user);
+            color: white;
+        }
+
+        .send-btn:hover {
+            background-color: var(--accent);
+        }
+
+        .disclaimer {
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-sub);
+            margin-top: 8px;
+        }
+
+        /* কাস্টম টোস্ট নোটিফিকেশন */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #1e293b;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            z-index: 1000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-left: 4px solid var(--accent);
+        }
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed; left: -280px; top: 0; bottom: 0; transition: left 0.3s ease;
+            }
+            .sidebar.open { left: 0; }
+            .chat-area { width: 100%; }
+            .menu-btn { display: block; }
+            .suggestion-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- সাইডবার (চ্যাট হিস্ট্রি ও সেটিংস) -->
+    <div class="sidebar" id="sidebar">
+        <h2><i class="fa-solid fa-wand-magic-sparkles"></i> প্রো পোর্টাল</h2>
+        
+        <button class="new-chat-btn" onclick="startNewChat()">
+            <i class="fa-solid fa-plus"></i> নতুন চ্যাট
+        </button>
+
+        <div class="persona-container">
+            <div class="category-title">এআই রোল (Persona)</div>
+            <select id="ai-persona" class="persona-select">
+                <option value="default">Default (সাধারণ এআই)</option>
+                <option value="programmer">Programmer (প্রোগ্রামার)</option>
+                <option value="writer">Content Writer (কন্টেন্ট লেখক)</option>
+                <option value="teacher">English Teacher (ইংরেজি শিক্ষক)</option>
+            </select>
+        </div>
+        
+        <div class="category-title">সাম্প্রতিক চ্যাট সমূহ</div>
+        <div class="history-list" id="history-list">
+            <!-- হিস্ট্রি ডায়নামিকভাবে এখানে আসবে -->
+        </div>
+
+        <div class="sidebar-footer">
+            <button class="footer-btn" onclick="toggleTheme()">
+                <i class="fa-solid fa-moon" id="theme-icon"></i> <span id="theme-text">ডার্ক মোড</span>
+            </button>
+            <button class="footer-btn" onclick="clearAllHistory()">
+                <i class="fa-solid fa-trash-can"></i> সব চ্যাট মুছুন
+            </button>
+        </div>
+    </div>
+
+    <!-- মেইন চ্যাট স্ক্রিন -->
+    <div class="chat-area">
+        <div class="chat-header">
+            <button class="menu-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+            <h3><i class="fa-solid fa-circle-nodes"></i> Pollinations Pro AI (Llama-3)</h3>
+            <div style="width: 20px;"></div>
+        </div>
+
+        <!-- চ্যাট উইন্ডো -->
+        <div class="chat-messages" id="chat-messages">
+            <div class="welcome-screen" id="welcome-screen">
+                <div class="welcome-logo"><i class="fa-solid fa-brain"></i></div>
+                <h2>আজ আপনাকে কীভাবে সাহায্য করতে পারি?</h2>
+                <p>সাইডবার থেকে এআই-এর রোল সিলেক্ট করে আপনার সুবিধাজনক কাজ করিয়ে নিন সহজে।</p>
+                
+                <div class="suggestion-grid">
+                    <div class="suggestion-card" onclick="useSuggestion('একটি কাল্পনিক অ্যাডভেঞ্চার গল্প লেখো')">
+                        <h4>📖 গল্প লিখন</h4>
+                        <p>"একটি কাল্পনিক অ্যাডভেঞ্চার গল্প..."</p>
+                    </div>
+                    <div class="suggestion-card" onclick="useSuggestion('JavaScript এ কুইক সর্ট (Quick Sort) কোড এক্সপ্লেইন করো')">
+                        <h4>💻 কোডিং টিউটোরিয়াল</h4>
+                        <p>"Quick Sort অ্যালগরিদম কোড..."</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ফ্লোটিং বটম স্ক্রল বাটন -->
+        <button class="scroll-bottom-btn" id="scroll-bottom-btn" onclick="scrollToBottom()">
+            <i class="fa-solid fa-arrow-down"></i>
+        </button>
+
+        <!-- ইনপুট বার -->
+        <div class="input-area">
+            <div class="input-container">
+                <!-- মাইক্রোফোন বাটন -->
+                <button class="action-btn" id="mic-btn" onclick="startVoiceInput()" title="ভয়েস টাইপিং">
+                    <i class="fa-solid fa-microphone"></i>
+                </button>
+                
+                <textarea id="user-input" placeholder="এখানে মেসেজ লিখুন..." oninput="autoGrow(this)"></textarea>
+                
+                <!-- সেন্ড বাটন -->
+                <button class="action-btn send-btn" onclick="sendMessage()"><i class="fa-solid fa-arrow-up"></i></button>
+            </div>
+            <div class="disclaimer">Pollinations AI can make mistakes. Please verify important info.</div>
+        </div>
+    </div>
+
+    <!-- টোস্ট নোটিফিকেশন -->
+    <div class="toast" id="custom-toast">
+        <i class="fa-solid fa-check-circle" style="color:var(--accent);"></i>
+        <span id="toast-message">কপি করা হয়েছে!</span>
+    </div>
+
+    <script>
+        let chatSessions = {};
+        let currentSessionId = '';
+
+        // এআই কাস্টম প্রম্পট ডেটা
+        const systemPrompts = {
+            default: "",
+            programmer: "You are a professional, world-class programmer. Help the user write highly optimized, clean, secure, and well-commented code. Explain your concepts clearly.",
+            writer: "তুমি একজন দক্ষ এবং সৃজনশীল কন্টেন্ট রাইটার। ব্যবহারকারীকে যেকোনো বিষয়ে চমৎকার, সাবলীল এবং আকর্ষণীয় বাংলা বা ইংরেজি লেখা তৈরি করতে সাহায্য করো।",
+            teacher: "You are an encouraging and highly skilled English Language Teacher. Correct the user's grammar, explain mistakes, and help them improve their English writing skills in a friendly tone."
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            // ১. থিম ও হিস্ট্রি সেটআপ
+            const savedTheme = localStorage.getItem('chat-theme');
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-theme');
+                updateThemeUI(true);
+            }
+
+            const savedHistory = localStorage.getItem('chat-sessions');
+            if (savedHistory) {
+                chatSessions = JSON.parse(savedHistory);
+            }
+            renderHistoryList();
+
+            // এন্টার টিপলে মেসেজ পাঠানো
+            const input = document.getElementById('user-input');
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            // স্ক্রল ডাউন বাটন হ্যান্ডলার
+            const messagesContainer = document.getElementById('chat-messages');
+            messagesContainer.addEventListener('scroll', () => {
+                const scrollBtn = document.getElementById('scroll-bottom-btn');
+                if (messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight > 300) {
+                    scrollBtn.style.display = 'flex';
+                } else {
+                    scrollBtn.style.display = 'none';
+                }
+            });
+        });
+
+        // থিম চেঞ্জিং
+        function toggleTheme() {
+            const body = document.body;
+            body.classList.toggle('light-theme');
+            const isLight = body.classList.contains('light-theme');
+            localStorage.setItem('chat-theme', isLight ? 'light' : 'dark');
+            updateThemeUI(isLight);
+        }
+
+        function updateThemeUI(isLight) {
+            const icon = document.getElementById('theme-icon');
+            const text = document.getElementById('theme-text');
+            if (isLight) {
+                icon.className = 'fa-solid fa-sun';
+                text.innerText = 'লাইট মোড';
+            } else {
+                icon.className = 'fa-solid fa-moon';
+                text.innerText = 'ডার্ক মোড';
+            }
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        function autoGrow(element) {
+            element.style.height = "24px";
+            element.style.height = (element.scrollHeight - 16) + "px";
+        }
+
+        function useSuggestion(text) {
+            document.getElementById('user-input').value = text;
+            sendMessage();
+        }
+
+        function scrollToBottom() {
+            const messagesContainer = document.getElementById('chat-messages');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // কাস্টম নোটিফিকেশন
+        function showToast(message) {
+            const toast = document.getElementById('custom-toast');
+            document.getElementById('toast-message').innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ভয়েস টাইপিং লজিক
+        function startVoiceInput() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                showToast("দুঃখিত, আপনার ব্রাউজারে ভয়েস টাইপিং সাপোর্ট করে না।");
+                return;
+            }
+
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'bn-BD'; // ডিফল্ট বাংলা ইনপুট
+            recognition.interimResults = false;
+            
+            const micBtn = document.getElementById('mic-btn');
+            micBtn.classList.add('active');
+            showToast("শুনছি, বাংলা বা ইংরেজিতে বলুন...");
+            recognition.start();
+
+            recognition.onresult = (event) => {
+                const speechToText = event.results[0][0].transcript;
+                const inputEl = document.getElementById('user-input');
+                inputEl.value += speechToText;
+                autoGrow(inputEl);
+                micBtn.classList.remove('active');
+            };
+
+            recognition.onerror = () => {
+                showToast("ভয়েস ইনপুট নেওয়া সম্ভব হয়নি।");
+                micBtn.classList.remove('active');
+            };
+
+            recognition.onend = () => {
+                micBtn.classList.remove('active');
+            }
+        }
+
+        // নতুন চ্যাট
+        function startNewChat() {
+            currentSessionId = '';
+            document.getElementById('chat-messages').innerHTML = `
+                <div class="welcome-screen" id="welcome-screen">
+                    <div class="welcome-logo"><i class="fa-solid fa-brain"></i></div>
+                    <h2>আজ আপনাকে কীভাবে সাহায্য করতে পারি?</h2>
+                    <p>সাইডবার থেকে এআই-এর রোল সিলেক্ট করে আপনার সুবিধাজনক কাজ করিয়ে নিন সহজে।</p>
+                    <div class="suggestion-grid">
+                        <div class="suggestion-card" onclick="useSuggestion('একটি কাল্পনিক অ্যাডভেঞ্চার গল্প লেখো')">
+                            <h4>📖 গল্প লিখন</h4>
+                            <p>"একটি কাল্পনিক অ্যাডভেঞ্চার গল্প..."</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            renderHistoryList();
+        }
+
+        // মেসেজ পাঠানো ও প্রসেসিং
+        async function sendMessage() {
+            const inputEl = document.getElementById('user-input');
+            const prompt = inputEl.value.trim();
+            if (!prompt) return;
+
+            if (!currentSessionId) {
+                currentSessionId = 'session_' + Date.now();
+                chatSessions[currentSessionId] = {
+                    title: prompt.substring(0, 30) + (prompt.length > 30 ? '...' : ''),
+                    messages: []
+                };
+            }
+
+            const welcome = document.getElementById('welcome-screen');
+            if (welcome) welcome.remove();
+
+            appendMessage(prompt, 'user');
+            chatSessions[currentSessionId].messages.push({ role: 'user', content: prompt });
+            saveToStorage();
+
+            inputEl.value = '';
+            inputEl.style.height = "24px";
+
+            const aiMsgDiv = appendMessage('', 'ai', true); // টাইপিং বাবল
+            
+            // সাইডবার থেকে সিলেক্ট করা রোল এর প্রম্পট নেওয়া
+            const activeRole = document.getElementById('ai-persona').value;
+            const systemText = systemPrompts[activeRole] || "";
+
+            try {
+                // Pollinations text এপিআই তে system parameter সহ কল করা
+                const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(prompt)}?system=${encodeURIComponent(systemText)}`);
+                const replyText = await response.text();
+                
+                typewriterEffect(aiMsgDiv.querySelector('.bubble-text'), replyText, aiMsgDiv, () => {
+                    chatSessions[currentSessionId].messages.push({ role: 'ai', content: replyText });
+                    saveToStorage();
+                    renderHistoryList();
+                });
+                
+            } catch (error) {
+                const bubble = aiMsgDiv.querySelector('.bubble-text');
+                bubble.classList.remove('typing');
+                bubble.innerText = 'দুঃখিত, উত্তর আনতে সমস্যা হয়েছে। অনুগ্রহ করে আবার ট্রাই করুন।';
+            }
+        }
+
+        // চ্যাট বাবল স্ক্রিনে রেন্ডার করা
+        function appendMessage(text, role, isTyping = false) {
+            const messagesContainer = document.getElementById('chat-messages');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${role}`;
+
+            const avatarDiv = document.createElement('div');
+            avatarDiv.className = `avatar ${role}-avatar`;
+            avatarDiv.innerHTML = role === 'user' ? '<i class="fa-solid fa-user"></i>' : '<i class="fa-solid fa-robot"></i>';
+
+            const bubbleContainer = document.createElement('div');
+            bubbleContainer.className = 'bubble-container';
+
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.className = 'bubble';
+            
+            const textSpan = document.createElement('span');
+            textSpan.className = 'bubble-text';
+            if (isTyping) {
+                textSpan.classList.add('typing');
+            } else {
+                textSpan.innerHTML = parseMarkdown(text);
+            }
+
+            bubbleDiv.appendChild(textSpan);
+            bubbleContainer.appendChild(bubbleDiv);
+
+            // এআই এর মেসেজে কুইক কপি অ্যাকশন যুক্ত করা
+            if (role === 'ai' && !isTyping) {
+                addCopyBtn(bubbleContainer, text);
+            }
+
+            msgDiv.appendChild(avatarDiv);
+            msgDiv.appendChild(bubbleContainer);
+            messagesContainer.appendChild(msgDiv);
+            scrollToBottom();
+
+            return msgDiv;
+        }
+
+        // মেসেজের জন্য কপি বাটন
+        function addCopyBtn(container, text) {
+            const copyBtn = document.createElement('button');
+            copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i> উত্তর কপি করুন';
+            copyBtn.style.cssText = "background:none; border:none; color:var(--text-sub); font-size:12px; cursor:pointer; margin-top:5px; text-align:left; width:fit-content; display:flex; align-items:center; gap:5px;";
+            copyBtn.onclick = () => {
+                navigator.clipboard.writeText(text);
+                showToast("উত্তর সফলভাবে কপি করা হয়েছে!");
+            };
+            container.appendChild(copyBtn);
+        }
+
+        // টাইপরাইটার ইফেক্ট
+        function typewriterEffect(element, text, msgDiv, callback) {
+            let i = 0;
+            element.innerHTML = '';
+            element.classList.add('typing');
+            
+            const speed = text.length > 500 ? 5 : 12;
+
+            function type() {
+                if (i < text.length) {
+                    element.innerHTML = parseMarkdown(text.substring(0, i + 1));
+                    i++;
+                    scrollToBottom();
+                    setTimeout(type, speed);
+                } else {
+                    element.classList.remove('typing');
+                    // টাইপিং শেষ হলে মেসেজ বাবলের নিচে কপি বাটন যুক্ত করা
+                    addCopyBtn(msgDiv.querySelector('.bubble-container'), text);
+                    if (callback) callback();
+                }
+            }
+            type();
+        }
+
+        // প্রফেশনাল লেভেলের কাস্টম কোড-ব্লক এবং মার্কার ডাউন পার্সার
+        function parseMarkdown(text) {
+            let escaped = text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+
+            const preBlocks = [];
+            
+            // কোড ব্লক (```lang ... ```) আলাদা করে সংরক্ষণ করা যাতে এন্টার মার্কার ডাউন নষ্ট না করে
+            escaped = escaped.replace(/```(\w*)\n([\s\S]+?)```/g, (match, lang, code) => {
+                const language = lang || 'code';
+                const index = preBlocks.length;
+                preBlocks.push(`
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>${language.toUpperCase()}</span>
+                        <button class="copy-code-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
+                    </div>
+                    <pre><code>${code.trim()}</code></pre>
+                </div>
+                `);
+                return `___PRE_BLOCK_${index}___`;
+            });
+
+            // ইনলাইন কোড `code`
+            escaped = escaped.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+            // বোল্ড **text**
+            escaped = escaped.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+
+            // সাধারণ লাইন ব্রেক পরিবর্তন
+            escaped = escaped.replace(/\n/g, '<br>');
+
+            // পূর্বের সংরক্ষিত কোড ব্লক ফিরিয়ে আনা
+            preBlocks.forEach((block, index) => {
+                escaped = escaped.replace(`___PRE_BLOCK_${index}___`, block);
+            });
+
+            return escaped;
+        }
+
+        // কোড কপি করার লজিক
+        function copyCode(btn) {
+            const pre = btn.closest('.code-block').querySelector('code');
+            const textarea = document.createElement('textarea');
+            textarea.innerHTML = pre.innerHTML;
+            const decodedCode = textarea.value;
+
+            navigator.clipboard.writeText(decodedCode).then(() => {
+                btn.innerHTML = '<i class="fa-solid fa-check" style="color:var(--accent);"></i> Copied!';
+                showToast("কোড কপি করা হয়েছে!");
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="fa-regular fa-copy"></i> Copy';
+                }, 2000);
+            });
+        }
+
+        function saveToStorage() {
+            localStorage.setItem('chat-sessions', JSON.stringify(chatSessions));
+        }
+
+        // সাইডবার হিস্ট্রি লোড
+        function renderHistoryList() {
+            const list = document.getElementById('history-list');
+            list.innerHTML = '';
+
+            Object.keys(chatSessions).reverse().forEach(sessionId => {
+                const session = chatSessions[sessionId];
+                const item = document.createElement('div');
+                item.className = `history-item ${sessionId === currentSessionId ? 'active' : ''}`;
+                item.onclick = () => loadSession(sessionId);
+
+                item.innerHTML = `
+                    <div>
+                        <i class="fa-solid fa-message"></i>
+                        <span>${session.title}</span>
+                    </div>
+                    <i class="fa-solid fa-trash-can delete-btn" onclick="deleteSession(event, '${sessionId}')"></i>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function loadSession(sessionId) {
+            currentSessionId = sessionId;
+            const messagesContainer = document.getElementById('chat-messages');
+            messagesContainer.innerHTML = '';
+
+            const session = chatSessions[sessionId];
+            session.messages.forEach(msg => {
+                appendMessage(msg.content, msg.role);
+            });
+
+            renderHistoryList();
+            if (window.innerWidth <= 768) {
+                toggleSidebar();
+            }
+        }
+
+        function deleteSession(event, sessionId) {
+            event.stopPropagation();
+            delete chatSessions[sessionId];
+            saveToStorage();
+            if (currentSessionId === sessionId) {
+                startNewChat();
+            } else {
+                renderHistoryList();
+            }
+        }
+
+        function clearAllHistory() {
+            if (confirm('আপনি কি সব চ্যাট হিস্ট্রি মুছে ফেলতে চান?')) {
+                chatSessions = {};
+                localStorage.removeItem('chat-sessions');
+                startNewChat();
+            }
+        }
+    </script>
+</body>
+</html>
