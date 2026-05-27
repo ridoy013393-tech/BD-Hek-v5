@@ -1,2230 +1,1015 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TikTok Suite Ultra Pro HD</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pollinations Pro AI Chatbot</title>
+    <!-- FontAwesome আইকন লাইব্রেরি -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* সিএসএস ভেরিয়েবল (লাইট ও ডার্ক থিম) */
+        :root {
+            --bg-main: #0b0f19;
+            --bg-sidebar: #090d16;
+            --bg-card: #151f32;
+            --bg-chat-user: #4f46e5;
+            --bg-chat-ai: #1e293b;
+            --text-main: #f1f5f9;
+            --text-sub: #94a3b8;
+            --border: #1e293b;
+            --accent: #10b981;
+            --sidebar-width: 280px;
+        }
 
-<style>
-:root {
-    --bg-dark: #080c14;
-    --card-bg: #0f172a;
-    --card-border: #1e293b;
-    --accent-cyan: #00f2fe;
-    --accent-pink: #fe0979;
-    --text-primary: #f3f4f6;
-    --text-secondary: #9ca3af;
-    --brand-gradient: linear-gradient(135deg, #fe0979 0%, #00f2fe 100%);
-    --tab-bg: #1e293b;
-    --neon-shadow: 0 0 15px rgba(0, 242, 254, 0.15);
-}
+        .light-theme {
+            --bg-main: #f8fafc;
+            --bg-sidebar: #0f172a;
+            --bg-card: #ffffff;
+            --bg-chat-user: #4f46e5;
+            --bg-chat-ai: #f1f5f9;
+            --text-main: #0f172a;
+            --text-sub: #475569;
+            --border: #e2e8f0;
+            --accent: #10b981;
+        }
 
-body.light-mode {
-    --bg-dark: #f1f5f9;
-    --card-bg: #ffffff;
-    --card-border: #cbd5e1;
-    --text-primary: #0f172a;
-    --text-secondary: #64748b;
-    --tab-bg: #e2e8f0;
-    --neon-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-}
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+        }
 
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-    -webkit-tap-highlight-color: transparent;
-    transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-}
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
 
-body{
-    background: var(--bg-dark);
-    color: var(--text-primary);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    padding: 16px 8px 95px 8px; /* নিচের ফিক্সড নেভিগেশনের জন্য এক্সট্রা স্পেস */
-}
+        /* সাইডবার */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--bg-sidebar);
+            padding: 15px 12px;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border);
+            z-index: 100;
+        }
 
-.container{
-    width: 100%;
-    max-width: 440px;
-    background: var(--card-bg);
-    padding: 24px 18px;
-    border-radius: 28px;
-    border: 1px solid var(--card-border);
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    position: relative;
-    margin-bottom: 70px;
-}
+        .sidebar h2 {
+            font-size: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #38bdf8;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
 
-/* লাইট/ডার্ক মোড বাটন */
-.theme-toggle {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    background: var(--tab-bg);
-    border: none;
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-primary);
-    z-index: 10;
-}
+        .new-chat-btn {
+            background-color: transparent;
+            color: #fff;
+            border: 1px solid #334155;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            transition: all 0.2s;
+        }
 
-h1{
-    text-align: center;
-    font-size: 24px;
-    margin-bottom: 24px;
-    font-weight: 800;
-    background: var(--brand-gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
+        .new-chat-btn:hover {
+            background-color: var(--bg-chat-user);
+            border-color: var(--bg-chat-user);
+        }
 
-/* নিচের মোবাইল স্টাইল নেভিগেশন বার */
-.bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    max-width: 440px;
-    background: var(--card-bg);
-    border-top: 1px solid var(--card-border);
-    display: flex;
-    justify-content: space-around;
-    padding: 8px 0;
-    box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
-    border-radius: 20px 20px 0 0;
-}
-.bottom-nav-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background: none;
-    border: none;
-    color: var(--text-secondary);
-    cursor: pointer;
-    font-size: 9px;
-    font-weight: bold;
-    gap: 2px;
-    flex: 1;
-}
-.bottom-nav-btn .icon {
-    font-size: 16px;
-}
-.bottom-nav-btn.active {
-    color: var(--accent-cyan);
-}
-.bottom-nav-btn.active .icon {
-    filter: drop-shadow(0 0 5px rgba(0, 242, 254, 0.5));
-}
+        /* এআই পারসোনা বা ড্রপডাউন সিলেক্টর */
+        .persona-container {
+            margin-bottom: 20px;
+        }
 
-/* স্মার্ট ইনপুট বক্স ও বাটনসমূহ */
-.search-box {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
+        .persona-select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background-color: var(--bg-card);
+            color: var(--text-main);
+            font-size: 14px;
+            outline: none;
+            cursor: pointer;
+        }
 
-input{
-    width: 100%;
-    padding: 16px 90px 16px 16px;
-    border: 2px solid var(--card-border);
-    border-radius: 16px;
-    background: var(--tab-bg);
-    color: var(--text-primary);
-    font-size: 14px;
-    outline: none;
-}
+        .category-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #475569;
+            margin: 15px 10px 5px 10px;
+            font-weight: bold;
+        }
 
-input:focus {
-    border-color: var(--accent-cyan);
-}
+        .history-list {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
 
-.compare-input {
-    width: 100%;
-    padding: 14px;
-    border: 2px solid var(--card-border);
-    border-radius: 14px;
-    background: var(--tab-bg);
-    color: var(--text-primary);
-    font-size: 13px;
-    outline: none;
-    text-align: center;
-}
-.compare-input:focus {
-    border-color: var(--accent-cyan);
-}
+        .history-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 5px;
+            color: #94a3b8;
+            font-size: 14px;
+        }
 
-/* ওয়াচলিস্ট ট্র্যাকার */
-.watchlist-section {
-    margin-top: 24px;
-    border-top: 1px dashed var(--card-border);
-    padding-top: 18px;
-}
-.watchlist-title {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--text-secondary);
-    margin-bottom: 12px;
-}
-.watchlist-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-.watchlist-card {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: var(--tab-bg);
-    padding: 10px;
-    border-radius: 14px;
-    cursor: pointer;
-    position: relative;
-    border: 1px solid transparent;
-}
-.watchlist-card:hover {
-    border-color: var(--accent-cyan);
-}
-.watchlist-card img {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: 1px solid var(--accent-cyan);
-}
-.watchlist-details h4 {
-    font-size: 13px;
-    font-weight: bold;
-}
-.watchlist-details p {
-    font-size: 11px;
-    color: var(--text-secondary);
-}
-.btn-remove-watchlist {
-    position: absolute;
-    right: 12px;
-    background: none;
-    border: none;
-    color: var(--accent-pink);
-    font-size: 18px;
-    cursor: pointer;
-}
+        .history-item:hover, .history-item.active {
+            background-color: var(--bg-card);
+            color: #fff;
+        }
 
-/* ইন-অ্যাপ ভিডিও প্লেয়ার ফ্রেম */
-.video-preview-container {
-    margin: 15px 0;
-    border-radius: 18px;
-    overflow: hidden;
-    border: 3px solid var(--card-border);
-    background: black;
-    aspect-ratio: 9/16;
-    max-height: 380px;
-    box-shadow: var(--neon-shadow);
-}
-.video-preview-container video, .video-preview-container img {
-    width: 100%;
-    height: 100%;
-    display: block;
-    object-fit: contain;
-}
+        .history-item div {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 180px;
+        }
 
-/* ইন-অ্যাপ অডিও প্লেয়ার */
-.audio-preview-container {
-    background: var(--tab-bg);
-    padding: 12px;
-    border-radius: 14px;
-    margin-bottom: 18px;
-    border: 1px dashed var(--card-border);
-}
-.music-disk-container {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 10px;
-}
-.music-disk {
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    border: 2px solid var(--accent-pink);
-    animation: rotateDisk 4s linear infinite;
-    animation-play-state: paused;
-    object-fit: cover;
-    background: black;
-}
-@keyframes rotateDisk {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-.music-title-text {
-    font-size: 12px;
-    font-weight: bold;
-    color: var(--text-primary);
-}
-audio {
-    width: 100%;
-    height: 34px;
-    border-radius: 8px;
-    outline: none;
-}
+        .history-item i.delete-btn {
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
 
-.loader-container {
-    display: none;
-    margin: 20px 0;
-}
-.loader {
-    width: 32px;
-    height: 32px;
-    border: 3px solid rgba(255, 255, 255, 0.1);
-    border-radius: 50%;
-    border-top-color: var(--accent-cyan);
-    animation: spin 0.8s linear infinite;
-    margin: 0 auto;
-}
+        .history-item:hover i.delete-btn {
+            opacity: 1;
+            color: #ef4444;
+        }
 
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
+        .sidebar-footer {
+            border-top: 1px solid var(--border);
+            padding-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
 
-.result {
-    margin-top: 24px;
-    display: none;
-    animation: slideUp 0.4s ease-out;
-}
+        .footer-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            padding: 10px;
+            text-align: left;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
 
-.result.active-result {
-    border-radius: 20px;
-    box-shadow: var(--neon-shadow);
-}
+        .footer-btn:hover {
+            background-color: var(--bg-card);
+            color: #fff;
+        }
 
-@keyframes slideUp {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+        /* প্রধান চ্যাট এরিয়া */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: relative;
+        }
 
-/* প্রোফাইল কার্ড এবং নাম অ্যালাইনমেন্ট */
-.profile-card {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    background: var(--tab-bg);
-    padding: 16px;
-    border-radius: 20px;
-    margin-bottom: 18px;
-    border: 1px solid var(--card-border);
-}
+        .chat-header {
+            background-color: var(--bg-sidebar);
+            border-bottom: 1px solid var(--border);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 99;
+        }
 
-.profile-card img {
-    width: 75px;
-    height: 75px;
-    border-radius: 50%;
-    border: 2px solid var(--accent-cyan);
-    object-fit: cover;
-    flex-shrink: 0;
-}
+        .chat-header h3 {
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--accent);
+        }
 
-.video-cover {
-    width: 70px;
-    height: 95px;
-    border-radius: 12px !important;
-    border: 2px solid var(--accent-pink) !important;
-    object-fit: cover;
-    flex-shrink: 0;
-}
+        .menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-main);
+            font-size: 20px;
+            cursor: pointer;
+        }
 
-.profile-names {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-    flex: 1;
-    min-width: 0;
-}
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: relative;
+        }
 
-.profile-names h2 {
-    font-size: 17px;
-    font-weight: 800;
-    line-height: 1.2;
-    word-break: break-word;
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    color: var(--text-primary);
-}
+        /* এম্পটি স্ক্রিন */
+        .welcome-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            height: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
 
-.profile-username {
-    font-size: 13px;
-    color: var(--text-secondary);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
+        .welcome-logo {
+            font-size: 60px;
+            color: var(--accent);
+            margin-bottom: 15px;
+        }
 
-.bio-box {
-    font-size: 13px;
-    background: var(--tab-bg);
-    padding: 12px;
-    border-radius: 12px;
-    margin-bottom: 20px;
-    border-left: 3px solid var(--accent-pink);
-    line-height: 1.4;
-}
+        .welcome-screen h2 {
+            font-size: 26px;
+            margin-bottom: 10px;
+        }
 
-.tabs {
-    display: flex;
-    background: var(--tab-bg);
-    border-radius: 14px;
-    padding: 4px;
-    margin-bottom: 18px;
-}
+        .welcome-screen p {
+            color: var(--text-sub);
+            margin-bottom: 30px;
+        }
 
-.tab-btn {
-    flex: 1;
-    background: none;
-    border: none;
-    padding: 10px;
-    color: var(--text-secondary);
-    font-weight: bold;
-    font-size: 13px;
-    cursor: pointer;
-    border-radius: 10px;
-}
+        .suggestion-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            width: 100%;
+        }
 
-.tab-btn.active {
-    background: var(--brand-gradient);
-    color: black;
-}
+        .suggestion-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: left;
+        }
 
-.tab-content {
-    display: none;
-}
+        .suggestion-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
 
-.tab-content.active {
-    display: block;
-}
+        /* চ্যাট বাবল */
+        .message {
+            display: flex;
+            gap: 15px;
+            max-width: 850px;
+            width: 100%;
+            margin: 0 auto;
+        }
 
-.stats-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-}
+        .message.user {
+            flex-direction: row-reverse;
+        }
 
-.stat-item {
-    background: var(--tab-bg);
-    padding: 14px;
-    border-radius: 14px;
-    text-align: center;
-}
+        .avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            flex-shrink: 0;
+        }
 
-.stat-label {
-    font-size: 11px;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    margin-bottom: 4px;
-}
+        .avatar.user-avatar { background-color: var(--bg-chat-user); }
+        .avatar.ai-avatar { background-color: var(--accent); }
 
-.stat-value {
-    font-size: 18px;
-    font-weight: 800;
-}
+        .bubble-container {
+            display: flex;
+            flex-direction: column;
+            max-width: 80%;
+        }
 
-.extra-meta {
-    margin-top: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    background: var(--tab-bg);
-    padding: 12px;
-    border-radius: 12px;
-    font-size: 12px;
-}
+        .bubble {
+            padding: 14px 18px;
+            border-radius: 12px;
+            font-size: 15px;
+            line-height: 1.6;
+            word-wrap: break-word;
+        }
 
-.meta-row {
-    display: flex;
-    justify-content: space-between;
-}
+        .user .bubble {
+            background-color: var(--bg-chat-user);
+            color: white;
+            border-top-right-radius: 2px;
+        }
 
-.action-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
+        .ai .bubble {
+            background-color: var(--bg-chat-ai);
+            color: var(--text-main);
+            border-top-left-radius: 2px;
+            border: 1px solid var(--border);
+        }
 
-.btn-action {
-    background: var(--tab-bg);
-    color: var(--text-primary);
-    padding: 14px;
-    border-radius: 12px;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    border: none;
-    text-decoration: none;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-}
+        .typing::after {
+            content: "▮";
+            animation: blink 0.8s infinite;
+            color: var(--accent);
+            margin-left: 3px;
+        }
 
-.btn-action:hover {
-    opacity: 0.9;
-}
+        @keyframes blink { 50% { opacity: 0; } }
 
-.qr-container {
-    text-align: center;
-    background: var(--tab-bg);
-    padding: 20px;
-    border-radius: 16px;
-}
+        /* কোড ব্লক স্টাইলিং */
+        .code-block {
+            background: #0f172a;
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            margin: 12px 0;
+            overflow: hidden;
+        }
 
-.qr-code-img {
-    width: 140px;
-    height: 140px;
-    background: white;
-    padding: 8px;
-    border-radius: 12px;
-    margin: 0 auto 12px;
-    display: block;
-}
+        .code-header {
+            background: #1e293b;
+            padding: 8px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: 600;
+            border-bottom: 1px solid #0f172a;
+        }
 
-/* টেমপ্লেটের টেক্সট বক্স স্টাইল */
-.template-textarea {
-    width: 100%;
-    height: 60px;
-    font-size: 11px;
-    padding: 8px;
-    border-radius: 8px;
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    color: var(--text-secondary);
-    resize: none;
-    outline: none;
-    margin-top: 6px;
-}
+        .copy-code-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
 
-/* স্পন্দিত লাল ডট লাইভ ইন্ডিকেটর [Pulsing Red Dot Animation] */
-@keyframes pulse {
-    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
-    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-}
+        .copy-code-btn:hover {
+            color: #fff;
+        }
 
-/* ফ্লোটিং মডার্ন টপ নোটিফিকেশন/টোস্ট */
-.toast {
-    position: fixed;
-    top: 24px;
-    left: 50%;
-    transform: translateX(-50%) translateY(-100px);
-    background: #10b981;
-    color: white;
-    padding: 14px 28px;
-    border-radius: 50px;
-    font-size: 14px;
-    font-weight: 700;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    z-index: 10000;
-    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
-    opacity: 0;
-    pointer-events: none;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.toast.show {
-    transform: translateX(-50%) translateY(0);
-    opacity: 1;
-}
-.toast.error {
-    background: #ef4444;
-}
+        pre {
+            padding: 15px;
+            overflow-x: auto;
+            color: #e2e8f0;
+            margin: 0;
+        }
 
-.footer {
-    margin-top: 24px;
-    text-align: center;
-    color: var(--text-secondary);
-    font-size: 11px;
-    text-transform: uppercase;
-}
-</style>
+        code {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+        }
+
+        /* ফ্লোটিং বটম স্ক্রল বাটন */
+        .scroll-bottom-btn {
+            position: absolute;
+            bottom: 110px;
+            right: 30px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+            z-index: 99;
+        }
+
+        .scroll-bottom-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* বটম ইনপুট এরিয়া */
+        .input-area {
+            padding: 20px;
+            background-image: linear-gradient(180deg, rgba(0,0,0,0) 0%, var(--bg-main) 50%);
+        }
+
+        .input-container {
+            max-width: 850px;
+            margin: 0 auto;
+            position: relative;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            gap: 10px;
+        }
+
+        .input-container textarea {
+            flex: 1;
+            background: none;
+            border: none;
+            color: var(--text-main);
+            font-size: 15px;
+            outline: none;
+            resize: none;
+            max-height: 200px;
+            height: 24px;
+            line-height: 24px;
+        }
+
+        .action-btn {
+            background-color: transparent;
+            color: var(--text-sub);
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover, .action-btn.active {
+            background-color: var(--border);
+            color: var(--accent);
+        }
+
+        .send-btn {
+            background-color: var(--bg-chat-user);
+            color: white;
+        }
+
+        .send-btn:hover {
+            background-color: var(--accent);
+        }
+
+        .disclaimer {
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-sub);
+            margin-top: 8px;
+        }
+
+        /* কাস্টম টোস্ট নোটিফিকেশন */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #1e293b;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            z-index: 1000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-left: 4px solid var(--accent);
+        }
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed; left: -280px; top: 0; bottom: 0; transition: left 0.3s ease;
+            }
+            .sidebar.open { left: 0; }
+            .chat-area { width: 100%; }
+            .menu-btn { display: block; }
+            .suggestion-grid { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body>
 
-<div class="container">
+    <!-- সাইডবার (চ্যাট হিস্ট্রি ও সেটিংস) -->
+    <div class="sidebar" id="sidebar">
+        <h2><i class="fa-solid fa-wand-magic-sparkles"></i> প্রো পোর্টাল</h2>
+        
+        <button class="new-chat-btn" onclick="startNewChat()">
+            <i class="fa-solid fa-plus"></i> নতুন চ্যাট
+        </button>
 
-    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle Theme">🌓</button>
+        <div class="persona-container">
+            <div class="category-title">এআই রোল (Persona)</div>
+            <select id="ai-persona" class="persona-select">
+                <option value="default">Default (সাধারণ এআই)</option>
+                <option value="programmer">Programmer (প্রোগ্রামার)</option>
+                <option value="writer">Content Writer (কন্টেন্ট লেখক)</option>
+                <option value="teacher">English Teacher (ইংরেজি শিক্ষক)</option>
+            </select>
+        </div>
+        
+        <div class="category-title">সাম্প্রতিক চ্যাট সমূহ</div>
+        <div class="history-list" id="history-list">
+            <!-- হিস্ট্রি ডায়নামিকভাবে এখানে আসবে -->
+        </div>
 
-    <h1>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="color: var(--accent-cyan)"><path d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.89-.74-3.94-1.74-.22-.22-.44-.47-.63-.73v7.3c0 4.26-2.52 7.79-6.78 8.12-4.45.35-8.62-2.73-9.04-7.18-.46-4.96 3.86-9.48 8.92-8.91.13.01.27.04.4.06V.02z"/></svg>
-        TikTok Suite Pro
-    </h1>
-
-    <!-- গ্লোবাল লোডার রিং -->
-    <div class="loader-container" id="loader">
-        <div class="loader"></div>
-    </div>
-
-    <!-- ১. একক অনুসন্ধান সেকশন (Single Search) -->
-    <div id="section-single" class="main-section">
-        <div class="search-box">
-            <input type="text" id="username" placeholder="Paste link or type username here...">
-            <button onclick="pasteFromClipboard()" class="paste-btn-icon" title="Paste Link">📋</button>
-            <button onclick="handleSearch()" class="search-btn-icon" aria-label="Search">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <div class="sidebar-footer">
+            <button class="footer-btn" onclick="toggleTheme()">
+                <i class="fa-solid fa-moon" id="theme-icon"></i> <span id="theme-text">ডার্ক মোড</span>
+            </button>
+            <button class="footer-btn" onclick="clearAllHistory()">
+                <i class="fa-solid fa-trash-can"></i> সব চ্যাট মুছুন
             </button>
         </div>
+    </div>
 
-        <!-- প্রোফাইল রেজাল্ট প্যানেল -->
-        <div class="result" id="result">
-            <div class="profile-card">
-                <img id="avatar" alt="Avatar">
-                <div class="profile-names">
-                    <h2 id="nickname">Nickname</h2>
-                    <div id="creatorBadge" class="creator-badge">Level</div>
-                    <div class="profile-username">
-                        <span id="displayUsername">@user</span>
-                    </div>
-                </div>
-            </div>
+    <!-- মেইন চ্যাট স্ক্রিন -->
+    <div class="chat-area">
+        <div class="chat-header">
+            <button class="menu-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+            <h3><i class="fa-solid fa-circle-nodes"></i> Pollinations Pro AI (Llama-3)</h3>
+            <div style="width: 20px;"></div>
+        </div>
 
-            <div id="bioLinkContainer" style="margin-bottom: 12px; display: none;"></div>
-            
-            <div class="bio-box" id="bioBox">No Bio</div>
-
-            <div class="tabs">
-                <button class="tab-btn active" id="btnStats" onclick="switchTab('stats')">📊 Stats</button>
-                <button class="tab-btn" id="btnActions" onclick="switchTab('actions')">⚙️ Tools</button>
-                <button class="tab-btn" id="btnQr" onclick="switchTab('qr')">📲 QR Code</button>
-            </div>
-
-            <div id="tabContent-stats" class="tab-content active">
-                <div class="stats-grid">
-                    <div class="stat-item"><div class="stat-label">Followers</div><div class="stat-value" id="valFollowers">0</div></div>
-                    <div class="stat-item"><div class="stat-label">Likes</div><div class="stat-value" id="valLikes">0</div></div>
-                    <div class="stat-item"><div class="stat-label">Following</div><div class="stat-value" id="valFollowing">0</div></div>
-                    <div class="stat-item"><div class="stat-label">Videos</div><div class="stat-value" id="valVideos">0</div></div>
-                </div>
+        <!-- চ্যাট উইন্ডো -->
+        <div class="chat-messages" id="chat-messages">
+            <div class="welcome-screen" id="welcome-screen">
+                <div class="welcome-logo"><i class="fa-solid fa-brain"></i></div>
+                <h2>আজ আপনাকে কীভাবে সাহায্য করতে পারি?</h2>
+                <p>সাইডবার থেকে এআই-এর রোল সিলেক্ট করে আপনার সুবিধাজনক কাজ করিয়ে নিন সহজে।</p>
                 
-                <div class="extra-meta">
-                    <div class="meta-row"><span>🏆 Creator Grade:</span> <b id="valGrade" style="color: var(--accent-cyan);">N/A</b></div>
-                    <div class="meta-row"><span>🌍 Region:</span> <b id="valRegion">N/A</b></div>
-                    <div class="meta-row"><span>🔥 Engagement Ratio:</span> <b id="valEngagement">0%</b></div>
-                    <div class="meta-row"><span>📈 Avg Likes/Video:</span> <b id="valAvgLikes">0</b></div>
-                    <div class="meta-row"><span>🔓 Account Status:</span> <b id="valPrivacy">Public</b></div>
-                </div>
-            </div>
-
-            <div id="tabContent-actions" class="tab-content">
-                <div class="action-buttons">
-                    <button onclick="toggleWatchlist()" id="btnWatchlistToggle" class="btn-action" style="background: #10b981; color: white;">⭐ Add to Watchlist</button>
-                    <a id="profileLink" target="_blank" class="btn-action">🌐 Open Profile</a>
-                    <button id="btnDownloadAvatar" class="btn-action">🖼️ Download HD Profile Pic</button>
-                    <button onclick="copyProfileSummary()" class="btn-action">📋 Copy Profile Info</button>
-                    <button onclick="downloadReport()" class="btn-action">📄 Download Text Report</button>
-                </div>
-            </div>
-
-            <div id="tabContent-qr" class="tab-content">
-                <div class="qr-container">
-                    <img id="qrCode" class="qr-code-img" src="" alt="QR Code">
+                <div class="suggestion-grid">
+                    <div class="suggestion-card" onclick="useSuggestion('একটি কাল্পনিক অ্যাডভেঞ্চার গল্প লেখো')">
+                        <h4>📖 গল্প লিখন</h4>
+                        <p>"একটি কাল্পনিক অ্যাডভেঞ্চার গল্প..."</p>
+                    </div>
+                    <div class="suggestion-card" onclick="useSuggestion('JavaScript এ কুইক সর্ট (Quick Sort) কোড এক্সপ্লেইন করো')">
+                        <h4>💻 কোডিং টিউটোরিয়াল</h4>
+                        <p>"Quick Sort অ্যালগরিদম কোড..."</p>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- ভিডিও/ছবি ডাউনলোডার রেজাল্ট প্যানেল -->
-        <div class="result" id="videoResult">
-            <div class="profile-card">
-                <img id="vidCover" class="video-cover" alt="Video Cover">
-                <div class="profile-names">
-                    <h2 id="vidAuthor">Creator Name</h2>
-                    <div class="profile-username" id="vidUsername">@user</div>
-                    <p id="vidTitle" style="font-size: 12px; color: var(--text-secondary); margin-top: 5px; line-height: 1.3; font-weight: 500;"></p>
-                </div>
+        <!-- ফ্লোটিং বটম স্ক্রল বাটন -->
+        <button class="scroll-bottom-btn" id="scroll-bottom-btn" onclick="scrollToBottom()">
+            <i class="fa-solid fa-arrow-down"></i>
+        </button>
+
+        <!-- ইনপুট বার -->
+        <div class="input-area">
+            <div class="input-container">
+                <!-- মাইক্রোফোন বাটন -->
+                <button class="action-btn" id="mic-btn" onclick="startVoiceInput()" title="ভয়েস টাইপিং">
+                    <i class="fa-solid fa-microphone"></i>
+                </button>
+                
+                <textarea id="user-input" placeholder="এখানে মেসেজ লিখুন..." oninput="autoGrow(this)"></textarea>
+                
+                <!-- সেন্ড বাটন -->
+                <button class="action-btn send-btn" onclick="sendMessage()"><i class="fa-solid fa-arrow-up"></i></button>
             </div>
-
-            <div class="tabs">
-                <button class="tab-btn active" id="btnVidWatch" onclick="switchVideoTab('watch')">📽️ Preview</button>
-                <button class="tab-btn" id="btnVidStats" onclick="switchVideoTab('stats')">📊 Stats</button>
-                <button class="tab-btn" id="btnVidDownload" onclick="switchVideoTab('download')">📥 Download</button>
-            </div>
-
-            <div id="vidTabContent-watch" class="tab-content active">
-                <div class="video-preview-container" id="videoPreviewContainer">
-                    <video id="vidPlayer" controls playsinline style="width: 100%; height: 100%; object-fit: contain;"></video>
-                    <img id="imagePreview" style="display: none; width: 100%; height: 100%; object-fit: contain;" alt="Image Preview">
-                </div>
-            </div>
-
-            <div id="vidTabContent-stats" class="tab-content">
-                <div class="stats-grid">
-                    <div class="stat-item"><div class="stat-label">Views / Plays</div><div class="stat-value" id="vidValPlays" style="color: var(--accent-cyan);">0</div></div>
-                    <div class="stat-item"><div class="stat-label">Likes / Hearts</div><div class="stat-value" id="vidValLikes" style="color: var(--accent-pink);">0</div></div>
-                    <div class="stat-item"><div class="stat-label">Comments</div><div class="stat-value" id="vidValComments">0</div></div>
-                    <div class="stat-item"><div class="stat-label">Shares</div><div class="stat-value" id="vidValShares">0</div></div>
-                </div>
-
-                <!-- একক ভিডিও এঙ্গেজমেন্ট রেট বক্স -->
-                <div style="background: var(--tab-bg); padding: 12px; border-radius: 12px; margin-top: 10px; font-size: 12px; border: 1px dashed var(--card-border);">
-                    <div style="display: flex; justify-content: space-between;">
-                        <span>🔥 Video Engagement Rate:</span>
-                        <b id="vidValEngagement" style="color: var(--accent-cyan);">0%</b>
-                    </div>
-                </div>
-
-                <div class="audio-preview-container" id="audioPreviewContainer" style="margin-top: 15px;">
-                    <div class="music-disk-container">
-                        <img id="musicDiskImg" class="music-disk" src="" alt="Album Cover">
-                        <div class="music-title-text" id="musicTitle">Original Background Audio</div>
-                    </div>
-                    <audio id="musicPlayer" controls></audio>
-                </div>
-            </div>
-
-            <div id="vidTabContent-download" class="tab-content">
-                <div class="action-buttons">
-                    <button id="btnDownloadNoWatermark" class="btn-action" style="background: var(--brand-gradient); color: black;">📥 Download Video (No Watermark - Full HD)</button>
-                    <button id="btnDownloadCover" class="btn-action">🖼️ Download HD Cover Thumbnail</button>
-                    <button id="btnDownloadMusic" class="btn-action">🎵 Download Audio Track (MP3)</button>
-                </div>
-            </div>
+            <div class="disclaimer">Pollinations AI can make mistakes. Please verify important info.</div>
         </div>
     </div>
 
-    <!-- ২. বাল্ক ভিডিও ডাউনলোডার সেকশন (Bulk Downloader) -->
-    <div id="section-bulk" class="main-section" style="display: none;">
-        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.4;">
-            একাধিক TikTok ভিডিওর লিংক আলাদা লাইনে (One per line) নিচে পেস্ট করুন। অ্যাপটি ক্রমানুসারে ডাউনলোড শুরু করবে।
-        </p>
-        <textarea id="bulkLinks" placeholder="এখানে লিংকগুলো পেস্ট করুন...&#10;https://www.tiktok.com/@user/video/12345...&#10;https://vt.tiktok.com/abcde/" style="width: 100%; height: 120px; padding: 12px; border: 2px solid var(--card-border); border-radius: 14px; background: var(--tab-bg); color: var(--text-primary); font-size: 13px; outline: none; resize: none; margin-bottom: 12px;"></textarea>
-        <button onclick="startBulkDownload()" class="btn-action" style="background: var(--brand-gradient); color: black;">📥 Start Bulk Download</button>
-        <div id="bulkProgress" style="display: none; margin-top: 15px; padding: 12px; border-radius: 12px; background: rgba(0,242,254,0.05); border: 1px dashed var(--accent-cyan); font-size: 12px; line-height: 1.5; max-height: 150px; overflow-y: auto;"></div>
+    <!-- টোস্ট নোটিফিকেশন -->
+    <div class="toast" id="custom-toast">
+        <i class="fa-solid fa-check-circle" style="color:var(--accent);"></i>
+        <span id="toast-message">কপি করা হয়েছে!</span>
     </div>
 
-    <!-- ৩. প্রোফাইল তুলনা সেকশন (Compare) -->
-    <div id="section-compare" class="main-section" style="display: none;">
-        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 15px; text-align: center;">দুইজন ক্রিয়েটরের ডেটা সরাসরি তুলনা করুন।</p>
-        <div style="display: flex; gap: 8px; margin-bottom: 15px; align-items: center;">
-            <input type="text" id="compUser1" class="compare-input" placeholder="User 1 (যেমন: khaby.lame)">
-            <div style="font-weight: 800; color: var(--accent-pink); font-size: 14px;">VS</div>
-            <input type="text" id="compUser2" class="compare-input" placeholder="User 2">
-        </div>
-        <button onclick="runComparison()" class="btn-action" style="background: var(--brand-gradient); color: black; margin-bottom: 20px;">⚖️ Compare Profiles</button>
-        
-        <!-- তুলনা ফলাফল টেবিল -->
-        <div id="compareResult" style="display: none; animation: slideUp 0.4s ease-out; background: var(--tab-bg); border-radius: 18px; padding: 16px; border: 1px solid var(--card-border);">
-            <div style="display: grid; grid-template-columns: 1fr 40px 1fr; align-items: center; text-align: center; gap: 10px; margin-bottom: 18px;">
-                <!-- প্রোফাইল ১ ফ্লেক্স সেন্টারড -->
-                <div style="position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; justify-content: center;">
-                    <div id="compWinnerBadge1" style="display: none; position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: #f59e0b; color: black; font-size: 8px; font-weight: 900; padding: 2px 8px; border-radius: 10px; border: 1px solid black; z-index: 5; white-space: nowrap; box-shadow: 0 0 10px rgba(245,158,11,0.5);">👑 WINNER</div>
-                    <img id="compImg1" style="width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--accent-cyan); object-fit: cover; margin-bottom: 6px; display: block;" alt="U1">
-                    <div id="compName1" style="font-weight: bold; font-size: 13px; max-width: 110px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-primary);">Creator 1</div>
-                    <div id="compUserLabel1" style="font-size: 11px; color: var(--text-secondary); max-width: 110px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@user1</div>
-                </div>
-                
-                <div style="font-weight: 800; font-size: 16px; color: var(--accent-pink); display: flex; align-items: center; justify-content: center; height: 100%;">VS</div>
-                
-                <!-- প্রোফাইল ২ ফ্লেক্স সেন্টারড -->
-                <div style="position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; justify-content: center;">
-                    <div id="compWinnerBadge2" style="display: none; position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: #f59e0b; color: black; font-size: 8px; font-weight: 900; padding: 2px 8px; border-radius: 10px; border: 1px solid black; z-index: 5; white-space: nowrap; box-shadow: 0 0 10px rgba(245,158,11,0.5);">👑 WINNER</div>
-                    <img id="compImg2" style="width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--accent-pink); object-fit: cover; margin-bottom: 6px; display: block;" alt="U2">
-                    <div id="compName2" style="font-weight: bold; font-size: 13px; max-width: 110px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-primary);">Creator 2</div>
-                    <div id="compUserLabel2" style="font-size: 11px; color: var(--text-secondary); max-width: 110px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@user2</div>
-                </div>
-            </div>
-            
-            <div style="display: flex; flex-direction: column; gap: 10px; font-size: 13px; margin-bottom: 18px;">
-                <!-- Followers Category & Split Bar -->
-                <div style="background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 10px;">
-                    <div style="text-align: center; font-size: 10px; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 4px; font-weight: bold;">Followers</div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; text-align: center; font-weight: 800; margin-bottom: 6px;">
-                        <span id="compFollowers1">0</span>
-                        <span id="compFollowers2">0</span>
-                    </div>
-                    <div style="display: flex; height: 6px; border-radius: 3px; overflow: hidden; background: rgba(255,255,255,0.1); width: 100%;">
-                        <div id="compBarFollowers1" style="width: 50%; background: var(--accent-cyan); transition: width 0.5s ease;"></div>
-                        <div id="compBarFollowers2" style="width: 50%; background: var(--accent-pink); transition: width 0.5s ease;"></div>
-                    </div>
-                </div>
-                
-                <!-- Hearts Category & Split Bar -->
-                <div style="background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 10px;">
-                    <div style="text-align: center; font-size: 10px; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 4px; font-weight: bold;">Hearts / Likes</div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; text-align: center; font-weight: 800; margin-bottom: 6px;">
-                        <span id="compLikes1">0</span>
-                        <span id="compLikes2">0</span>
-                    </div>
-                    <div style="display: flex; height: 6px; border-radius: 3px; overflow: hidden; background: rgba(255,255,255,0.1); width: 100%;">
-                        <div id="compBarLikes1" style="width: 50%; background: var(--accent-cyan); transition: width 0.5s ease;"></div>
-                        <div id="compBarLikes2" style="width: 50%; background: var(--accent-pink); transition: width 0.5s ease;"></div>
-                    </div>
-                </div>
-                
-                <!-- Engagement Category & Split Bar -->
-                <div style="background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 10px;">
-                    <div style="text-align: center; font-size: 10px; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 4px; font-weight: bold;">Engagement Rate</div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; text-align: center; font-weight: 800; margin-bottom: 6px;">
-                        <span id="compEng1">0%</span>
-                        <span id="compEng2">0%</span>
-                    </div>
-                    <div style="display: flex; height: 6px; border-radius: 3px; overflow: hidden; background: rgba(255,255,255,0.1); width: 100%;">
-                        <div id="compBarEng1" style="width: 50%; background: var(--accent-cyan); transition: width 0.5s ease;"></div>
-                        <div id="compBarEng2" style="width: 50%; background: var(--accent-pink); transition: width 0.5s ease;"></div>
-                    </div>
-                </div>
-                
-                <!-- Avg Likes Category & Split Bar -->
-                <div style="background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 10px;">
-                    <div style="text-align: center; font-size: 10px; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 4px; font-weight: bold;">Avg Likes / Video</div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; text-align: center; font-weight: 800; margin-bottom: 6px;">
-                        <span id="compAvg1">0</span>
-                        <span id="compAvg2">0</span>
-                    </div>
-                    <div style="display: flex; height: 6px; border-radius: 3px; overflow: hidden; background: rgba(255,255,255,0.1); width: 100%;">
-                        <div id="compBarAvg1" style="width: 50%; background: var(--accent-cyan); transition: width 0.5s ease;"></div>
-                        <div id="compBarAvg2" style="width: 50%; background: var(--accent-pink); transition: width 0.5s ease;"></div>
-                    </div>
-                </div>
-                
-                <div style="background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 10px;">
-                    <div style="text-align: center; font-size: 10px; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 4px; font-weight: bold;">Region</div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; text-align: center; font-weight: 800; color: var(--text-secondary);">
-                        <span id="compRegion1">N/A</span>
-                        <span id="compRegion2">N/A</span>
-                    </div>
-                </div>
-            </div>
-            
-            <button id="btnDownloadCompReport" class="btn-action" style="width:100%; padding:10px; font-size:12px;">📄 Download Comparison Report</button>
-        </div>
-    </div>
+    <script>
+        let chatSessions = {};
+        let currentSessionId = '';
 
-    <!-- ৪. লাইভ কাউন্টার সেকশন (🔴 Live Counter) -->
-    <div id="section-live" class="main-section" style="display: none;">
-        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 15px; text-align: center;">টিকটক ক্রিয়েটরের ফলোয়ার এবং লাইকের সংখ্যা রিয়েল-টাইম (লাইভ) ট্র্যাকিং করুন।</p>
-        
-        <div style="display: flex; gap: 8px; margin-bottom: 15px;">
-            <input type="text" id="liveUser" class="compare-input" placeholder="User (যেমন: khaby.lame)" style="text-align: left; padding-left: 15px;">
-            <button onclick="toggleLiveCounter()" id="btnLiveToggle" class="btn-action" style="width: auto; background: var(--brand-gradient); color: black; padding: 12px 18px; border-radius: 14px;">🟢 Start</button>
-        </div>
-
-        <!-- লাইভ ফলাফল কন্টেইনার -->
-        <div id="liveCounterResult" style="display: none; animation: slideUp 0.4s ease-out; background: var(--tab-bg); border-radius: 18px; padding: 18px; border: 1px solid var(--card-border);">
-            
-            <!-- লাইভ ইন্ডিকেটর -->
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <div style="display: flex; align-items: center; gap: 6px;">
-                    <!-- স্পন্দিত লাল ডট -->
-                    <span style="display: inline-block; width: 8px; height: 8px; background-color: #ef4444; border-radius: 50%; animation: pulse 1s infinite;"></span>
-                    <span style="font-size: 11px; font-weight: 900; color: #ef4444; letter-spacing: 1px;">🔴 LIVE TRACKING</span>
-                </div>
-                <span id="liveStatusText" style="font-size: 10px; color: var(--text-secondary);">Connecting...</span>
-            </div>
-
-            <!-- ক্রিয়েটর প্রোফাইল কন্টেন্ট -->
-            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 18px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px;">
-                <img id="liveImg" style="width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--accent-cyan); object-fit: cover;" alt="Live User">
-                <div style="text-align: left;">
-                    <div id="liveName" style="font-weight: bold; font-size: 14px; color: var(--text-primary);">Creator Name</div>
-                    <div id="liveUserLabel" style="font-size: 11px; color: var(--text-secondary);">@username</div>
-                </div>
-            </div>
-
-            <!-- রিয়েল-টাইম ফলোয়ার ও লাইক কাউন্টার গ্রিড -->
-            <div style="display: flex; flex-direction: column; gap: 12px;">
-                <!-- ফলোয়ার কাউন্টার -->
-                <div style="background: rgba(255,255,255,0.03); padding: 14px; border-radius: 12px; text-align: center;">
-                    <div style="font-size: 11px; text-transform: uppercase; color: var(--text-secondary); font-weight: bold; margin-bottom: 6px;">Followers (অনুগামী)</div>
-                    <div id="liveFollowersVal" style="font-size: 28px; font-weight: 900; color: var(--accent-cyan); font-family: monospace; letter-spacing: 1px;">0</div>
-                </div>
-
-                <!-- লাইক কাউন্টার -->
-                <div style="background: rgba(255,255,255,0.03); padding: 14px; border-radius: 12px; text-align: center;">
-                    <div style="font-size: 11px; text-transform: uppercase; color: var(--text-secondary); font-weight: bold; margin-bottom: 6px;">Total Likes (মোট লাইক)</div>
-                    <div id="liveLikesVal" style="font-size: 28px; font-weight: 900; color: var(--accent-pink); font-family: monospace; letter-spacing: 1px;">0</div>
-                </div>
-            </div>
-            
-            <p style="font-size: 10px; color: var(--text-secondary); text-align: center; margin-top: 15px;">※ Auto-syncs every 8 seconds with the global TikTok server.</p>
-        </div>
-    </div>
-
-    <!-- ৫. রিপোর্ট হেল্পার সেকশন (Report Helper - ৮টি টেমপ্লেট সহ) -->
-    <div id="section-report" class="main-section" style="display: none;">
-        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 15px; text-align: center; line-height: 1.4;">
-            টিকটকে খারাপ আইডি বা ক্ষতিকারক কন্টেন্ট বন্ধ করতে সঠিক গাইডলাইন অনুযায়ী রিপোর্ট করুন।
-        </p>
-
-        <!-- সঠিক নিয়ম কার্ড -->
-        <div style="background: var(--tab-bg); border-radius: 16px; padding: 15px; border: 1px solid var(--card-border); margin-bottom: 18px;">
-            <h4 style="font-size: 14px; font-weight: bold; margin-bottom: 10px; color: var(--accent-cyan); display: flex; align-items: center; gap: 6px;">
-                📖 How to Report (রিপোর্ট করার নিয়ম)
-            </h4>
-            <ul style="font-size: 12px; line-height: 1.6; padding-left: 18px; color: var(--text-primary);">
-                <li><b>ভিডিওর জন্য:</b> Share আইকন ➔ <b>Report</b> অপশন ➔ নির্দিষ্ট কারণ সিলেক্ট করে সাবমিট করুন।</li>
-                <li style="margin-top: 6px;"><b>আইডির জন্য:</b> প্রোফাইলে গিয়ে উপরে ডানদিকের <b>3-dot (তিনটি বিন্দু)</b> ➔ <b>Report</b> ➔ <b>Report Account</b> সিলেক্ট করুন।</li>
-            </ul>
-        </div>
-
-        <!-- অফিশিয়াল ডাইরেক্ট রিপোর্ট লিংক -->
-        <div style="background: var(--tab-bg); border-radius: 16px; padding: 15px; border: 1px solid var(--card-border); margin-bottom: 22px;">
-            <h4 style="font-size: 14px; font-weight: bold; margin-bottom: 8px; color: var(--accent-pink);">
-                🌐 Direct Feedback Portal
-            </h4>
-            <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.4;">
-                লগইন ছাড়াই টিকটক টিমের কাছে সরাসরি এই স্পেশাল ফর্মে আইডি বা ভিডিওর লিংক দিয়ে সরাসরি অফিশিয়াল রিপোর্ট করতে পারেন।
-            </p>
-            <a href="https://www.tiktok.com/legal/report/feedback" target="_blank" class="btn-action" style="background: var(--brand-gradient); color: black; padding: 10px; font-size: 13px; display: flex; justify-content: center; align-items: center; gap: 6px;">
-                📩 Open Official Feedback Form
-            </a>
-        </div>
-
-        <h3 style="font-size: 15px; font-weight: 800; margin-bottom: 15px; border-bottom: 1px dashed var(--card-border); padding-bottom: 8px;">📋 Select Report Template</h3>
-
-        <!-- টেমপ্লেট ১: ব্যক্তিগত হয়রানি ও হুমকি -->
-        <div style="background: var(--tab-bg); border-radius: 16px; padding: 15px; border: 1px solid var(--card-border); margin-bottom: 15px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <span style="font-size: 13px; font-weight: bold; color: var(--accent-cyan);">১. ব্যক্তিগত হয়রানি ও হুমকি</span>
-                <button onclick="copyDirectText(document.getElementById('tempHate').value)" style="background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-primary); padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; font-weight: bold;">Copy</button>
-            </div>
-            <p style="font-size: 11px; color: var(--text-secondary); line-height: 1.4; margin-bottom: 8px;">
-                <b>কখন ব্যবহার করবেন:</b> যখন কোনো ভিডিও বা আইডিতে আপনাকে বা অন্য কোনো ব্যক্তিকে সরাসরি আক্রমণ করা হয়, হুমকি দেওয়া হয়, বা ব্ল্যাকমেইল করার চেষ্টা করা হয়।
-            </p>
-            <textarea id="tempHate" readonly class="template-textarea">Dear TikTok Support Team, This account/video contains clear evidence of personal harassment, targeted bullying, and abusive behavior towards an individual. This is a direct violation of TikTok's Community Guidelines. Please review and suspend this account immediately.</textarea>
-        </div>
-
-        <!-- টেমপ্লেট ২: ঘৃণামূলক বক্তব্য ও বৈষম্য -->
-        <div style="background: var(--tab-bg); border-radius: 16px; padding: 15px; border: 1px solid var(--card-border); margin-bottom: 15px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <span style="font-size: 13px; font-weight: bold; color: var(--accent-cyan);">২. ঘৃণামূলক বক্তব্য ও বর্ণবাদ</span>
-                <button onclick="copyDirectText(document.getElementById('tempSpeech').value)" style="background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-primary); padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; font-weight: bold;">Copy</button>
-            </div>
-            <p style="font-size: 11px; color: var(--text-secondary); line-height: 1.4; margin-bottom: 8px;">
-                <b>কখন ব্যবহার করবেন:</b> ধর্ম, জাতি, বর্ণ, লিঙ্গ বা কোনো নির্দিষ্ট গোষ্ঠী নিয়ে কটূক্তি, ঘৃণা ছড়ানো বা হিংসাত্মক কথাবার্তা বলা হলে।
-            </p>
-            <textarea id="tempSpeech" readonly class="template-textarea">Hello, this account/video is actively spreading hate speech, promoting discrimination, and generating hostility against a specific group of people. This goes entirely against your policy on hate speech. Please take immediate action to remove this content.</textarea>
-        </div>
-
-        <!-- টেমপ্লেট ৩: প্রতারণা ও স্প্যাম লিংক -->
-        <div style="background: var(--tab-bg); border-radius: 16px; padding: 15px; border: 1px solid var(--card-border); margin-bottom: 15px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <span style="font-size: 13px; font-weight: bold; color: var(--accent-cyan);">৩. প্রতারণা ও স্প্যাম লিংক</span>
-                <button onclick="copyDirectText(document.getElementById('tempScam').value)" style="background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-primary); padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; font-weight: bold;">Copy</button>
-            </div>
-            <p style="font-size: 11px; color: var(--text-secondary); line-height: 1.4; margin-bottom: 8px;">
-                <b>কখন ব্যবহার করবেন:</b> টাকা দ্বিগুণ করা, নকল গিভঅ্যাওয়ে বা কোনো অনিরাপদ লিংকে ক্লিক করতে বাধ্য করার মাধ্যমে প্রতারণা করা হলে।
-            </p>
-            <textarea id="tempScam" readonly class="template-textarea">Dear TikTok Team, This profile/video is involved in promoting scams, financial fraud, and suspicious phishing links. It misleads the community for financial gain. I request you to investigate and permanently terminate this account.</textarea>
-        </div>
-
-        <!-- টেমপ্লেট ৪: নকল আইডি বা অন্যের ছদ্মবেশ ধারণ -->
-        <div style="background: var(--tab-bg); border-radius: 16px; padding: 15px; border: 1px solid var(--card-border); margin-bottom: 15px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <span style="font-size: 13px; font-weight: bold; color: var(--accent-cyan);">৪. নকল আইডি বা ছদ্মবেশ ধারণ</span>
-                <button onclick="copyDirectText(document.getElementById('tempFake').value)" style="background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-primary); padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; font-weight: bold;">Copy</button>
-            </div>
-            <p style="font-size: 11px; color: var(--text-secondary); line-height: 1.4; margin-bottom: 8px;">
-                <b>কখন ব্যবহার করবেন:</b> কেউ যদি আপনার বা অন্য কোনো সেলিব্রিটি অথবা জনপ্রিয় ক্রিয়েটরের নাম ও ছবি ব্যবহার করে ফেক আইডি খুলে মানুষকে বিভ্রান্ত করে।
-            </p>
-            <textarea id="tempFake" readonly class="template-textarea">Dear Support, This account is impersonating another individual/public figure without authorization, using their photos, name, and likeness to mislead followers. Please verify this identity and shut down this fake profile immediately.</textarea>
-        </div>
-
-        <!-- টেমপ্লেট ৫: কপিরাইট বা কন্টেন্ট চুরি -->
-        <div style="background: var(--tab-bg); border-radius: 16px; padding: 15px; border: 1px solid var(--card-border); margin-bottom: 15px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <span style="font-size: 13px; font-weight: bold; color: var(--accent-cyan);">৫. কপিরাইট বা কন্টেন্ট চুরি</span>
-                <button onclick="copyDirectText(document.getElementById('tempCopy').value)" style="background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-primary); padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; font-weight: bold;">Copy</button>
-            </div>
-            <p style="font-size: 11px; color: var(--text-secondary); line-height: 1.4; margin-bottom: 8px;">
-                <b>কখন ব্যবহার করবেন:</b> আপনার নিজের তৈরি করা অরিজিনাল ভিডিও যদি অনুমতি ছাড়া অন্য কেউ নিজের আইডিতে আপলোড করে ভিউ পাওয়ার চেষ্টা করে।
-            </p>
-            <textarea id="tempCopy" readonly class="template-textarea">Hello, this user is uploading copyrighted material belonging to another creator without proper permission or credit. This is a direct violation of intellectual property rights. Please take down the stolen videos.</textarea>
-        </div>
-
-        <!-- টেমপ্লেট ৬: ঝুঁকিপূর্ণ বা আত্মঘাতী কন্টেন্ট -->
-        <div style="background: var(--tab-bg); border-radius: 16px; padding: 15px; border: 1px solid var(--card-border); margin-bottom: 15px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <span style="font-size: 13px; font-weight: bold; color: var(--accent-cyan);">৬. ঝুঁকিপূর্ণ বা আত্মঘাতী কন্টেন্ট</span>
-                <button onclick="copyDirectText(document.getElementById('tempHarm').value)" style="background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-primary); padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; font-weight: bold;">Copy</button>
-            </div>
-            <p style="font-size: 11px; color: var(--text-secondary); line-height: 1.4; margin-bottom: 8px;">
-                <b>কখন ব্যবহার করবেন:</b> ভিডিওতে যদি নিজের ক্ষতি করার বিষয় দেখানো হয়, বিপজ্জনক স্টান্ট বা আত্মহত্যার মতো প্রবণতাকে উস্কে দেওয়া হয়।
-            </p>
-            <textarea id="tempHarm" readonly class="template-textarea">TikTok Support, This video depicts dangerous activities, self-harm, or encourages highly risky stunts that could lead to severe physical injuries. To ensure safety, please remove this video as soon as possible.</textarea>
-        </div>
-
-        <!-- টেমপ্লেট ৭: সহিংসতা ও রক্তাক্ত কন্টেন্ট -->
-        <div style="background: var(--tab-bg); border-radius: 16px; padding: 15px; border: 1px solid var(--card-border); margin-bottom: 15px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <span style="font-size: 13px; font-weight: bold; color: var(--accent-cyan);">৭. সহিংসতা ও রক্তাক্ত কন্টেন্ট</span>
-                <button onclick="copyDirectText(document.getElementById('tempViolent').value)" style="background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-primary); padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; font-weight: bold;">Copy</button>
-            </div>
-            <p style="font-size: 11px; color: var(--text-secondary); line-height: 1.4; margin-bottom: 8px;">
-                <b>কখন ব্যবহার করবেন:</b> পশুর উপর নিষ্ঠুরতা, মারামারি, রক্তাক্ত কোনো দৃশ্য বা অন্য কোনো অমানবিক কন্টেন্ট ছড়াতে দেখলে।
-            </p>
-            <textarea id="tempViolent" readonly class="template-textarea">Dear TikTok, This content contains violent imagery, physical abuse, or severe cruelty that is highly distressing and graphic. It violates the safety standards of your platform. Please review and delete this content immediately.</textarea>
-        </div>
-
-        <!-- টেমপ্লেট ৮: শিশুদের নিরাপত্তা লঙ্ঘন -->
-        <div style="background: var(--tab-bg); border-radius: 16px; padding: 15px; border: 1px solid var(--card-border); margin-bottom: 15px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <span style="font-size: 13px; font-weight: bold; color: var(--accent-cyan);">৮. শিশুদের নিরাপত্তা লঙ্ঘন</span>
-                <button onclick="copyDirectText(document.getElementById('tempMinor').value)" style="background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-primary); padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; font-weight: bold;">Copy</button>
-            </div>
-            <p style="font-size: 11px; color: var(--text-secondary); line-height: 1.4; margin-bottom: 8px;">
-                <b>কখন ব্যবহার করবেন:</b> কোনো ভিডিও বা আইডিতে অপ্রাপ্তবয়স্ক শিশুদের অনিরাপদ উপায়ে বিপজ্জনক কাজে বা কোনো আপত্তিকর পরিস্থিতিতে লিপ্ত হতে দেখলে।
-            </p>
-            <textarea id="tempMinor" readonly class="template-textarea">Hello, this content violates minor safety guidelines by placing underage individuals in dangerous, exploitative, or highly inappropriate situations. Please take immediate protective action and disable this account/video.</textarea>
-        </div>
-
-    </div>
-
-    <!-- ট্র্যাকার ড্যাশবোর্ড (গ্লোবাল) -->
-    <div class="watchlist-section" id="watchlistSection" style="display: none;">
-        <div class="watchlist-title" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
-            <span>Influencer Watchlist (Tracker)</span>
-            
-            <!-- ওয়াচলিস্ট ব্যাকআপ এক্সপোর্ট ও ইম্পোর্ট ইন্টিগ্রেশন -->
-            <div style="display: flex; gap: 6px;">
-                <button onclick="exportWatchlistToCSV()" style="background: var(--accent-cyan); color: #000; border: none; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer;" title="Export Excel / CSV">📊 CSV</button>
-                <button onclick="exportWatchlistBackup()" style="background: var(--tab-bg); color: var(--text-primary); border: 1px solid var(--card-border); padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer;" title="Export JSON Backup">📥 Export</button>
-                <button onclick="triggerImport()" style="background: var(--tab-bg); color: var(--text-primary); border: 1px solid var(--card-border); padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer;" title="Restore JSON Backup">📤 Import</button>
-                <input type="file" id="importFile" style="display: none;" accept=".json" onchange="importWatchlistBackup(event)">
-            </div>
-        </div>
-
-        <!-- ওয়াচলিস্ট রিয়েল-টাইম সার্চ বক্স -->
-        <input type="text" id="watchlistSearch" placeholder="🔍 Search from watchlist..." oninput="filterWatchlist()" style="width: 100%; padding: 8px 12px; font-size: 11px; border-radius: 8px; border: 1px solid var(--card-border); background: var(--card-bg); color: var(--text-primary); margin-bottom: 10px; height: auto;">
-
-        <div class="watchlist-grid" id="watchlistGrid"></div>
-    </div>
-
-    <div class="footer">TikTok Tool Suite Pro</div>
-</div>
-
-<!-- মোবাইল স্টাইলের ফিক্সড নিচের নেভিগেশন বার -->
-<div class="bottom-nav">
-    <button class="bottom-nav-btn active" id="mainTab-single" onclick="switchMainTab('single')">
-        <span class="icon">🔍</span>
-        <span>Search</span>
-    </button>
-    <button class="bottom-nav-btn" id="mainTab-bulk" onclick="switchMainTab('bulk')">
-        <span class="icon">📥</span>
-        <span>Bulk</span>
-    </button>
-    <button class="bottom-nav-btn" id="mainTab-compare" onclick="switchMainTab('compare')">
-        <span class="icon">⚖️</span>
-        <span>Compare</span>
-    </button>
-    <button class="bottom-nav-btn" id="mainTab-live" onclick="switchMainTab('live')">
-        <span class="icon">🔴</span>
-        <span>Live</span>
-    </button>
-    <button class="bottom-nav-btn" id="mainTab-report" onclick="switchMainTab('report')">
-        <span class="icon">🚨</span>
-        <span>Reports</span>
-    </button>
-</div>
-
-<div id="toast" class="toast"></div>
-
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-    renderWatchlist();
-    setupAudioAnimation();
-    
-    // কি-বোর্ড এন্টার কী হ্যান্ডলিং
-    document.getElementById("username").addEventListener("keypress", (event) => {
-        if (event.key === "Enter") handleSearch();
-    });
-    document.getElementById("compUser1").addEventListener("keypress", (event) => {
-        if (event.key === "Enter") runComparison();
-    });
-    document.getElementById("compUser2").addEventListener("keypress", (event) => {
-        if (event.key === "Enter") runComparison();
-    });
-    document.getElementById("liveUser").addEventListener("keypress", (event) => {
-        if (event.key === "Enter") toggleLiveCounter();
-    });
-});
-
-// অফলাইন ও অনলাইন ডিটেকশন
-window.addEventListener('offline', () => {
-    showToast("You are offline! Check your internet connection. 📡", true);
-});
-window.addEventListener('online', () => {
-    showToast("Back online! ✨");
-});
-
-let currentProfileData = null;
-
-// ব্রাউজার অডিও সিন্থেসাইজার ইঞ্জিন (Web Audio API)
-let audioCtx = null;
-function getAudioContext() {
-    if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    return audioCtx;
-}
-
-function playTone(freq, type, duration, volume) {
-    try {
-        let ctx = getAudioContext();
-        if (ctx.state === 'suspended') {
-            ctx.resume();
-        }
-        let osc = ctx.createOscillator();
-        let gain = ctx.createGain();
-        
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq, ctx.currentTime);
-        
-        gain.gain.setValueAtTime(volume, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + duration);
-        
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        
-        osc.start();
-        osc.stop(ctx.currentTime + duration);
-    } catch (e) {
-        console.warn("Audio Context error", e);
-    }
-}
-
-// ইন্টারেক্টিভ সাউন্ড ইফেক্টসমূহ
-function playClickSound() {
-    playTone(700, 'sine', 0.08, 0.08); // মৃদু বাটন ক্লিক সাউন্ড
-}
-
-function playSuccessSound() {
-    try {
-        let ctx = getAudioContext();
-        if (ctx.state === 'suspended') ctx.resume();
-        playTone(523.25, 'sine', 0.12, 0.12); // C5
-        setTimeout(() => {
-            playTone(659.25, 'sine', 0.2, 0.12); // E5
-        }, 70);
-    } catch (e) {}
-}
-
-function playErrorSound() {
-    playTone(190, 'triangle', 0.25, 0.15); // সতর্ক বার্তা বা ব্যর্থ সাউন্ড
-}
-
-function toggleTheme() {
-    playClickSound();
-    document.body.classList.toggle("light-mode");
-    showToast("Theme updated!");
-}
-
-// ফিক্সড নিচের নেভিগেশন বার
-function switchMainTab(tabId) {
-    playClickSound();
-    document.querySelectorAll('.bottom-nav-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelectorAll('.main-section').forEach(sec => sec.style.display = 'none');
-    
-    document.getElementById('mainTab-' + tabId).classList.add('active');
-    document.getElementById('section-' + tabId).style.display = 'block';
-
-    // লাইভ ট্যাব ছাড়া অন্য কোনো ট্যাবে গেলে ট্র্যাকিং বন্ধ করার স্মার্ট মেথড
-    if (tabId !== 'live') {
-        stopLiveCounter();
-        resetLiveUI();
-    }
-}
-
-// ওয়ান-ট্যাপ পেস্ট বাটন
-async function pasteFromClipboard() {
-    playClickSound();
-    try {
-        const text = await navigator.clipboard.readText();
-        document.getElementById("username").value = text;
-        showToast("Link pasted successfully! 📋");
-    } catch (err) {
-        showToast("Clipboard read permission denied.", true);
-    }
-}
-
-// ভিডিও ডুরেশন ফরম্যাটার (MM:SS)
-function formatDuration(sec) {
-    if (!sec) return "0:00";
-    let mins = Math.floor(sec / 60);
-    let secs = sec % 60;
-    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-}
-
-// ইউনিক্স টাইমস্ট্যাম্পকে রিডঅ্যাবল ডেট-টাইমে রূপান্তর করার মেথড
-function formatEpoch(epoch) {
-    if(!epoch) return "N/A";
-    let date = new Date(epoch * 1000);
-    return date.toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' }) + " • " + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-}
-
-// অ্যালবাম ডিস্ক ঘোরার লজিক
-function setupAudioAnimation() {
-    const audio = document.getElementById("musicPlayer");
-    const disk = document.getElementById("musicDiskImg");
-    if(audio && disk) {
-        audio.addEventListener("play", () => {
-            disk.style.animationPlayState = "running";
-        });
-        audio.addEventListener("pause", () => {
-            disk.style.animationPlayState = "paused";
-        });
-        audio.addEventListener("ended", () => {
-            disk.style.animationPlayState = "paused";
-        });
-    }
-}
-
-// প্রক্সি দিয়ে সরাসরি ডাউনলোড মেথড
-async function downloadFile(url, filename) {
-    playClickSound();
-    showToast("Downloading started... please wait ⏳");
-    const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(url);
-    
-    try {
-        const response = await fetch(proxyUrl);
-        if (!response.ok) throw new Error("CORS Proxy error");
-        const blob = await response.blob();
-        const blobUrl = window.URL.createObjectURL(blob);
-        
-        const tempLink = document.createElement("a");
-        tempLink.href = blobUrl;
-        tempLink.download = filename;
-        document.body.appendChild(tempLink);
-        tempLink.click();
-        document.body.removeChild(tempLink);
-        window.URL.revokeObjectURL(blobUrl);
-        
-        showToast("File saved to device successfully! ✅");
-    } catch (error) {
-        console.warn("Proxy download failed, trying direct fallback...", error);
-        try {
-            const directResponse = await fetch(url);
-            const blob = await directResponse.blob();
-            const blobUrl = window.URL.createObjectURL(blob);
-            const tempLink = document.createElement("a");
-            tempLink.href = blobUrl;
-            tempLink.download = filename;
-            document.body.appendChild(tempLink);
-            tempLink.click();
-            document.body.removeChild(tempLink);
-            window.URL.revokeObjectURL(blobUrl);
-            showToast("File saved to device successfully! ✅");
-        } catch (directError) {
-            console.error("All download methods failed, opening link", directError);
-            window.open(url, "_blank");
-            showToast("Opening link in browser tab (Fallback)...", true);
-        }
-    }
-}
-
-function handleSearch() {
-    playClickSound();
-    let inputVal = document.getElementById("username").value.trim();
-    if(inputVal === "") {
-        showToast("Enter a username, link, or image URL!", true);
-        return;
-    }
-
-    // সরাসরি ছবির লিংক শনাক্তকরণ (jpg, png, webp, jpeg, gif)
-    let isDirectImage = /\.(jpg|jpeg|png|webp|gif)/i.test(inputVal) || inputVal.startsWith("data:image/");
-    if (isDirectImage && inputVal.startsWith("http")) {
-        handleDirectImage(inputVal);
-        return;
-    }
-
-    if (inputVal.includes("tiktok.com") && (inputVal.includes("/video/") || inputVal.includes("vt.tiktok.com"))) {
-        getVideoInfo(inputVal);
-    } else {
-        let username = inputVal;
-        if (inputVal.includes("tiktok.com/@")) {
-            username = inputVal.split("/@")[1].split("?")[0].split("/")[0];
-        }
-        username = username.startsWith("@") ? username.substring(1) : username;
-        getUser(username);
-    }
-}
-
-// সরাসরি ছবির লিংক ডাউনলোডার লজিক
-async function handleDirectImage(url) {
-    let loader = document.getElementById("loader");
-    let resultBox = document.getElementById("result");
-    let videoBox = document.getElementById("videoResult");
-    let vidPlayer = document.getElementById("vidPlayer");
-    let imgPrev = document.getElementById("imagePreview");
-
-    resultBox.style.display = "none";
-    videoBox.style.display = "none";
-    loader.style.display = "block";
-    
-    setTimeout(() => {
-        loader.style.display = "none";
-        videoBox.style.display = "block";
-        switchVideoTab('watch');
-
-        vidPlayer.style.display = "none";
-        imgPrev.style.display = "block";
-        imgPrev.src = url;
-
-        document.getElementById("vidCover").src = url;
-        document.getElementById("vidAuthor").textContent = "Direct Image File";
-        document.getElementById("vidUsername").textContent = "@image_downloader";
-        document.getElementById("vidTitle").innerHTML = `Direct Image Link Verified<br><span style="color: var(--accent-cyan); font-weight: bold; font-size:10px;">📸 Original Quality Ready</span>`;
-
-        document.getElementById("audioPreviewContainer").style.display = "none";
-        
-        let oldList = document.getElementById("slideshowList");
-        if (oldList) oldList.remove();
-
-        let btnDownload = document.getElementById("btnDownloadNoWatermark");
-        btnDownload.style.display = "block";
-        btnDownload.textContent = "📥 Download Image (Original Quality)";
-        btnDownload.onclick = function() {
-            downloadFile(url, `downloaded_image.jpg`);
+        // এআই কাস্টম প্রম্পট ডেটা
+        const systemPrompts = {
+            default: "",
+            programmer: "You are a professional, world-class programmer. Help the user write highly optimized, clean, secure, and well-commented code. Explain your concepts clearly.",
+            writer: "তুমি একজন দক্ষ এবং সৃজনশীল কন্টেন্ট রাইটার। ব্যবহারকারীকে যেকোনো বিষয়ে চমৎকার, সাবলীল এবং আকর্ষণীয় বাংলা বা ইংরেজি লেখা তৈরি করতে সাহায্য করো।",
+            teacher: "You are an encouraging and highly skilled English Language Teacher. Correct the user's grammar, explain mistakes, and help them improve their English writing skills in a friendly tone."
         };
-        
-        document.getElementById("btnDownloadCover").style.display = "none";
-        document.getElementById("btnDownloadMusic").style.display = "none";
 
-        showToast("Image loaded! Ready to download 🖼️");
-    }, 600);
-}
-
-// ভিডিও ও স্লাইডশো এনালাইসিস
-async function getVideoInfo(url) {
-    let loader = document.getElementById("loader");
-    let resultBox = document.getElementById("result");
-    let videoBox = document.getElementById("videoResult");
-    let vidPlayer = document.getElementById("vidPlayer");
-    let audioPlayer = document.getElementById("musicPlayer");
-    let imgPrev = document.getElementById("imagePreview");
-
-    resultBox.style.display = "none";
-    videoBox.style.display = "none";
-    loader.style.display = "block";
-    
-    vidPlayer.src = ""; 
-    audioPlayer.src = "";
-
-    try {
-        let res = await fetch("https://www.tikwm.com/api/?url=" + encodeURIComponent(url) + "&hd=1");
-        let json = await res.json();
-        loader.style.display = "none";
-
-        if(json.data) {
-            let d = json.data;
-            videoBox.style.display = "block";
-            switchVideoTab('watch');
-
-            vidPlayer.style.display = "block";
-            imgPrev.style.display = "none";
-            document.getElementById("audioPreviewContainer").style.display = "block";
-            document.getElementById("btnDownloadCover").style.display = "block";
-            document.getElementById("btnDownloadMusic").style.display = "block";
-            document.getElementById("btnDownloadNoWatermark").style.display = "block";
-            document.getElementById("btnDownloadNoWatermark").textContent = "📥 Download Video (No Watermark - Full HD)";
-
-            let oldList = document.getElementById("slideshowList");
-            if (oldList) oldList.remove();
-
-            // হ্যাশট্যাগ এক্সট্র্যাক্টর ইঞ্জিন
-            let hashtagsContainer = document.getElementById("vidHashtags");
-            if (!hashtagsContainer) {
-                hashtagsContainer = document.createElement("div");
-                hashtagsContainer.id = "vidHashtags";
-                hashtagsContainer.style.display = "flex";
-                hashtagsContainer.style.flexWrap = "wrap";
-                hashtagsContainer.style.gap = "6px";
-                hashtagsContainer.style.marginTop = "10px";
-                document.getElementById("vidTitle").parentNode.appendChild(hashtagsContainer);
+        window.addEventListener('DOMContentLoaded', () => {
+            // ১. থিম ও হিস্ট্রি সেটআপ
+            const savedTheme = localStorage.getItem('chat-theme');
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-theme');
+                updateThemeUI(true);
             }
-            hashtagsContainer.innerHTML = "";
+
+            const savedHistory = localStorage.getItem('chat-sessions');
+            if (savedHistory) {
+                chatSessions = JSON.parse(savedHistory);
+            }
+            renderHistoryList();
+
+            // এন্টার টিপলে মেসেজ পাঠানো
+            const input = document.getElementById('user-input');
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            // স্ক্রল ডাউন বাটন হ্যান্ডলার
+            const messagesContainer = document.getElementById('chat-messages');
+            messagesContainer.addEventListener('scroll', () => {
+                const scrollBtn = document.getElementById('scroll-bottom-btn');
+                if (messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight > 300) {
+                    scrollBtn.style.display = 'flex';
+                } else {
+                    scrollBtn.style.display = 'none';
+                }
+            });
+        });
+
+        // থিম চেঞ্জিং
+        function toggleTheme() {
+            const body = document.body;
+            body.classList.toggle('light-theme');
+            const isLight = body.classList.contains('light-theme');
+            localStorage.setItem('chat-theme', isLight ? 'light' : 'dark');
+            updateThemeUI(isLight);
+        }
+
+        function updateThemeUI(isLight) {
+            const icon = document.getElementById('theme-icon');
+            const text = document.getElementById('theme-text');
+            if (isLight) {
+                icon.className = 'fa-solid fa-sun';
+                text.innerText = 'লাইট মোড';
+            } else {
+                icon.className = 'fa-solid fa-moon';
+                text.innerText = 'ডার্ক মোড';
+            }
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        function autoGrow(element) {
+            element.style.height = "24px";
+            element.style.height = (element.scrollHeight - 16) + "px";
+        }
+
+        function useSuggestion(text) {
+            document.getElementById('user-input').value = text;
+            sendMessage();
+        }
+
+        function scrollToBottom() {
+            const messagesContainer = document.getElementById('chat-messages');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // কাস্টম নোটিফিকেশন
+        function showToast(message) {
+            const toast = document.getElementById('custom-toast');
+            document.getElementById('toast-message').innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ভয়েস টাইপিং লজিক
+        function startVoiceInput() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                showToast("দুঃখিত, আপনার ব্রাউজারে ভয়েস টাইপিং সাপোর্ট করে না।");
+                return;
+            }
+
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'bn-BD'; // ডিফল্ট বাংলা ইনপুট
+            recognition.interimResults = false;
             
-            let matches = d.title ? d.title.match(/#\w+/g) : null;
-            if (matches && matches.length > 0) {
-                matches.forEach(tag => {
-                    let badge = document.createElement("span");
-                    badge.textContent = tag;
-                    badge.style.fontSize = "10px";
-                    badge.style.padding = "4px 10px";
-                    badge.style.borderRadius = "50px";
-                    badge.style.background = "rgba(0, 242, 254, 0.1)";
-                    badge.style.border = "1px solid var(--accent-cyan)";
-                    badge.style.color = "var(--accent-cyan)";
-                    badge.style.cursor = "pointer";
-                    badge.style.fontWeight = "bold";
-                    badge.onclick = () => {
-                        copyDirectText(tag);
-                    };
-                    hashtagsContainer.appendChild(badge);
-                });
+            const micBtn = document.getElementById('mic-btn');
+            micBtn.classList.add('active');
+            showToast("শুনছি, বাংলা বা ইংরেজিতে বলুন...");
+            recognition.start();
+
+            recognition.onresult = (event) => {
+                const speechToText = event.results[0][0].transcript;
+                const inputEl = document.getElementById('user-input');
+                inputEl.value += speechToText;
+                autoGrow(inputEl);
+                micBtn.classList.remove('active');
+            };
+
+            recognition.onerror = () => {
+                showToast("ভয়েস ইনপুট নেওয়া সম্ভব হয়নি।");
+                micBtn.classList.remove('active');
+            };
+
+            recognition.onend = () => {
+                micBtn.classList.remove('active');
             }
+        }
 
-            if (d.images && d.images.length > 0) {
-                vidPlayer.style.display = "none";
-                imgPrev.style.display = "block";
-                imgPrev.src = d.images[0]; 
-
-                document.getElementById("vidCover").src = d.cover;
-                document.getElementById("vidAuthor").textContent = d.author.nickname;
-                document.getElementById("vidUsername").textContent = "@" + d.author.unique_id;
-                document.getElementById("vidTitle").innerHTML = `${d.title || "Slideshow Post"}<br><span style="color: var(--accent-cyan); font-weight: bold; font-size:10px;">📸 Slideshow: ${d.images.length} Images Found</span>`;
-                
-                let dwnTab = document.getElementById("vidTabContent-download");
-                let slidesList = document.createElement("div");
-                slidesList.id = "slideshowList";
-                slidesList.style.marginTop = "15px";
-                slidesList.style.display = "flex";
-                slidesList.style.flexDirection = "column";
-                slidesList.style.gap = "8px";
-                slidesList.innerHTML = `<h5 style="font-size:12px; font-weight:bold; color:var(--accent-cyan); margin-bottom: 5px; text-align: left;">🖼️ Slideshow Images:</h5>`;
-                
-                let downloadAllBtn = document.createElement("button");
-                downloadAllBtn.className = "btn-action";
-                downloadAllBtn.style.background = "var(--brand-gradient)";
-                downloadAllBtn.style.color = "black";
-                downloadAllBtn.style.marginBottom = "10px";
-                downloadAllBtn.innerHTML = "📥 Download All Slides (সব ছবি ডাউনলোড)";
-                downloadAllBtn.onclick = async function() {
-                    showToast("Starting sequential slide download... ⏳");
-                    for(let j=0; j<d.images.length; j++) {
-                        await downloadFile(d.images[j], `${d.author.unique_id}_slide_${j+1}.jpg`);
-                        await new Promise(r => setTimeout(r, 1000)); 
-                    }
-                };
-                slidesList.appendChild(downloadAllBtn);
-
-                d.images.forEach((imgUrl, idx) => {
-                    let slideRow = document.createElement("div");
-                    slideRow.style.display = "flex";
-                    slideRow.style.alignItems = "center";
-                    slideRow.style.justifyContent = "space-between";
-                    slideRow.style.background = "var(--tab-bg)";
-                    slideRow.style.padding = "8px 12px";
-                    slideRow.style.borderRadius = "10px";
-                    slideRow.style.border = "1px solid var(--card-border)";
-                    
-                    slideRow.innerHTML = `
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <img src="${imgUrl}" style="width:30px; height:30px; border-radius:4px; object-fit:cover;" alt="Slide ${idx+1}">
-                            <span style="font-size:11px; font-weight:bold;">Image ${idx+1}</span>
+        // নতুন চ্যাট
+        function startNewChat() {
+            currentSessionId = '';
+            document.getElementById('chat-messages').innerHTML = `
+                <div class="welcome-screen" id="welcome-screen">
+                    <div class="welcome-logo"><i class="fa-solid fa-brain"></i></div>
+                    <h2>আজ আপনাকে কীভাবে সাহায্য করতে পারি?</h2>
+                    <p>সাইডবার থেকে এআই-এর রোল সিলেক্ট করে আপনার সুবিধাজনক কাজ করিয়ে নিন সহজে।</p>
+                    <div class="suggestion-grid">
+                        <div class="suggestion-card" onclick="useSuggestion('একটি কাল্পনিক অ্যাডভেঞ্চার গল্প লেখো')">
+                            <h4>📖 গল্প লিখন</h4>
+                            <p>"একটি কাল্পনিক অ্যাডভেঞ্চার গল্প..."</p>
                         </div>
-                        <button onclick="downloadFile('${imgUrl}', '${d.author.unique_id}_slide_${idx+1}.jpg')" style="background:var(--accent-cyan); color:#000; border:none; padding:4px 10px; border-radius:6px; font-size:10px; font-weight:bold; cursor:pointer;">Download</button>
-                    `;
-                    slidesList.appendChild(slideRow);
-                });
-                
-                dwnTab.appendChild(slidesList);
-                document.getElementById("btnDownloadNoWatermark").style.display = "none";
-                audioPlayer.src = d.music;
-            } else {
-                let hdVideoUrl = d.hdplay || d.play;
-                vidPlayer.src = hdVideoUrl;
-                audioPlayer.src = d.music;
+                    </div>
+                </div>
+            `;
+            renderHistoryList();
+        }
 
-                document.getElementById("vidCover").src = d.cover;
-                document.getElementById("vidAuthor").textContent = d.author.nickname;
-                document.getElementById("vidUsername").textContent = "@" + d.author.unique_id;
-                
-                // আপলোড টাইমে রূপান্তরকরণ এবং ভিডিও প্রিভিউ কার্ডে যুক্ত করা [Upload Time Utility]
-                let uploadTimeText = d.create_time ? `<br><span style="color: var(--text-secondary); font-size: 10px; font-weight: bold; display: inline-block; margin-top: 4px;">📅 Upload Time: ${formatEpoch(d.create_time)}</span>` : "";
-                let timeInfo = d.duration ? `⏱️ Duration: ${formatDuration(d.duration)}` : "";
-                
-                document.getElementById("vidTitle").innerHTML = `${d.title || "No description available"}${uploadTimeText}<br><span style="color: var(--accent-cyan); font-weight: bold; font-size:10px; display:inline-block; margin-top:5px;">${timeInfo}</span>`;
+        // মেসেজ পাঠানো ও প্রসেসিং
+        async function sendMessage() {
+            const inputEl = document.getElementById('user-input');
+            const prompt = inputEl.value.trim();
+            if (!prompt) return;
 
-                document.getElementById("btnDownloadNoWatermark").onclick = function() {
-                    downloadFile(hdVideoUrl, `${d.author.unique_id}_video_full_hd.mp4`);
+            if (!currentSessionId) {
+                currentSessionId = 'session_' + Date.now();
+                chatSessions[currentSessionId] = {
+                    title: prompt.substring(0, 30) + (prompt.length > 30 ? '...' : ''),
+                    messages: []
                 };
             }
 
-            // ভিডিওর নিজস্ব এঙ্গেজমেন্ট রেট হিসাব [Single Video Engagement %] ও সেফ নাম্বার কনভার্সন
-            let playCount = Number(d.play_count) || 0;
-            let diggCount = Number(d.digg_count) || 0;
-            let commentCount = Number(d.comment_count) || 0;
-            let shareCount = Number(d.share_count) || 0;
+            const welcome = document.getElementById('welcome-screen');
+            if (welcome) welcome.remove();
 
-            let totalVideoEng = diggCount + commentCount + shareCount;
-            let videoEngagementPercent = playCount > 0 ? ((totalVideoEng / playCount) * 100).toFixed(1) + "%" : "0%";
-            document.getElementById("vidValEngagement").textContent = videoEngagementPercent;
+            appendMessage(prompt, 'user');
+            chatSessions[currentSessionId].messages.push({ role: 'user', content: prompt });
+            saveToStorage();
 
-            document.getElementById("vidValPlays").textContent = formatNumber(playCount);
-            document.getElementById("vidValLikes").textContent = formatNumber(diggCount);
-            document.getElementById("vidValComments").textContent = formatNumber(commentCount);
-            document.getElementById("vidValShares").textContent = formatNumber(shareCount);
+            inputEl.value = '';
+            inputEl.style.height = "24px";
 
-            document.getElementById("btnDownloadCover").onclick = function() {
-                downloadFile(d.cover, `${d.author.unique_id}_cover.jpg`);
-            };
-            document.getElementById("btnDownloadMusic").onclick = function() {
-                downloadFile(d.music, `${d.author.unique_id}_music.mp3`);
-            };
-
-            showToast("Content loaded successfully! 📽️");
-        } else {
-            showToast("Invalid URL or Private content.", true);
-        }
-    } catch(e) {
-        loader.style.display = "none";
-        showToast("Error loading content data", true);
-    }
-}
-
-// বাল্ক ডাউনলোডার
-async function startBulkDownload() {
-    playClickSound();
-    let bulkInput = document.getElementById("bulkLinks").value.trim();
-    if(!bulkInput) {
-        showToast("Please enter at least one TikTok URL!", true);
-        return;
-    }
-    
-    let links = bulkInput.split("\n").map(line => line.trim()).filter(line => line.length > 0);
-    let progressBox = document.getElementById("bulkProgress");
-    
-    progressBox.style.display = "block";
-    progressBox.innerHTML = `<b>Bulk Downloader Status:</b><br>Found ${links.length} links. Starting process...`;
-    
-    for (let i = 0; i < links.length; i++) {
-        let currentLink = links[i];
-        progressBox.innerHTML += `<br>👉 Fetching video ${i + 1}/${links.length}...`;
-        
-        try {
-            let res = await fetch("https://www.tikwm.com/api/?url=" + encodeURIComponent(currentLink) + "&hd=1");
-            let json = await res.json();
+            const aiMsgDiv = appendMessage('', 'ai', true); // টাইপিং বাবল
             
-            if (json.data) {
-                let d = json.data;
-                let hdUrl = d.hdplay || d.play;
-                progressBox.innerHTML += ` <span style="color:var(--accent-cyan)">[Success]</span>`;
+            // সাইডবার থেকে সিলেক্ট করা রোল এর প্রম্পট নেওয়া
+            const activeRole = document.getElementById('ai-persona').value;
+            const systemText = systemPrompts[activeRole] || "";
+
+            try {
+                // Pollinations text এপিআই তে system parameter সহ কল করা
+                const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(prompt)}?system=${encodeURIComponent(systemText)}`);
+                const replyText = await response.text();
                 
-                await downloadFile(hdUrl, `${d.author.unique_id}_bulk_hd_${i + 1}.mp4`);
-                await new Promise(resolve => setTimeout(resolve, 2000));
-            } else {
-                progressBox.innerHTML += ` <span style="color:var(--accent-pink)">[Failed - Invalid URL]</span>`;
-            }
-        } catch (e) {
-            progressBox.innerHTML += ` <span style="color:var(--accent-pink)">[Error Connecting]</span>`;
-        }
-    }
-    progressBox.innerHTML += `<br><b style="color:#10b981;">✅ Bulk downloader process completed!</b>`;
-}
-
-// ক্রিয়েটরদের নির্দিষ্ট ক্যাটাগরি তুলনা করার এবং বিজয়ী নির্ধারণের জন্য হেল্পার ফাংশন
-function highlightWinner(element1Id, element2Id, val1, val2) {
-    let el1 = document.getElementById(element1Id);
-    let el2 = document.getElementById(element2Id);
-    
-    el1.style.color = "";
-    el1.innerHTML = el1.textContent.replace(" 👑", "");
-    el2.style.color = "";
-    el2.innerHTML = el2.textContent.replace(" 👑", "");
-    el1.style.opacity = "1";
-    el2.style.opacity = "1";
-
-    let n1 = Number(val1) || 0;
-    let n2 = Number(val2) || 0;
-
-    if (n1 > n2) {
-        el1.style.color = "#10b981"; 
-        el1.innerHTML += " 👑";      
-        el2.style.opacity = "0.5";   
-        return 1; 
-    } else if (n2 > n1) {
-        el2.style.color = "#10b981"; 
-        el2.innerHTML += " 👑";
-        el1.style.opacity = "0.5";
-        return 2; 
-    }
-    return 0; 
-}
-
-// স্প্লিট বার রেন্ডারিং মেথড (Visual Comparison Split Bars)
-function updateComparisonBar(bar1Id, bar2Id, val1, val2) {
-    let n1 = Number(val1) || 0;
-    let n2 = Number(val2) || 0;
-    let total = n1 + n2;
-    let bar1 = document.getElementById(bar1Id);
-    let bar2 = document.getElementById(bar2Id);
-    
-    if (total === 0) {
-        bar1.style.width = "50%";
-        bar2.style.width = "50%";
-    } else {
-        let p1 = (n1 / total) * 100;
-        let p2 = (n2 / total) * 100;
-        bar1.style.width = p1 + "%";
-        bar2.style.width = p2 + "%";
-    }
-}
-
-// সাইড-বাই-সাইড কম্পেয়ার
-async function runComparison() {
-    playClickSound();
-    let user1 = document.getElementById("compUser1").value.trim();
-    let user2 = document.getElementById("compUser2").value.trim();
-    
-    if(!user1 || !user2) {
-        showToast("Please enter both usernames to compare!", true);
-        return;
-    }
-    
-    user1 = user1.startsWith("@") ? user1.substring(1) : user1;
-    user2 = user2.startsWith("@") ? user2.substring(1) : user2;
-    
-    let loader = document.getElementById("loader");
-    let compBox = document.getElementById("compareResult");
-    
-    loader.style.display = "block";
-    compBox.style.display = "none";
-    
-    try {
-        let res1 = await fetch("https://www.tikwm.com/api/user/info?unique_id=" + encodeURIComponent(user1));
-        let json1 = await res1.json();
-        
-        let res2 = await fetch("https://www.tikwm.com/api/user/info?unique_id=" + encodeURIComponent(user2));
-        let json2 = await res2.json();
-        
-        loader.style.display = "none";
-        
-        if(json1.data && json2.data) {
-            let u1 = json1.data.user;
-            let s1 = json1.data.stats || {};
-            let u2 = json2.data.user;
-            let s2 = json2.data.stats || {};
-            
-            compBox.style.display = "block";
-            
-            document.getElementById("compImg1").src = u1.avatarLarger || "https://via.placeholder.com/120";
-            document.getElementById("compName1").textContent = u1.nickname || u1.uniqueId;
-            document.getElementById("compUserLabel1").textContent = "@" + u1.uniqueId;
-            
-            document.getElementById("compImg2").src = u2.avatarLarger || "https://via.placeholder.com/120";
-            document.getElementById("compName2").textContent = u2.nickname || u2.uniqueId;
-            document.getElementById("compUserLabel2").textContent = "@" + u2.uniqueId;
-            
-            let followerCount1 = Number(s1.followerCount) || 0;
-            let followerCount2 = Number(s2.followerCount) || 0;
-            let heartCount1 = Number(s1.heartCount) || 0;
-            let heartCount2 = Number(s2.heartCount) || 0;
-            let videoCount1 = Number(s1.videoCount) || 0;
-            let videoCount2 = Number(s2.videoCount) || 0;
-
-            // ডেটা ফরম্যাটিং ও প্রদর্শন
-            document.getElementById("compFollowers1").textContent = formatNumber(followerCount1);
-            document.getElementById("compFollowers2").textContent = formatNumber(followerCount2);
-            
-            document.getElementById("compLikes1").textContent = formatNumber(heartCount1);
-            document.getElementById("compLikes2").textContent = formatNumber(heartCount2);
-            
-            let ratioVal1 = followerCount1 > 0 ? (heartCount1 / followerCount1) : 0;
-            let ratioVal2 = followerCount2 > 0 ? (heartCount2 / followerCount2) : 0;
-            document.getElementById("compEng1").textContent = (ratioVal1 * 100).toFixed(1) + "%";
-            document.getElementById("compEng2").textContent = (ratioVal2 * 100).toFixed(1) + "%";
-            
-            let avgVal1 = videoCount1 > 0 ? (heartCount1 / videoCount1) : 0;
-            let avgVal2 = videoCount2 > 0 ? (heartCount2 / videoCount2) : 0;
-            document.getElementById("compAvg1").textContent = formatNumber(Math.round(avgVal1));
-            document.getElementById("compAvg2").textContent = formatNumber(Math.round(avgVal2));
-            
-            document.getElementById("compRegion1").textContent = u1.region || "N/A";
-            document.getElementById("compRegion2").textContent = u2.region || "N/A";
-            
-            let score1 = 0;
-            let score2 = 0;
-
-            let fWin = highlightWinner("compFollowers1", "compFollowers2", followerCount1, followerCount2);
-            if (fWin === 1) score1++; else if (fWin === 2) score2++;
-
-            let lWin = highlightWinner("compLikes1", "compLikes2", heartCount1, heartCount2);
-            if (lWin === 1) score1++; else if (lWin === 2) score2++;
-
-            let eWin = highlightWinner("compEng1", "compEng2", ratioVal1, ratioVal2);
-            if (eWin === 1) score1++; else if (eWin === 2) score2++;
-
-            let aWin = highlightWinner("compAvg1", "compAvg2", avgVal1, avgVal2);
-            if (aWin === 1) score1++; else if (aWin === 2) score2++;
-
-            // ভিজুয়াল তুলনা বার আপডেট করা [Visual Split Bars Update]
-            updateComparisonBar("compBarFollowers1", "compBarFollowers2", followerCount1, followerCount2);
-            updateComparisonBar("compBarLikes1", "compBarLikes2", heartCount1, heartCount2);
-            updateComparisonBar("compBarEng1", "compBarEng2", ratioVal1, ratioVal2);
-            updateComparisonBar("compBarAvg1", "compBarAvg2", avgVal1, avgVal2);
-
-            // সার্বিক বিজয়ী (Overall Winner) প্রোফাইল স্টাইল আপডেট
-            document.getElementById("compWinnerBadge1").style.display = "none";
-            document.getElementById("compWinnerBadge2").style.display = "none";
-            document.getElementById("compImg1").style.borderColor = "var(--accent-cyan)";
-            document.getElementById("compImg2").style.borderColor = "var(--accent-pink)";
-
-            if (score1 > score2) {
-                document.getElementById("compWinnerBadge1").style.display = "block";
-                document.getElementById("compImg1").style.borderColor = "#f59e0b"; 
-            } else if (score2 > score1) {
-                document.getElementById("compWinnerBadge2").style.display = "block";
-                document.getElementById("compImg2").style.borderColor = "#f59e0b"; 
-            }
-            
-            document.getElementById("btnDownloadCompReport").onclick = function() {
-                let textReport = `TikTok Side-by-Side Comparison Report\n\n` +
-                                 `Creator 1: @${u1.uniqueId} (${u1.nickname})\n` +
-                                 `- Followers: ${followerCount1}\n` +
-                                 `- Likes: ${heartCount1}\n` +
-                                 `- Engagement Ratio: ${(ratioVal1 * 100).toFixed(1)}%\n\n` +
-                                 `Creator 2: @${u2.uniqueId} (${u2.nickname})\n` +
-                                 `- Followers: ${followerCount2}\n` +
-                                 `- Likes: ${heartCount2}\n` +
-                                 `- Engagement Ratio: ${(ratioVal2 * 100).toFixed(1)}%\n`;
-                
-                let blob = new Blob([textReport], { type: "text/plain;charset=utf-8" });
-                let link = document.createElement("a");
-                link.href = URL.createObjectURL(blob);
-                link.download = `Comparison_Report_${u1.uniqueId}_vs_${u2.uniqueId}.txt`;
-                link.click();
-                showToast("Report downloaded successfully! 📄");
-            };
-            
-            showToast("Comparison loaded! Winners Highlighted ⚖️");
-        } else {
-            showToast("One or both users not found.", true);
-        }
-    } catch (err) {
-        loader.style.display = "none";
-        showToast("Error processing comparison data", true);
-    }
-}
-
-// লাইভ ট্র্যাক কাউন্টার স্টার্ট/স্টপ লজিক [Live Counter Toggle Logic]
-let liveInterval = null;
-let lastFollowers = 0;
-let lastLikes = 0;
-let liveUsername = "";
-
-function toggleLiveCounter() {
-    playClickSound();
-    let btn = document.getElementById("btnLiveToggle");
-    let input = document.getElementById("liveUser");
-    
-    if (liveInterval) {
-        stopLiveCounter();
-        resetLiveUI();
-        showToast("Live counter stopped.");
-    } else {
-        let username = input.value.trim();
-        if (!username) {
-            showToast("Please enter a username first!", true);
-            return;
-        }
-        username = username.startsWith("@") ? username.substring(1) : username;
-        
-        liveUsername = username;
-        
-        // সেশন পরিবর্তনের সময় অ্যানিমেশন লাফানো এড়াতে ডাটা শুন্য করে নেওয়া হলো
-        lastFollowers = 0;
-        lastLikes = 0;
-        
-        btn.textContent = "🔴 Stop";
-        btn.style.background = "#ef4444";
-        btn.style.color = "white";
-        input.disabled = true;
-        
-        document.getElementById("liveCounterResult").style.display = "block";
-        document.getElementById("liveStatusText").textContent = "Connecting...";
-        
-        fetchLiveStats();
-        
-        // ৮ সেকেন্ড পর পর লাইভ রিফ্রেশ করা হবে (সার্ভার রেট লিমিট প্রটেকশন সহ)
-        liveInterval = setInterval(fetchLiveStats, 8000);
-    }
-}
-
-function stopLiveCounter() {
-    if (liveInterval) {
-        clearInterval(liveInterval);
-        liveInterval = null;
-    }
-    lastFollowers = 0;
-    lastLikes = 0;
-}
-
-async function fetchLiveStats() {
-    try {
-        let res = await fetch("https://www.tikwm.com/api/user/info?unique_id=" + encodeURIComponent(liveUsername));
-        let json = await res.json();
-        
-        if (json.data) {
-            let d = json.data.user;
-            let s = json.data.stats || {};
-            
-            document.getElementById("liveImg").src = d.avatarLarger || "https://via.placeholder.com/120";
-            document.getElementById("liveName").textContent = d.nickname || d.uniqueId;
-            document.getElementById("liveUserLabel").textContent = "@" + d.uniqueId;
-            
-            let currentFollowers = Number(s.followerCount) || 0;
-            let currentLikes = Number(s.heartCount) || 0;
-            
-            // রিয়েল-টাইম এনিমেশন ট্র্রিগার [Odometer counter animation]
-            animateValue("liveFollowersVal", lastFollowers, currentFollowers, 1500);
-            animateValue("liveLikesVal", lastLikes, currentLikes, 1500);
-            
-            lastFollowers = currentFollowers;
-            lastLikes = currentLikes;
-            
-            document.getElementById("liveStatusText").textContent = "Synced Just Now";
-        } else {
-            document.getElementById("liveStatusText").textContent = "User Not Found";
-            stopLiveCounter();
-            resetLiveUI();
-        }
-    } catch(e) {
-        document.getElementById("liveStatusText").textContent = "Sync Error...";
-    }
-}
-
-function resetLiveUI() {
-    let btn = document.getElementById("btnLiveToggle");
-    let input = document.getElementById("liveUser");
-    btn.textContent = "🟢 Start";
-    btn.style.background = "var(--brand-gradient)";
-    btn.style.color = "black";
-    input.disabled = false;
-}
-
-// লাইভ স্মুথ সংখ্যা গণনা এনিমেশন মেথড [Smooth numbers count animation]
-function animateValue(id, start, end, duration) {
-    let obj = document.getElementById(id);
-    if (!obj) return;
-    
-    let sVal = Number(start) || 0;
-    let eVal = Number(end) || 0;
-
-    if (sVal === 0) {
-        obj.textContent = formatNumberWithCommas(eVal);
-        return;
-    }
-    
-    // পূর্ববর্তী রানিং অ্যানিমেশনের সাথে ওভারল্যাপ এড়াতে এটি সরাসরি সেট হবে
-    if (sVal === eVal) {
-        obj.textContent = formatNumberWithCommas(eVal);
-        return;
-    }
-
-    let range = eVal - sVal;
-    let current = sVal;
-    let stepTime = Math.abs(Math.floor(duration / (Math.abs(range) || 1)));
-    stepTime = Math.max(stepTime, 20); // ২০ মিলি সেকেন্ডের ফাস্ট লিমিট
-    
-    let steps = duration / stepTime;
-    let valStep = Math.max(Math.floor(Math.abs(range) / (steps || 1)), 1);
-    
-    // পূর্ববর্তী রানিং টাইমার ওভারল্যাপিং বন্ধ করার জন্য এটি ক্লিয়ার করা হয়
-    if (obj.dataset.timerId) {
-        clearInterval(Number(obj.dataset.timerId));
-    }
-
-    let timer = setInterval(() => {
-        current += (eVal > sVal ? valStep : -valStep);
-        if ((eVal > sVal && current >= eVal) || (eVal < sVal && current <= eVal)) {
-            clearInterval(timer);
-            obj.textContent = formatNumberWithCommas(eVal);
-            delete obj.dataset.timerId;
-        } else {
-            obj.textContent = formatNumberWithCommas(current);
-        }
-    }, stepTime);
-    
-    obj.dataset.timerId = timer;
-}
-
-function formatNumberWithCommas(x) {
-    if (x === undefined || x === null || isNaN(x)) return "0";
-    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-}
-
-// সরাসরি টেক্সট কপি করার ফাংশন
-function copyDirectText(text) {
-    playClickSound();
-    navigator.clipboard.writeText(text).then(() => {
-        showToast("Report text copied! 📋");
-    }).catch(() => {
-        showToast("Copy failed.", true);
-    });
-}
-
-// ওয়াচলিস্ট CSV ফাইল এক্সপোর্ট
-function exportWatchlistToCSV() {
-    playClickSound();
-    let watchlist = JSON.parse(localStorage.getItem("tt_watchlist")) || [];
-    if(watchlist.length === 0) {
-        showToast("Your watchlist tracker is empty!", true);
-        return;
-    }
-    
-    let csvRows = ["Username,Nickname,Followers"];
-    watchlist.forEach(item => {
-        let nick = item.nickname ? item.nickname.replace(/,/g, "") : "";
-        csvRows.push(`@${item.uniqueId},${nick},${item.followers}`);
-    });
-    
-    let csvContent = "data:text/csv;charset=utf-8," + csvRows.join("\n");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "TikTok_Influencer_Watchlist_Report.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    showToast("Watchlist CSV Exported! 📊");
-}
-
-// ওয়াচলিস্ট ব্যাকআপ এক্সপোর্ট লজিক [Watchlist Backup Export]
-function exportWatchlistBackup() {
-    playClickSound();
-    let watchlist = JSON.parse(localStorage.getItem("tt_watchlist")) || [];
-    if(watchlist.length === 0) {
-        showToast("Your watchlist is empty!", true);
-        return;
-    }
-    let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(watchlist, null, 2));
-    let dlAnchorElem = document.createElement('a');
-    dlAnchorElem.setAttribute("href", dataStr);
-    dlAnchorElem.setAttribute("download", "TikTok_Watchlist_Backup.json");
-    dlAnchorElem.click();
-    showToast("Backup file downloaded! 📥");
-}
-
-// ইম্পোর্ট ট্রিগার করা
-function triggerImport() {
-    playClickSound();
-    document.getElementById("importFile").click();
-}
-
-// ওয়াচলিস্ট ব্যাকআপ ইম্পোর্ট/রিস্টোর লজিক [Watchlist Restore Import]
-function importWatchlistBackup(event) {
-    let file = event.target.files[0];
-    if (!file) return;
-    let reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            let imported = JSON.parse(e.target.result);
-            if (Array.isArray(imported)) {
-                let existing = JSON.parse(localStorage.getItem("tt_watchlist")) || [];
-                let merged = [...existing];
-                imported.forEach(item => {
-                    if (!merged.some(m => m.uniqueId.toLowerCase() === item.uniqueId.toLowerCase())) {
-                        merged.push(item);
-                    }
+                typewriterEffect(aiMsgDiv.querySelector('.bubble-text'), replyText, aiMsgDiv, () => {
+                    chatSessions[currentSessionId].messages.push({ role: 'ai', content: replyText });
+                    saveToStorage();
+                    renderHistoryList();
                 });
-                localStorage.setItem("tt_watchlist", JSON.stringify(merged));
-                renderWatchlist();
-                showToast("Watchlist restored successfully! ✅");
+                
+            } catch (error) {
+                const bubble = aiMsgDiv.querySelector('.bubble-text');
+                bubble.classList.remove('typing');
+                bubble.innerText = 'দুঃখিত, উত্তর আনতে সমস্যা হয়েছে। অনুগ্রহ করে আবার ট্রাই করুন।';
+            }
+        }
+
+        // চ্যাট বাবল স্ক্রিনে রেন্ডার করা
+        function appendMessage(text, role, isTyping = false) {
+            const messagesContainer = document.getElementById('chat-messages');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${role}`;
+
+            const avatarDiv = document.createElement('div');
+            avatarDiv.className = `avatar ${role}-avatar`;
+            avatarDiv.innerHTML = role === 'user' ? '<i class="fa-solid fa-user"></i>' : '<i class="fa-solid fa-robot"></i>';
+
+            const bubbleContainer = document.createElement('div');
+            bubbleContainer.className = 'bubble-container';
+
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.className = 'bubble';
+            
+            const textSpan = document.createElement('span');
+            textSpan.className = 'bubble-text';
+            if (isTyping) {
+                textSpan.classList.add('typing');
             } else {
-                showToast("Invalid backup file structure.", true);
-            }
-        } catch (err) {
-            showToast("Failed to parse backup file.", true);
-        }
-    };
-    reader.readAsText(file);
-}
-
-// ওয়াচলিস্ট রিয়েল-টাইম সার্চ ফিল্টারিং লজিক [Watchlist Real-time Search Filter]
-function filterWatchlist() {
-    let query = document.getElementById("watchlistSearch").value.toLowerCase().trim();
-    let cards = document.querySelectorAll(".watchlist-card");
-    cards.forEach(card => {
-        let name = card.querySelector("h4").textContent.toLowerCase();
-        let username = card.querySelector("p").textContent.toLowerCase();
-        if (name.includes(query) || username.includes(query)) {
-            card.style.display = "flex";
-        } else {
-            card.style.display = "none";
-        }
-    });
-}
-
-function getCreatorLevel(followers) {
-    let fCount = Number(followers) || 0;
-    if (fCount < 10000) return { name: "🥑 Nano Creator", color: "#10b981" };
-    if (fCount < 100000) return { name: "🚀 Micro Creator", color: "#3b82f6" };
-    if (fCount < 1000000) return { name: "🌟 Mid-Tier Star", color: "#8b5cf6" };
-    if (fCount < 10000000) return { name: "👑 Macro Star", color: "#ec4899" };
-    return { name: "💎 Mega Legend", color: "#f59e0b" };
-}
-
-function formatNumber(num) {
-    if (!num || isNaN(num)) return "0";
-    let n = Number(num);
-    if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
-    if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
-    return new Intl.NumberFormat().format(n);
-}
-
-function switchTab(tabId) {
-    playClickSound();
-    document.querySelectorAll('#result .tab-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelectorAll('#result .tab-content').forEach(content => content.classList.remove('active'));
-    
-    document.getElementById('btn' + tabId.charAt(0).toUpperCase() + tabId.slice(1)).classList.add('active');
-    document.getElementById('tabContent-' + tabId).classList.add('active');
-}
-
-// প্রোফাইল এনালাইজার
-async function getUser(username){
-    let loader = document.getElementById("loader");
-    let resultBox = document.getElementById("result");
-    let videoBox = document.getElementById("videoResult");
-    let bioLinkContainer = document.getElementById("bioLinkContainer");
-
-    resultBox.style.display = "none";
-    videoBox.style.display = "none";
-    bioLinkContainer.style.display = "none";
-    loader.style.display = "block";
-
-    try{
-        let res = await fetch("https://www.tikwm.com/api/user/info?unique_id=" + encodeURIComponent(username));
-        let json = await res.json();
-        loader.style.display = "none";
-
-        if(json.data){
-            let d = json.data.user;
-            let s = json.data.stats || {};
-            currentProfileData = json.data;
-
-            resultBox.style.display = "block";
-            switchTab('stats');
-
-            document.getElementById("avatar").src = d.avatarLarger || "https://via.placeholder.com/120";
-            document.getElementById("nickname").innerHTML = `${d.nickname || 'N/A'} ${d.verified ? '✅' : ''}`;
-            document.getElementById("displayUsername").textContent = `@${d.uniqueId}`;
-            document.getElementById("bioBox").innerHTML = d.signature ? `"${d.signature}"` : '"No bio written."';
-
-            let followerCount = Number(s.followerCount) || 0;
-            let heartCount = Number(s.heartCount) || 0;
-            let followingCount = Number(s.followingCount) || 0;
-            let videoCount = Number(s.videoCount) || 0;
-
-            let badge = getCreatorLevel(followerCount);
-            let badgeEl = document.getElementById("creatorBadge");
-            badgeEl.textContent = badge.name;
-            badgeEl.style.backgroundColor = badge.color;
-
-            if (d.bioLink && d.bioLink.link) {
-                bioLinkContainer.style.display = "block";
-                bioLinkContainer.innerHTML = `<a href="${d.bioLink.link}" target="_blank" class="btn-action" style="background: #10b981; color: white;">🔗 Website: ${d.bioLink.link.replace(/^https?:\/\//i, '')}</a>`;
+                textSpan.innerHTML = parseMarkdown(text);
             }
 
-            document.getElementById("profileLink").href = `https://www.tiktok.com/@${d.uniqueId}`;
-            
-            document.getElementById("btnDownloadAvatar").onclick = function() {
-                downloadFile(d.avatarLarger, `${d.uniqueId}_avatar_hd.jpg`);
+            bubbleDiv.appendChild(textSpan);
+            bubbleContainer.appendChild(bubbleDiv);
+
+            // এআই এর মেসেজে কুইক কপি অ্যাকশন যুক্ত করা
+            if (role === 'ai' && !isTyping) {
+                addCopyBtn(bubbleContainer, text);
+            }
+
+            msgDiv.appendChild(avatarDiv);
+            msgDiv.appendChild(bubbleContainer);
+            messagesContainer.appendChild(msgDiv);
+            scrollToBottom();
+
+            return msgDiv;
+        }
+
+        // মেসেজের জন্য কপি বাটন
+        function addCopyBtn(container, text) {
+            const copyBtn = document.createElement('button');
+            copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i> উত্তর কপি করুন';
+            copyBtn.style.cssText = "background:none; border:none; color:var(--text-sub); font-size:12px; cursor:pointer; margin-top:5px; text-align:left; width:fit-content; display:flex; align-items:center; gap:5px;";
+            copyBtn.onclick = () => {
+                navigator.clipboard.writeText(text);
+                showToast("উত্তর সফলভাবে কপি করা হয়েছে!");
             };
-
-            document.getElementById("valFollowers").textContent = formatNumber(followerCount);
-            document.getElementById("valLikes").textContent = formatNumber(heartCount);
-            document.getElementById("valFollowing").textContent = formatNumber(followingCount);
-            document.getElementById("valVideos").textContent = formatNumber(videoCount);
-            document.getElementById("valRegion").textContent = d.region || 'Unknown';
-
-            let ratioVal = followerCount > 0 ? (heartCount / followerCount) : 0;
-            document.getElementById("valEngagement").textContent = followerCount > 0 ? (heartCount / followerCount).toFixed(1) + "x likes/fan" : "0%";
-
-            // ক্রিয়েটর গ্রেড ও পারফরম্যান্স এনালাইসিস ইঞ্জিন
-            let grade = "C (Seedling Creator) 🌱";
-            let gradeColor = "var(--text-secondary)";
-            if (ratioVal >= 0.15) {
-                grade = "S-Tier (Legend) 🔥";
-                gradeColor = "#f59e0b"; 
-            } else if (ratioVal >= 0.10) {
-                grade = "A+ (Viral Creator) 🚀";
-                gradeColor = "#10b981"; 
-            } else if (ratioVal >= 0.05) {
-                grade = "A (Steady Creator) ⭐";
-                gradeColor = "var(--accent-cyan)"; 
-            } else if (ratioVal >= 0.02) {
-                grade = "B (Growing Creator) 📈";
-                gradeColor = "#3b82f6"; 
-            }
-            
-            let gradeEl = document.getElementById("valGrade");
-            gradeEl.textContent = grade;
-            gradeEl.style.color = gradeColor;
-
-            let avgLikes = videoCount > 0 ? formatNumber(Math.round(heartCount / videoCount)) : "0";
-            document.getElementById("valAvgLikes").textContent = avgLikes + " / video";
-
-            let privacy = d.privateAccount || d.secret ? "Private 🔒" : "Public 🔓";
-            document.getElementById("valPrivacy").textContent = privacy;
-
-            document.getElementById("qrCode").src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://www.tiktok.com/@${d.uniqueId}`;
-
-            updateWatchlistBtnState(d.uniqueId);
-
-            showToast("Profile analyzed successfully! 📊");
-        } else {
-            showToast("Profile not found", true);
+            container.appendChild(copyBtn);
         }
-    } catch(e) {
-        loader.style.display = "none";
-        showToast("Network Error", true);
-    }
-}
 
-function updateWatchlistBtnState(username) {
-    let watchlist = JSON.parse(localStorage.getItem("tt_watchlist")) || [];
-    let exists = watchlist.some(item => item.uniqueId.toLowerCase() === username.toLowerCase());
-    document.getElementById("btnWatchlistToggle").innerHTML = exists ? "➖ Remove from Watchlist" : "⭐ Add to Watchlist";
-}
+        // টাইপরাইটার ইফেক্ট
+        function typewriterEffect(element, text, msgDiv, callback) {
+            let i = 0;
+            element.innerHTML = '';
+            element.classList.add('typing');
+            
+            const speed = text.length > 500 ? 5 : 12;
 
-function toggleWatchlist() {
-    playClickSound();
-    if (!currentProfileData) return;
-    let d = currentProfileData.user;
-    let s = currentProfileData.stats || {};
-    let watchlist = JSON.parse(localStorage.getItem("tt_watchlist")) || [];
-    
-    let existsIdx = watchlist.findIndex(item => item.uniqueId.toLowerCase() === d.uniqueId.toLowerCase());
-    
-    let followerCount = Number(s.followerCount) || 0;
+            function type() {
+                if (i < text.length) {
+                    element.innerHTML = parseMarkdown(text.substring(0, i + 1));
+                    i++;
+                    scrollToBottom();
+                    setTimeout(type, speed);
+                } else {
+                    element.classList.remove('typing');
+                    // টাইপিং শেষ হলে মেসেজ বাবলের নিচে কপি বাটন যুক্ত করা
+                    addCopyBtn(msgDiv.querySelector('.bubble-container'), text);
+                    if (callback) callback();
+                }
+            }
+            type();
+        }
 
-    if (existsIdx > -1) {
-        watchlist.splice(existsIdx, 1);
-        showToast("Removed from Watchlist! ❌");
-    } else {
-        watchlist.push({
-            uniqueId: d.uniqueId,
-            nickname: d.nickname,
-            avatar: d.avatarLarger,
-            followers: followerCount
-        });
-        showToast("Added to Watchlist! ⭐");
-    }
-    
-    localStorage.setItem("tt_watchlist", JSON.stringify(watchlist));
-    updateWatchlistBtnState(d.uniqueId);
-    renderWatchlist();
-}
+        // প্রফেশনাল লেভেলের কাস্টম কোড-ব্লক এবং মার্কার ডাউন পার্সার
+        function parseMarkdown(text) {
+            let escaped = text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
 
-function renderWatchlist() {
-    let watchlist = JSON.parse(localStorage.getItem("tt_watchlist")) || [];
-    let section = document.getElementById("watchlistSection");
-    let grid = document.getElementById("watchlistGrid");
-
-    if (watchlist.length > 0) {
-        section.style.display = "block";
-        grid.innerHTML = "";
-        watchlist.forEach(item => {
-            let card = document.createElement("div");
-            card.className = "watchlist-card";
-            card.innerHTML = `
-                <img src="${item.avatar || 'https://via.placeholder.com/40'}" alt="Avatar">
-                <div class="watchlist-details" onclick="getUser('${item.uniqueId}')">
-                    <h4>${item.nickname || item.uniqueId}</h4>
-                    <p>@${item.uniqueId} • 👥 ${formatNumber(item.followers)} Followers</p>
+            const preBlocks = [];
+            
+            // কোড ব্লক (```lang ... ```) আলাদা করে সংরক্ষণ করা যাতে এন্টার মার্কার ডাউন নষ্ট না করে
+            escaped = escaped.replace(/```(\w*)\n([\s\S]+?)```/g, (match, lang, code) => {
+                const language = lang || 'code';
+                const index = preBlocks.length;
+                preBlocks.push(`
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>${language.toUpperCase()}</span>
+                        <button class="copy-code-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
+                    </div>
+                    <pre><code>${code.trim()}</code></pre>
                 </div>
-                <button class="btn-remove-watchlist" onclick="removeFromWatchlistDirect('${item.uniqueId}')" title="Remove">×</button>
-            `;
-            grid.appendChild(card);
-        });
-    } else {
-        section.style.display = "none";
-    }
-}
+                `);
+                return `___PRE_BLOCK_${index}___`;
+            });
 
-function removeFromWatchlistDirect(username) {
-    playClickSound();
-    let watchlist = JSON.parse(localStorage.getItem("tt_watchlist")) || [];
-    watchlist = watchlist.filter(item => item.uniqueId.toLowerCase() !== username.toLowerCase());
-    localStorage.setItem("tt_watchlist", JSON.stringify(watchlist));
-    
-    if (currentProfileData && currentProfileData.user.uniqueId.toLowerCase() === username.toLowerCase()) {
-        updateWatchlistBtnState(username);
-    }
-    
-    showToast("Removed from Watchlist Tracker! ❌");
-    renderWatchlist();
-}
+            // ইনলাইন কোড `code`
+            escaped = escaped.replace(/`([^`]+)`/g, '<code>$1</code>');
 
-function downloadReport() {
-    playClickSound();
-    if (!currentProfileData) return;
-    let d = currentProfileData.user;
-    let s = currentProfileData.stats || {};
-    let followerCount = Number(s.followerCount) || 0;
-    let heartCount = Number(s.heartCount) || 0;
-    let reportText = `TikTok User: @${d.uniqueId}\nFollowers: ${followerCount}\nLikes: ${heartCount}`;
-    let blob = new Blob([reportText], { type: "text/plain;charset=utf-8" });
-    let link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `${d.uniqueId}_TikTok_Report.txt`;
-    link.click();
-    showToast("Report downloaded! 📄");
-}
+            // বোল্ড **text**
+            escaped = escaped.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
 
-// প্রোফাইল সামারি কপি করার মেথড
-function copyProfileSummary() {
-    playClickSound();
-    if (!currentProfileData) return;
-    let d = currentProfileData.user;
-    let s = currentProfileData.stats || {};
-    let followerCount = Number(s.followerCount) || 0;
-    let heartCount = Number(s.heartCount) || 0;
-    let text = `TikTok User: @${d.uniqueId}\nFollowers: ${followerCount}\nLikes: ${heartCount}`;
-    navigator.clipboard.writeText(text).then(() => {
-        showToast("Summary copied! 📋");
-    });
-}
+            // সাধারণ লাইন ব্রেক পরিবর্তন
+            escaped = escaped.replace(/\n/g, '<br>');
 
-function switchVideoTab(tabId) {
-    playClickSound();
-    document.querySelectorAll('#videoResult .tab-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelectorAll('#videoResult .tab-content').forEach(content => content.classList.remove('active'));
-    
-    document.getElementById('btnVid' + tabId.charAt(0).toUpperCase() + tabId.slice(1)).classList.add('active');
-    document.getElementById('vidTabContent-' + tabId).classList.add('active');
-}
+            // পূর্বের সংরক্ষিত কোড ব্লক ফিরিয়ে আনা
+            preBlocks.forEach((block, index) => {
+                escaped = escaped.replace(`___PRE_BLOCK_${index}___`, block);
+            });
 
-// উন্নত টোস্ট নোটিফিকেশন ইঞ্জিন
-let toastTimeout = null;
-function showToast(msg, isError = false) {
-    let toast = document.getElementById("toast");
-    toast.textContent = msg;
-    
-    if (isError) {
-        toast.classList.add("error");
-        playErrorSound();
-    } else {
-        toast.classList.remove("error");
-        playSuccessSound();
-    }
-    
-    if (toastTimeout) {
-        clearTimeout(toastTimeout);
-    }
-    
-    toast.classList.add("show");
-    
-    toastTimeout = setTimeout(() => {
-        toast.classList.remove("show");
-    }, 2500);
-}
-</script>
+            return escaped;
+        }
 
+        // কোড কপি করার লজিক
+        function copyCode(btn) {
+            const pre = btn.closest('.code-block').querySelector('code');
+            const textarea = document.createElement('textarea');
+            textarea.innerHTML = pre.innerHTML;
+            const decodedCode = textarea.value;
+
+            navigator.clipboard.writeText(decodedCode).then(() => {
+                btn.innerHTML = '<i class="fa-solid fa-check" style="color:var(--accent);"></i> Copied!';
+                showToast("কোড কপি করা হয়েছে!");
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="fa-regular fa-copy"></i> Copy';
+                }, 2000);
+            });
+        }
+
+        function saveToStorage() {
+            localStorage.setItem('chat-sessions', JSON.stringify(chatSessions));
+        }
+
+        // সাইডবার হিস্ট্রি লোড
+        function renderHistoryList() {
+            const list = document.getElementById('history-list');
+            list.innerHTML = '';
+
+            Object.keys(chatSessions).reverse().forEach(sessionId => {
+                const session = chatSessions[sessionId];
+                const item = document.createElement('div');
+                item.className = `history-item ${sessionId === currentSessionId ? 'active' : ''}`;
+                item.onclick = () => loadSession(sessionId);
+
+                item.innerHTML = `
+                    <div>
+                        <i class="fa-solid fa-message"></i>
+                        <span>${session.title}</span>
+                    </div>
+                    <i class="fa-solid fa-trash-can delete-btn" onclick="deleteSession(event, '${sessionId}')"></i>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function loadSession(sessionId) {
+            currentSessionId = sessionId;
+            const messagesContainer = document.getElementById('chat-messages');
+            messagesContainer.innerHTML = '';
+
+            const session = chatSessions[sessionId];
+            session.messages.forEach(msg => {
+                appendMessage(msg.content, msg.role);
+            });
+
+            renderHistoryList();
+            if (window.innerWidth <= 768) {
+                toggleSidebar();
+            }
+        }
+
+        function deleteSession(event, sessionId) {
+            event.stopPropagation();
+            delete chatSessions[sessionId];
+            saveToStorage();
+            if (currentSessionId === sessionId) {
+                startNewChat();
+            } else {
+                renderHistoryList();
+            }
+        }
+
+        function clearAllHistory() {
+            if (confirm('আপনি কি সব চ্যাট হিস্ট্রি মুছে ফেলতে চান?')) {
+                chatSessions = {};
+                localStorage.removeItem('chat-sessions');
+                startNewChat();
+            }
+        }
+    </script>
 </body>
 </html>
