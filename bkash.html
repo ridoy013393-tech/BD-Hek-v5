@@ -266,7 +266,7 @@ input:focus {
     max-height: 380px;
     box-shadow: var(--neon-shadow);
 }
-.video-preview-container video {
+.video-preview-container video, .video-preview-container img {
     width: 100%;
     height: 100%;
     display: block;
@@ -555,7 +555,7 @@ audio {
     z-index: 10000;
     transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
     opacity: 0;
-    pointer-events: none; /* নোটিফিকেশন যেন ক্লিকে বাধা না দেয় */
+    pointer-events: none;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -659,7 +659,7 @@ audio {
             </div>
         </div>
 
-        <!-- ভিডিও ডাউনলোডার রেজাল্ট প্যানেল -->
+        <!-- ভিডিও/ছবি ডাউনলোডার রেজাল্ট প্যানেল -->
         <div class="result" id="videoResult">
             <div class="profile-card">
                 <img id="vidCover" class="video-cover" alt="Video Cover">
@@ -678,7 +678,8 @@ audio {
 
             <div id="vidTabContent-watch" class="tab-content active">
                 <div class="video-preview-container" id="videoPreviewContainer">
-                    <video id="vidPlayer" controls playsinline></video>
+                    <video id="vidPlayer" controls playsinline style="width: 100%; height: 100%; object-fit: contain;"></video>
+                    <img id="imagePreview" style="display: none; width: 100%; height: 100%; object-fit: contain;" alt="Image Preview">
                 </div>
             </div>
 
@@ -1007,7 +1008,6 @@ function playClickSound() {
 }
 
 function playSuccessSound() {
-    // সফল কাজের জন্য ডাবল চিম্প সাউন্ড
     try {
         let ctx = getAudioContext();
         if (ctx.state === 'suspended') ctx.resume();
@@ -1122,7 +1122,14 @@ function handleSearch() {
     playClickSound();
     let inputVal = document.getElementById("username").value.trim();
     if(inputVal === "") {
-        showToast("Enter a username or link!", true);
+        showToast("Enter a username, link, or image URL!", true);
+        return;
+    }
+
+    // সরাসরি ছবির লিংক শনাক্তকরণ (jpg, png, webp, jpeg, gif)
+    let isDirectImage = /\.(jpg|jpeg|png|webp|gif)/i.test(inputVal) || inputVal.startsWith("data:image/");
+    if (isDirectImage && inputVal.startsWith("http")) {
+        handleDirectImage(inputVal);
         return;
     }
 
@@ -1138,13 +1145,62 @@ function handleSearch() {
     }
 }
 
-// ভিডিও এনালাইসিস এবং এইচডি কভার সেটআপ
+// সরাসরি ছবির লিংক ডাউনলোডার লজিক
+async function handleDirectImage(url) {
+    let loader = document.getElementById("loader");
+    let resultBox = document.getElementById("result");
+    let videoBox = document.getElementById("videoResult");
+    let vidPlayer = document.getElementById("vidPlayer");
+    let imgPrev = document.getElementById("imagePreview");
+
+    resultBox.style.display = "none";
+    videoBox.style.display = "none";
+    loader.style.display = "block";
+    
+    setTimeout(() => {
+        loader.style.display = "none";
+        videoBox.style.display = "block";
+        switchVideoTab('watch');
+
+        // ভিডিও প্লেয়ারের জায়গায় ছবি সোয়াপ করা
+        vidPlayer.style.display = "none";
+        imgPrev.style.display = "block";
+        imgPrev.src = url;
+
+        document.getElementById("vidCover").src = url;
+        document.getElementById("vidAuthor").textContent = "Direct Image File";
+        document.getElementById("vidUsername").textContent = "@image_downloader";
+        document.getElementById("vidTitle").innerHTML = `Direct Image Link Verified<br><span style="color: var(--accent-cyan); font-weight: bold; font-size:10px;">📸 Original Quality Ready</span>`;
+
+        // অডিও কন্টেইনার এবং অপ্রয়োজনীয় ডাউনলোডার বাটন হাইড করা
+        document.getElementById("audioPreviewContainer").style.display = "none";
+        
+        let oldList = document.getElementById("slideshowList");
+        if (oldList) oldList.remove();
+
+        // ডাউনলোড বাটন সেটআপ
+        let btnDownload = document.getElementById("btnDownloadNoWatermark");
+        btnDownload.style.display = "block";
+        btnDownload.textContent = "📥 Download Image (Original Quality)";
+        btnDownload.onclick = function() {
+            downloadFile(url, `downloaded_image.jpg`);
+        };
+        
+        document.getElementById("btnDownloadCover").style.display = "none";
+        document.getElementById("btnDownloadMusic").style.display = "none";
+
+        showToast("Image loaded! Ready to download 🖼️");
+    }, 600);
+}
+
+// ভিডিও ও স্লাইডশো এনালাইসিস
 async function getVideoInfo(url) {
     let loader = document.getElementById("loader");
     let resultBox = document.getElementById("result");
     let videoBox = document.getElementById("videoResult");
     let vidPlayer = document.getElementById("vidPlayer");
     let audioPlayer = document.getElementById("musicPlayer");
+    let imgPrev = document.getElementById("imagePreview");
 
     resultBox.style.display = "none";
     videoBox.style.display = "none";
@@ -1163,16 +1219,79 @@ async function getVideoInfo(url) {
             videoBox.style.display = "block";
             switchVideoTab('watch');
 
-            document.getElementById("vidCover").src = d.cover;
-            document.getElementById("vidAuthor").textContent = d.author.nickname;
-            document.getElementById("vidUsername").textContent = "@" + d.author.unique_id;
-            
-            let timeInfo = d.duration ? `⏱️ Duration: ${formatDuration(d.duration)}` : "";
-            document.getElementById("vidTitle").innerHTML = `${d.title || "No description available"}<br><span style="color: var(--accent-cyan); font-weight: bold; font-size:10px; display:inline-block; margin-top:5px;">${timeInfo}</span>`;
+            // ডিফল্ট এলিমেন্টসমূহ সচল করা
+            vidPlayer.style.display = "block";
+            imgPrev.style.display = "none";
+            document.getElementById("audioPreviewContainer").style.display = "block";
+            document.getElementById("btnDownloadCover").style.display = "block";
+            document.getElementById("btnDownloadMusic").style.display = "block";
+            document.getElementById("btnDownloadNoWatermark").style.display = "block";
+            document.getElementById("btnDownloadNoWatermark").textContent = "📥 Download Video (No Watermark - Full HD)";
 
-            let hdVideoUrl = d.hdplay || d.play;
-            vidPlayer.src = hdVideoUrl;
-            audioPlayer.src = d.music;
+            let oldList = document.getElementById("slideshowList");
+            if (oldList) oldList.remove();
+
+            // স্লাইডশো/ফটো পোস্ট ডিটেকশন [Slideshow Support]
+            if (d.images && d.images.length > 0) {
+                vidPlayer.style.display = "none";
+                imgPrev.style.display = "block";
+                imgPrev.src = d.images[0]; // ১ম ছবিটিকে প্রিভিউ করা
+
+                document.getElementById("vidCover").src = d.cover;
+                document.getElementById("vidAuthor").textContent = d.author.nickname;
+                document.getElementById("vidUsername").textContent = "@" + d.author.unique_id;
+                document.getElementById("vidTitle").innerHTML = `${d.title || "Slideshow Post"}<br><span style="color: var(--accent-cyan); font-weight: bold; font-size:10px;">📸 Slideshow: ${d.images.length} Images Found</span>`;
+                
+                // স্লাইডশো ছবির তালিকা জেনারেট করা
+                let dwnTab = document.getElementById("vidTabContent-download");
+                let slidesList = document.createElement("div");
+                slidesList.id = "slideshowList";
+                slidesList.style.marginTop = "15px";
+                slidesList.style.display = "flex";
+                slidesList.style.flexDirection = "column";
+                slidesList.style.gap = "8px";
+                slidesList.innerHTML = `<h5 style="font-size:12px; font-weight:bold; color:var(--accent-cyan); margin-bottom: 5px; text-align: left;">🖼️ Slideshow Images:</h5>`;
+                
+                d.images.forEach((imgUrl, idx) => {
+                    let slideRow = document.createElement("div");
+                    slideRow.style.display = "flex";
+                    slideRow.style.alignItems = "center";
+                    slideRow.style.justifyContent = "space-between";
+                    slideRow.style.background = "var(--tab-bg)";
+                    slideRow.style.padding = "8px 12px";
+                    slideRow.style.borderRadius = "10px";
+                    slideRow.style.border = "1px solid var(--card-border)";
+                    
+                    slideRow.innerHTML = `
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <img src="${imgUrl}" style="width:30px; height:30px; border-radius:4px; object-fit:cover;" alt="Slide ${idx+1}">
+                            <span style="font-size:11px; font-weight:bold;">Image ${idx+1}</span>
+                        </div>
+                        <button onclick="downloadFile('${imgUrl}', '${d.author.unique_id}_slide_${idx+1}.jpg')" style="background:var(--accent-cyan); color:#000; border:none; padding:4px 10px; border-radius:6px; font-size:10px; font-weight:bold; cursor:pointer;">Download</button>
+                    `;
+                    slidesList.appendChild(slideRow);
+                });
+                
+                dwnTab.appendChild(slidesList);
+                document.getElementById("btnDownloadNoWatermark").style.display = "none";
+                audioPlayer.src = d.music;
+            } else {
+                // সাধারণ ভিডিও পোস্ট
+                let hdVideoUrl = d.hdplay || d.play;
+                vidPlayer.src = hdVideoUrl;
+                audioPlayer.src = d.music;
+
+                document.getElementById("vidCover").src = d.cover;
+                document.getElementById("vidAuthor").textContent = d.author.nickname;
+                document.getElementById("vidUsername").textContent = "@" + d.author.unique_id;
+                
+                let timeInfo = d.duration ? `⏱️ Duration: ${formatDuration(d.duration)}` : "";
+                document.getElementById("vidTitle").innerHTML = `${d.title || "No description available"}<br><span style="color: var(--accent-cyan); font-weight: bold; font-size:10px; display:inline-block; margin-top:5px;">${timeInfo}</span>`;
+
+                document.getElementById("btnDownloadNoWatermark").onclick = function() {
+                    downloadFile(hdVideoUrl, `${d.author.unique_id}_video_full_hd.mp4`);
+                };
+            }
 
             if (d.music_info && d.music_info.cover) {
                 document.getElementById("musicDiskImg").src = d.music_info.cover;
@@ -1187,9 +1306,6 @@ async function getVideoInfo(url) {
             document.getElementById("vidValComments").textContent = formatNumber(d.comment_count);
             document.getElementById("vidValShares").textContent = formatNumber(d.share_count);
 
-            document.getElementById("btnDownloadNoWatermark").onclick = function() {
-                downloadFile(hdVideoUrl, `${d.author.unique_id}_video_full_hd.mp4`);
-            };
             document.getElementById("btnDownloadCover").onclick = function() {
                 downloadFile(d.cover, `${d.author.unique_id}_cover.jpg`);
             };
@@ -1197,13 +1313,13 @@ async function getVideoInfo(url) {
                 downloadFile(d.music, `${d.author.unique_id}_music.mp3`);
             };
 
-            showToast("Video loaded! Full HD Quality Ready 📽️");
+            showToast("Content loaded successfully! 📽️");
         } else {
-            showToast("Invalid URL or Private video.", true);
+            showToast("Invalid URL or Private content.", true);
         }
     } catch(e) {
         loader.style.display = "none";
-        showToast("Error loading video data", true);
+        showToast("Error loading content data", true);
     }
 }
 
@@ -1401,15 +1517,6 @@ function switchTab(tabId) {
     document.getElementById('tabContent-' + tabId).classList.add('active');
 }
 
-function switchVideoTab(tabId) {
-    playClickSound();
-    document.querySelectorAll('#videoResult .tab-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelectorAll('#videoResult .tab-content').forEach(content => content.classList.remove('active'));
-    
-    document.getElementById('btnVid' + tabId.charAt(0).toUpperCase() + tabId.slice(1)).classList.add('active');
-    document.getElementById('vidTabContent-' + tabId).classList.add('active');
-}
-
 // প্রোফাইল এনালাইজার
 async function getUser(username){
     let loader = document.getElementById("loader");
@@ -1583,13 +1690,21 @@ function copyProfileSummary() {
     });
 }
 
+function switchVideoTab(tabId) {
+    playClickSound();
+    document.querySelectorAll('#videoResult .tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('#videoResult .tab-content').forEach(content => content.classList.remove('active'));
+    
+    document.getElementById('btnVid' + tabId.charAt(0).toUpperCase() + tabId.slice(1)).classList.add('active');
+    document.getElementById('vidTabContent-' + tabId).classList.add('active');
+}
+
 // উন্নত টোস্ট নোটিফিকেশন ইঞ্জিন
 let toastTimeout = null;
 function showToast(msg, isError = false) {
     let toast = document.getElementById("toast");
     toast.textContent = msg;
     
-    // নির্দিষ্ট সাউন্ড এবং এরর ক্লাস যোগ করা
     if (isError) {
         toast.classList.add("error");
         playErrorSound();
@@ -1598,7 +1713,6 @@ function showToast(msg, isError = false) {
         playSuccessSound();
     }
     
-    // রানিং নোটিফিকেশন থাকলে তার টাইমার রিসেট করা
     if (toastTimeout) {
         clearTimeout(toastTimeout);
     }
