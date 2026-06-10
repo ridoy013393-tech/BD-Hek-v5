@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="bn" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kurigram Mini TV - Bulletproof Client</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        ytBlack: '#0f0f0f',
+                        ytCardBg: '#000000',
+                        ytHeaderBg: '#0f0f0f',
+                        ytSidebar: '#0f0f0f',
+                        ytGray: '#272727',
+                        ytHover: '#3f3f3f',
+                        ytBorder: '#303030',
+                        ytText: '#f1f1f1',
+                        ytRed: '#ff0000',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #0f0f0f;
+            color: #f1f1f1;
+            font-family: 'Roboto', 'Noto Sans Bengali', sans-serif;
+            overflow-x: hidden;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        body.light-mode {
+            background-color: #f9f9f9;
+            color: #0f0f0f;
+        }
+        body.light-mode header, body.light-mode aside, body.light-mode #yt-sidebar-mobile {
+            background-color: #ffffff;
+            border-color: #e5e5e5;
+            color: #0f0f0f;
+        }
+        body.light-mode .glass-panel {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: #e5e5e5;
+        }
+        body.light-mode .yt-btn-gray {
+            background-color: #f2f2f2;
+            color: #0f0f0f;
+            border-color: #e5e5e5;
+        }
+        body.light-mode .yt-btn-gray:hover {
+            background-color: #e5e5e5;
+        }
+        body.light-mode input {
+            background-color: #ffffff;
+            border-color: #ccc;
+            color: #0f0f0f;
+        }
+        body.light-mode .text-ytText {
+            color: #0f0f0f;
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #272727; border-radius: 10px; }
+        
+        .marquee {
+            display: inline-block;
+            animation: yt-marquee 30s linear infinite;
+        }
+        @keyframes yt-marquee {
+            0% { transform: translate3d(100%, 0, 0); }
+            100% { transform: translate3d(-100%, 0, 0); }
+        }
+        .skeleton {
+            background: linear-gradient(90deg, #161b22 25%, #21262d 50%, #161b22 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+    <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3"></div>
+
+    <!-- ==========================================
+         MODAL: QR CODE SHARE
+         ========================================== -->
+    <div id="qr-modal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-ytGray border border-ytBorder rounded-2xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl relative">
+            <button onclick="toggleQRModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="text-sm sm:text-base font-bold text-ytText">Scan to Watch / মোবাইল স্ক্যান করুন</h3>
+            <div class="bg-white p-3 rounded-xl inline-block mx-auto border-2 border-ytRed">
+                <img id="qr-image-display" src="" alt="QR Code" class="w-48 h-48 mx-auto">
+            </div>
+            <p class="text-xs text-gray-400 leading-normal">স্মার্টফোনের ক্যামেরা দিয়ে কিউআর কোডটি স্ক্যান করে সরাসরি ভিডিওটি মোবাইলে দেখা শুরু করুন।</p>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         HEADER BAR
+         ========================================== -->
+    <header class="bg-ytHeaderBg border-b border-ytBorder fixed top-0 left-0 w-full z-40 h-14 flex items-center justify-between px-3 sm:px-4">
+        <!-- Left: Burger & Logo -->
+        <div class="flex items-center gap-2 sm:gap-4">
+            <button onclick="toggleSidebar()" class="w-9 h-9 rounded-full hover:bg-ytGray flex items-center justify-center text-lg text-ytText">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <div class="flex items-center gap-1 cursor-pointer select-none" onclick="navigateTo('#home')">
+                <span class="text-ytRed text-xl sm:text-2xl flex items-center"><i class="fa-brands fa-youtube"></i></span>
+                <span class="font-sans font-bold text-sm sm:text-base tracking-tighter text-ytText flex items-center">
+                    KurigramTV<span class="hidden xs:inline text-[9px] text-gray-400 font-normal ml-1 border border-ytBorder px-1 rounded">BD</span>
+                </span>
+            </div>
+        </div>
+
+        <!-- Center: Search Bar & Dropdown Suggestion -->
+        <div class="flex items-center flex-grow max-w-[320px] sm:max-w-[500px] mx-2 relative">
+            <div class="flex items-center w-full bg-ytCardBg border border-ytBorder rounded-l-full overflow-hidden h-8 pl-3 focus-within:border-red-600 transition-all">
+                <input type="text" id="yt-search-input" oninput="handleSearchSuggestions(this.value)" placeholder="Search YouTube / ইউটিউব খুঁজুন..." autocomplete="off" class="bg-transparent text-xs text-ytText placeholder-gray-500 focus:outline-none w-full">
+            </div>
+            <button onclick="triggerSearch()" class="bg-ytGray border-y border-r border-ytBorder hover:bg-ytHover rounded-r-full w-12 sm:w-16 h-8 flex items-center justify-center text-xs text-ytText">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+            
+            <!-- Live Suggestions Droplist -->
+            <div id="search-suggestions-box" class="absolute top-9 left-0 w-full bg-ytSidebar border border-ytBorder rounded-xl p-2 hidden shadow-2xl z-50"></div>
+        </div>
+
+        <!-- Right: Utility Actions & Dark Toggle -->
+        <div class="flex items-center gap-1 sm:gap-3">
+            <button onclick="toggleTheme()" class="w-8 h-8 rounded-full hover:bg-ytGray flex items-center justify-center text-sm text-ytText" title="Toggle Theme">
+                <i id="theme-btn-icon" class="fa-solid fa-moon"></i>
+            </button>
+            <a href="admin.html" class="flex items-center justify-center w-8 h-8 rounded-full hover:bg-ytGray text-sm text-ytText" title="Studio / ক্রিয়েটর স্টুডিও">
+                <i class="fa-solid fa-video"></i>
+            </a>
+            <a href="admin.html" class="w-7 h-7 rounded-full bg-gradient-to-r from-red-600 to-ytRed flex items-center justify-center text-xs font-bold text-white uppercase select-none">
+                A
+            </a>
+        </div>
+    </header>
+
+    <div class="h-14"></div>
+
+    <!-- Notice Ticker -->
+    <div class="bg-[#030303] border-b border-ytBorder overflow-hidden relative h-8 flex items-center z-30">
+        <div class="absolute left-0 top-0 h-full bg-ytRed text-white px-3 flex items-center text-[10px] font-bold uppercase z-10">
+            <i class="fa-solid fa-bullhorn mr-1.5 animate-bounce"></i> Notice / বিজ্ঞপ্তি
+        </div>
+        <div class="w-full pl-28 whitespace-nowrap overflow-hidden">
+            <span id="global-notice-text" class="marquee text-[11px] text-gray-400 font-medium">স্বাগতম! এটি একটি সম্পূর্ণ স্বয়ংক্রিয় ইউটিউব প্লেয়ার সিস্টেম।</span>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         LAYOUT: SIDEBAR + CONTENT
+         ========================================== -->
+    <div class="flex flex-row flex-grow w-full relative">
+        
+        <!-- Mobile Sidebar Backdrop Overlay -->
+        <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/70 z-40 hidden transition-opacity duration-300"></div>
+
+        <!-- SIDEBAR -->
+        <aside id="yt-sidebar" class="bg-ytSidebar w-64 border-r border-ytBorder flex-shrink-0 h-full fixed md:sticky top-0 left-0 z-50 md:z-30 transform -translate-x-full md:translate-x-0 transition-transform duration-300 flex flex-col justify-between py-3 overflow-y-auto">
+            <div class="space-y-1 px-2">
+                <div class="flex items-center justify-between px-4 pb-4 border-b border-ytBorder md:hidden">
+                    <span class="font-sans font-bold text-ytText">Navigation / নেভিগেশন</span>
+                    <button onclick="toggleSidebar()" class="text-gray-400 text-lg"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+
+                <div class="pt-2 space-y-1">
+                    <button onclick="navigateTo('#home'); closeSidebarOnMobile(); clearSearchFilter();" class="w-full flex items-center gap-4 px-4 py-2 rounded-xl hover:bg-ytGray text-xs sm:text-sm font-medium text-ytText transition-all">
+                        <i class="fa-solid fa-house text-base w-5"></i> Home / হোম
+                    </button>
+                    <!-- Watch Later (Bookmarks) Tab Button -->
+                    <button onclick="showWatchLaterList(); closeSidebarOnMobile();" class="w-full flex items-center gap-4 px-4 py-2 rounded-xl hover:bg-ytGray text-xs sm:text-sm font-medium text-ytText transition-all">
+                        <i class="fa-solid fa-bookmark text-base w-5 text-yellow-500"></i> Watch Later / বুকমার্ক
+                    </button>
+                    <!-- Watch History Tab Button -->
+                    <button onclick="showHistoryList(); closeSidebarOnMobile();" class="w-full flex items-center gap-4 px-4 py-2 rounded-xl hover:bg-ytGray text-xs sm:text-sm font-medium text-ytText transition-all">
+                        <i class="fa-solid fa-clock-rotate-left text-base w-5 text-emerald-500"></i> History / ইতিহাস
+                    </button>
+                </div>
+                
+                <hr class="border-ytBorder my-4">
+                
+                <p class="text-[10px] text-gray-500 font-bold px-4 uppercase tracking-wider mb-2">Popular Categories / ক্যাটাগরি</p>
+                <div id="sidebar-categories" class="space-y-1"></div>
+            </div>
+            
+            <div class="px-6 py-4 border-t border-ytBorder text-center">
+                <p class="text-[10px] text-gray-600 font-semibold uppercase">Kurigram TV v2.0</p>
+                <p class="text-[9px] text-gray-700 mt-1">&copy; 2026 Systems LLC</p>
+            </div>
+        </aside>
+
+        <!-- MAIN VIEWPORTS CONTAINER -->
+        <main class="flex-grow p-3 sm:p-5 overflow-x-hidden max-w-full">
+
+            <!-- VIEWPORT: HOME -->
+            <section id="page-home" class="space-y-6 max-w-full">
+
+                <!-- Billboard Spotlight Banner -->
+                <div id="yt-billboard" class="hidden sm:block relative w-full aspect-[21/6] rounded-xl overflow-hidden shadow-md group">
+                    <div id="billboard-img" class="absolute inset-0 bg-cover bg-center transition-all duration-700" style="background-image: url('https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?auto=format&fit=crop&w=1200&q=80')"></div>
+                    <div class="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent"></div>
+                    <div class="absolute bottom-4 left-6 z-10 max-w-lg space-y-1">
+                        <span class="inline-block bg-ytRed text-white text-[9px] font-bold px-2 py-0.5 rounded uppercase"><i class="fa-solid fa-fire mr-1"></i> Spotlight / স্পটলাইট</span>
+                        <h1 id="billboard-title" class="text-xl lg:text-3xl font-extrabold text-white tracking-tight">YouTube Client v2.0</h1>
+                        <p id="billboard-subtitle" class="text-gray-300 text-[11px] line-clamp-1">ইউটিউবের কোটি কোটি ভিডিও এখন এক প্ল্যাটফর্মে।</p>
+                        <button id="billboard-play-btn" class="mt-1 bg-ytText text-ytBlack hover:bg-gray-200 px-3 py-1.5 rounded-full font-bold text-[10px] flex items-center gap-1.5 transition-all">
+                            <i class="fa-solid fa-play"></i> Watch Popular / জনপ্রিয় ভিডিও
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Scrolling Tags -->
+                <div id="category-chips-wrapper" class="flex gap-2 overflow-x-auto no-scrollbar py-1 select-none max-w-full"></div>
+
+                <!-- Feeds -->
+                <div id="main-feeds" class="space-y-8 max-w-full overflow-hidden">
+                    <!-- Trending Section -->
+                    <div class="space-y-3">
+                        <h2 class="text-sm sm:text-base font-bold text-ytText flex items-center gap-1.5"><span class="text-ytRed"><i class="fa-solid fa-fire"></i></span> Trending YouTube / ইউটিউব ট্রেন্ডিং ভিডিও</h2>
+                        <div id="trending-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            <!-- Skeletons loaded instantly -->
+                            <div class="space-y-2"><div class="aspect-video skeleton rounded-xl"></div><div class="h-3 skeleton rounded w-2/3"></div></div>
+                            <div class="space-y-2"><div class="aspect-video skeleton rounded-xl"></div><div class="h-3 skeleton rounded w-2/3"></div></div>
+                        </div>
+                    </div>
+
+                    <!-- Localized Bangladesh Section -->
+                    <div class="space-y-3">
+                        <h2 class="text-sm sm:text-base font-bold text-ytText flex items-center gap-1.5"><span class="text-ytRed"><i class="fa-solid fa-globe"></i></span> Popular / বাংলায় জনপ্রিয়</h2>
+                        <div id="latest-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            <div class="space-y-2"><div class="aspect-video skeleton rounded-xl"></div><div class="h-3 skeleton rounded w-2/3"></div></div>
+                            <div class="space-y-2"><div class="aspect-video skeleton rounded-xl"></div><div class="h-3 skeleton rounded w-2/3"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Search/Filtered/Bookmark/History Results -->
+                <div id="dynamic-feed" class="space-y-4 hidden">
+                    <div class="flex items-center justify-between border-b border-ytBorder pb-2">
+                        <h2 id="dynamic-feed-title" class="text-sm sm:text-base font-bold text-ytText">Filtered Feed</h2>
+                        <div id="history-clear-btn-container" class="hidden">
+                            <button onclick="clearWatchHistory()" class="text-xs text-red-500 hover:underline flex items-center gap-1"><i class="fa-solid fa-trash"></i> Clear History / ইতিহাস মুছুন</button>
+                        </div>
+                        <button id="standard-clear-btn" onclick="clearSearchFilter()" class="text-xs text-ytRed hover:underline flex items-center gap-1"><i class="fa-solid fa-times"></i> Clear / রিসেট</button>
+                    </div>
+                    <div id="dynamic-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+                    <div id="yt-empty-state" class="hidden text-center py-16 space-y-3">
+                        <div class="w-12 h-12 rounded-full bg-ytGray flex items-center justify-center mx-auto text-gray-500"><i class="fa-solid fa-magnifying-glass"></i></div>
+                        <p class="text-xs text-gray-400">কোন ফলাফল পাওয়া যায়নি! আবার চেষ্টা করুন।</p>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- VIEWPORT: WATCH PLAYER -->
+            <section id="page-watch" class="hidden space-y-6 animate-fade-in max-w-full">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Left Column -->
+                    <div class="lg:col-span-2 space-y-4 max-w-full overflow-hidden">
+                        
+                        <!-- Main Video Viewport -->
+                        <div class="relative w-full aspect-video rounded-xl overflow-hidden bg-black shadow-lg transition-all" id="yt-player-container">
+                            <iframe id="youtube-iframe" class="absolute inset-0 w-full h-full" src="" frameborder="0" allowfullscreen></iframe>
+                        </div>
+
+                        <!-- MULTI-SERVER PLAYER SELECTOR (NEW: বাইপাস প্লেয়ার সার্ভার!) -->
+                        <div class="flex flex-wrap items-center gap-2 p-2 bg-ytGray rounded-xl border border-ytBorder">
+                            <span class="text-xs text-gray-400 font-bold ml-2">Player Server / প্লেয়ার সার্ভার:</span>
+                            <button onclick="setPlayerServer('youtube')" id="btn-srv-yt" class="bg-ytRed text-white text-[10px] sm:text-xs px-3 py-1.5 rounded-full font-bold transition-all">Server 1 (YouTube)</button>
+                            <button onclick="setPlayerServer('proxy')" id="btn-srv-proxy" class="bg-ytGray hover:bg-ytHover text-white text-[10px] sm:text-xs px-3 py-1.5 rounded-full font-bold transition-all">Server 2 (Proxy Bypass / আনব্লক)</button>
+                        </div>
+
+                        <!-- PREMIUM AUTO-GENERATED MOBILE BACKGROUND AUDIO STREAM PLAYER -->
+                        <div id="audio-background-player-card" class="bg-ytGray border border-ytBorder p-4 rounded-xl space-y-2 hidden">
+                            <div class="flex items-center justify-between">
+                                <p class="text-xs font-bold text-emerald-400"><i class="fa-solid fa-headphones mr-1 animate-pulse"></i> Background Play Enabled / ব্যাকগ্রাউন্ড প্লে সচল</p>
+                                <button onclick="toggleAudioMode(false)" class="text-[10px] bg-ytHover px-2 py-1 rounded text-ytRed font-bold">Switch to Video / ভিডিও মোডে ফিরুন</button>
+                            </div>
+                            <audio id="bg-audio-element" controls class="w-full bg-[#1e1e1e] rounded mt-1"></audio>
+                            <p class="text-[10px] text-gray-500">মোবাইল লক করলেও অডিও প্লেটি সচল থাকবে।</p>
+                        </div>
+
+                        <h1 id="player-title" class="text-base sm:text-lg font-bold text-ytText leading-tight">Video Title</h1>
+
+                        <!-- Actions Bar -->
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-ytBorder pb-3">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-9 h-9 rounded-full bg-ytRed flex items-center justify-center font-bold text-white text-xs">K</div>
+                                <div>
+                                    <h3 class="font-bold text-xs text-ytText">Kurigram Mini TV</h3>
+                                    <p class="text-[10px] text-gray-500">Real-time YouTube Client</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center flex-wrap gap-1.5">
+                                <!-- Real-Time Audio Background Mode Switch -->
+                                <button onclick="toggleAudioMode(true)" class="bg-emerald-950 text-emerald-400 hover:bg-emerald-900 border border-emerald-800 text-[10px] sm:text-xs px-3 py-1.5 rounded-full font-bold flex items-center gap-1.5">
+                                    <i class="fa-solid fa-music"></i> Audio Mode / ব্যাকগ্রাউন্ড প্লে
+                                </button>
+                                <button id="btn-bookmark-player" onclick="handleBookmarkAction()" class="bg-ytGray hover:bg-ytHover text-[10px] sm:text-xs px-3 py-1.5 rounded-full font-bold flex items-center gap-1.5 transition-all">
+                                    <i id="bookmark-icon-player" class="fa-regular fa-bookmark"></i> <span id="bookmark-label-player">Bookmark</span>
+                                </button>
+                                <button onclick="triggerQRGenerator()" class="bg-ytGray hover:bg-ytHover text-[10px] sm:text-xs px-3 py-1.5 rounded-full font-bold flex items-center gap-1.5"><i class="fa-solid fa-qrcode"></i> QR Share</button>
+                                <button id="btn-share" class="bg-ytGray hover:bg-ytHover text-[10px] sm:text-xs px-3 py-1.5 rounded-full font-bold flex items-center gap-1.5"><i class="fa-solid fa-share"></i> Share</button>
+                                <button id="btn-copy" class="bg-ytGray hover:bg-ytHover text-[10px] sm:text-xs px-3 py-1.5 rounded-full font-bold flex items-center gap-1.5"><i class="fa-regular fa-clone"></i> Copy Link</button>
+                                <button id="btn-theater" class="bg-ytGray hover:bg-ytHover w-8 h-8 rounded-full flex items-center justify-center" title="Toggle Size"><i class="fa-solid fa-expand text-xs"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Description Box -->
+                        <div class="bg-ytGray rounded-xl p-3 sm:p-4 space-y-1.5 text-xs">
+                            <div class="flex items-center gap-3 font-semibold text-ytText">
+                                <span><span id="player-view-count">0</span> Views / ভিউ</span>
+                                <span id="player-publish-date">-- -- --</span>
+                                <span id="player-category" class="text-ytRed uppercase text-[10px] font-bold">Category</span>
+                            </div>
+                            <p id="player-description" class="text-gray-300 leading-relaxed whitespace-pre-line"></p>
+                        </div>
+
+                        <!-- LIVE REAL-TIME YOUTUBE COMMENTS SECTION -->
+                        <div class="glass-panel p-4 rounded-xl border border-ytBorder space-y-4">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-bold text-ytText uppercase tracking-wider">Comments / মতামত (Live from YouTube)</span>
+                            </div>
+                            <div id="comments-list-panel" class="space-y-3.5 max-h-[300px] overflow-y-auto pr-1 text-xs">
+                                <p class="text-xs text-gray-500 py-4 text-center">Loading YouTube comments... / লোড হচ্ছে...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Suggested Videos -->
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-xs font-bold text-ytText uppercase tracking-wider">Suggested Videos / সাজেস্টেড</h3>
+                        </div>
+                        <div id="suggested-videos-panel" class="space-y-3"></div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- ==========================================
+         JAVASCRIPT CONTROLLER CORE
+         ========================================== -->
+    <script>
+        // --- 99.9% Uptime Public Failover Instances ---
+        const invidiousInstances = [
+            "https://inv.nadeko.net",
+            "https://invidious.nerdvpn.de",
+            "https://invidious.tiekoetter.com",
+            "https://invidious.projectsegfau.lt"
+        ];
+        let activeInstanceIndex = 0;
+        let activeInstance = invidiousInstances[activeInstanceIndex];
+
+        // অফলাইন/লোকাল প্রোটোকল প্রটেকশন ব্যাকআপ ডেটা (CORS ব্লক হলে স্বয়ংক্রিয় লোড হবে)
+        const offlineBackupVideos = [
+            { videoId: "ScMzIvxBSi4", title: "কুড়িগ্রামের ঐতিহ্যবাহী চিলমারী বন্দরের বর্তমান রূপ ও ব্রহ্মপুত্র নদ", author: "Kurigram Mini TV", viewCount: 124500, publishedText: "3 days ago" },
+            { videoId: "h8r3_Z84uY4", title: "সাইবার সিকিউরিটি এবং হ্যাকিং থেকে বাচার সেরা উপায়", author: "Education Zone", viewCount: 89000, publishedText: "5 days ago" },
+            { videoId: "tgbNymZ7vqY", title: "কুড়িগ্রামের দর্শনীয় ধরলা সেতু ভ্রমণ গাইড ও চমৎকার দৃশ্য", author: "Travel BD", viewCount: 231400, publishedText: "1 week ago" },
+            { videoId: "PHZVoKauNAM", title: "কুড়িগ্রামের স্থানীয় ঐতিহ্যবাহী ভাওয়াইয়া গানের আসর ও উৎসব", author: "Culture BD", viewCount: 78000, publishedText: "2 weeks ago" }
+        ];
+
+        let state = { videos: {}, categories: { "cat_1": { name: "Trending" }, "cat_2": { name: "Bangla Music" }, "cat_3": { name: "News" }, "cat_4": { name: "Islamic" }, "cat_5": { name: "Travel" } }, isFirebase: false, currentFilter: 'All' };
+        let currentWatchKey = null;
+        let currentPlayerServer = 'youtube'; // Default YouTube Embed Server
+
+        // Auto Failover Fetch API
+        async function fetchAPI(endpoint) {
+            try {
+                const response = await fetch(`${activeInstance}${endpoint}`);
+                if (!response.ok) throw new Error("Server down");
+                return await response.json();
+            } catch (error) {
+                console.warn(`Instance failed: ${activeInstance}. Switching...`);
+                activeInstanceIndex = (activeInstanceIndex + 1) % invidiousInstances.length;
+                activeInstance = invidiousInstances[activeInstanceIndex];
+                return await fetchAPI(endpoint);
+            }
+        }
+
+        // --- Core Loaders ---
+        async function initDatabase() {
+            renderSidebarCategories();
+            renderCategoryChips();
+            await fetchHomeContent();
+        }
+
+        async function fetchHomeContent() {
+            showSkeletons();
+            
+            try {
+                // 1. Fetch YouTube Trending via Invidious API
+                const trendingData = await fetchAPI('/api/v1/trending');
+                if (trendingData && trendingData.length) {
+                    const trend = document.getElementById('trending-grid');
+                    trend.innerHTML = trendingData.slice(0, 8).map(v => makeYtCard(v)).join('');
+                    
+                    trendingData.forEach(video => {
+                        state.videos[video.videoId] = {
+                            title: video.title,
+                            youtubeId: video.videoId,
+                            description: video.description || "No description.",
+                            category: "Trending",
+                            thumbnail: video.videoThumbnails[0]?.url || `https://img.youtube.com/vi/${video.videoId}/hqdefault.jpg`,
+                            views: video.viewCount || 0,
+                            createdAt: video.publishedText || "Recently"
+                        };
+                    });
+                } else {
+                    loadOfflineBackup();
+                }
+
+                // 2. Fetch Popular Localized Videos
+                const localData = await fetchAPI('/api/v1/search?q=' + encodeURIComponent('Bangladesh News'));
+                if (localData && localData.length) {
+                    const late = document.getElementById('latest-grid');
+                    late.innerHTML = localData.slice(0, 8).map(v => makeYtCard(v)).join('');
+
+                    localData.forEach(video => {
+                        state.videos[video.videoId] = {
+                            title: video.title,
+                            youtubeId: video.videoId,
+                            description: video.description || "No description.",
+                            category: "Latest",
+                            thumbnail: video.videoThumbnails[0]?.url || `https://img.youtube.com/vi/${video.videoId}/hqdefault.jpg`,
+                            views: video.viewCount || 0,
+                            createdAt: video.publishedText || "Recently"
+                        };
+                    });
+                }
+            } catch (err) {
+                console.error("Local network or CORS blocked external fetch. Loading local backup...");
+                loadOfflineBackup();
+            }
+        }
+
+        // Local Offline fallback renderer (যাতে CORS ব্লকের কারণে পেজ ফাঁকা না থাকে)
+        function loadOfflineBackup() {
+            const trend = document.getElementById('trending-grid');
+            const late = document.getElementById('latest-grid');
+            
+            trend.innerHTML = offlineBackupVideos.map(v => makeYtCard(v)).join('');
+            late.innerHTML = offlineBackupVideos.map(v => makeYtCard(v)).join('');
+
+            offlineBackupVideos.forEach(v => {
+                state.videos[v.videoId] = {
+                    title: v.title,
+                    youtubeId: v.videoId,
+                    description: "Offline simulated content / লোকাল প্রোটোকল মোড সচল হয়েছে।",
+                    category: "Local",
+                    thumbnail: `https://img.youtube.com/vi/${v.videoId}/hqdefault.jpg`,
+                    views: v.viewCount,
+                    createdAt: v.publishedText
+                };
+            });
+            showToast("Offline fallback mode active / লোকাল অফলাইন মোড সচল হয়েছে।");
+        }
+
+        function showSkeletons() {
+            const temp = `<div class="space-y-2"><div class="aspect-video skeleton rounded-xl"></div><div class="h-3 skeleton rounded w-2/3"></div></div>`;
+            document.getElementById('trending-grid').innerHTML = temp.repeat(4);
+            document.getElementById('latest-grid').innerHTML = temp.repeat(4);
+        }
+
+        function renderCategoryChips() {
+            const container = document.getElementById('category-chips-wrapper');
+            if(!container) return;
+            let html = `<button onclick="setFilter('All')" class="px-3 py-1 rounded-lg text-[11px] font-semibold whitespace-nowrap border ${state.currentFilter==='All'?'bg-ytText text-ytBlack':'bg-ytGray border-ytBorder text-ytText'}">All</button>`;
+            Object.values(state.categories).forEach(cat => {
+                html += `<button onclick="setFilter('${cat.name}')" class="px-3 py-1 rounded-lg text-[11px] font-semibold whitespace-nowrap border ${state.currentFilter===cat.name?'bg-ytText text-ytBlack':'bg-ytGray border-ytBorder text-ytText'}">${cat.name}</button>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function renderSidebarCategories() {
+            const sidebar = document.getElementById('sidebar-categories');
+            if (!sidebar) return;
+            sidebar.innerHTML = Object.values(state.categories).map(cat => `
+                <button onclick="setFilter('${cat.name}'); navigateTo('#home'); closeSidebarOnMobile();" class="w-full flex items-center gap-4 px-4 py-2 rounded-xl text-xs font-medium ${state.currentFilter===cat.name?'text-ytRed bg-ytGray/30': 'text-gray-400 hover:text-ytText'} transition-all">
+                    <span class="w-1.5 h-1.5 rounded-full bg-current"></span> ${cat.name}
+                </button>
+            `).join('');
+        }
+
+        function makeYtCard(v) {
+            const list = JSON.parse(localStorage.getItem('kmt_bookmarks')) || [];
+            const isBookmarked = list.includes(v.videoId);
+            const thumb = v.videoThumbnails ? v.videoThumbnails[0]?.url : `https://img.youtube.com/vi/${v.videoId}/hqdefault.jpg`;
+            const views = v.viewCount ? v.viewCount.toLocaleString() : "1.2K";
+            const published = v.publishedText || "Recently";
+
+            return `
+                <div class="flex flex-col gap-2 cursor-pointer w-full group relative" onclick="navigateTo('#watch/${v.videoId}')">
+                    <div class="relative aspect-video rounded-xl overflow-hidden bg-ytGray shadow-sm w-full">
+                        <img src="${thumb}" class="w-full h-full object-cover group-hover:scale-105 transition-all duration-300" alt="">
+                        <span class="absolute bottom-1.5 right-1.5 bg-black/80 px-1 py-0.5 rounded text-[9px] text-white font-semibold font-mono">Video</span>
+                        <button onclick="toggleCardBookmark(event, '${v.videoId}')" class="absolute top-1.5 right-1.5 bg-black/70 hover:bg-ytRed w-7 h-7 rounded-full flex items-center justify-center transition-all z-20">
+                            <i class="${isBookmarked ? 'fa-solid' : 'fa-regular'} fa-bookmark text-xs text-white"></i>
+                        </button>
+                    </div>
+                    <div class="flex gap-2.5 px-0.5">
+                        <div class="w-8 h-8 rounded-full bg-ytRed flex-shrink-0 flex items-center justify-center font-bold text-white text-[10px]">K</div>
+                        <div class="space-y-0.5 overflow-hidden">
+                            <h3 class="text-xs font-bold text-ytText leading-tight line-clamp-2" title="${v.title}">${v.title}</h3>
+                            <div class="text-[10px] text-gray-500">
+                                <p class="flex items-center gap-1">${v.author || "YouTube BD"} <i class="fa-solid fa-circle-check text-[8px] text-gray-400"></i></p>
+                                <p>${views} views • ${published}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        async function setFilter(cat) { 
+            state.currentFilter = cat; 
+            renderCategoryChips(); 
+            renderSidebarCategories(); 
+            if (cat !== 'All') {
+                triggerSearchAndFilter(cat);
+            } else {
+                clearSearchFilter();
+            }
+        }
+        
+        function triggerSearch() { triggerSearchAndFilter(document.getElementById('yt-search-input').value); }
+
+        async function triggerSearchAndFilter(query = "") {
+            const resultsGrid = document.getElementById('dynamic-grid');
+            const stateHomeFeed = document.getElementById('main-feeds');
+            const stateDynamicFeed = document.getElementById('dynamic-feed');
+
+            document.getElementById('history-clear-btn-container').classList.add('hidden');
+            document.getElementById('standard-clear-btn').classList.remove('hidden');
+
+            stateHomeFeed.classList.add('hidden');
+            stateDynamicFeed.classList.remove('hidden');
+            
+            resultsGrid.innerHTML = `<div class="col-span-full py-12 text-center text-xs text-gray-500">Searching live YouTube... / ইউটিউব থেকে খোঁজ করা হচ্ছে...</div>`;
+
+            try {
+                const searchData = await fetchAPI('/api/v1/search?q=' + encodeURIComponent(query));
+                document.getElementById('dynamic-feed-title').innerText = `Search: "${query}"`;
+                
+                if (searchData && searchData.length) {
+                    document.getElementById('yt-empty-state').classList.add('hidden');
+                    resultsGrid.innerHTML = searchData.map(v => makeYtCard(v)).join('');
+                    
+                    searchData.forEach(video => {
+                        state.videos[video.videoId] = {
+                            title: video.title,
+                            youtubeId: video.videoId,
+                            description: video.description || "No description.",
+                            category: "Search",
+                            thumbnail: video.videoThumbnails[0]?.url || `https://img.youtube.com/vi/${video.videoId}/hqdefault.jpg`,
+                            views: video.viewCount || 0,
+                            createdAt: video.publishedText || "Recently"
+                        };
+                    });
+                } else {
+                    resultsGrid.innerHTML = '';
+                    document.getElementById('yt-empty-state').classList.remove('hidden');
+                }
+            } catch (err) {
+                // If search API fails, search offline cache
+                const matches = Object.entries(state.videos)
+                    .map(([k, v]) => ({ videoId: k, ...v }))
+                    .filter(v => v.title.toLowerCase().includes(query.toLowerCase()));
+                if(matches.length) {
+                    document.getElementById('yt-empty-state').classList.add('hidden');
+                    resultsGrid.innerHTML = matches.map(v => makeYtCard(v)).join('');
+                } else {
+                    resultsGrid.innerHTML = '';
+                    document.getElementById('yt-empty-state').classList.remove('hidden');
+                }
+            }
+        }
+
+        function clearSearchFilter() { document.getElementById('yt-search-input').value = ''; setFilter('All'); fetchHomeContent(); }
+
+        // --- DYNAMIC SEARCH SUGGESTION ---
+        async function handleSearchSuggestions(val) {
+            const box = document.getElementById('search-suggestions-box');
+            if(!val.trim()) { box.classList.add('hidden'); return; }
+
+            try {
+                const suggestions = await fetchAPI('/api/v1/search/suggestions?q=' + encodeURIComponent(val));
+                if(suggestions && suggestions.suggestions && suggestions.suggestions.length) {
+                    box.classList.remove('hidden');
+                    box.innerHTML = suggestions.suggestions.slice(0, 5).map(s => `
+                        <div onclick="clickSearchSuggestion('${s}')" class="px-3 py-2 text-xs font-semibold text-gray-300 hover:bg-ytGray hover:text-white rounded-lg cursor-pointer flex items-center gap-2 truncate">
+                            <i class="fa-solid fa-magnifying-glass text-gray-500"></i> ${s}
+                        </div>
+                    `).join('');
+                } else {
+                    box.classList.add('hidden');
+                }
+            } catch (e) {
+                box.classList.add('hidden');
+            }
+        }
+
+        function clickSearchSuggestion(val) {
+            document.getElementById('search-suggestions-box').classList.add('hidden');
+            document.getElementById('yt-search-input').value = val;
+            triggerSearchAndFilter(val);
+        }
+
+        // --- WATCH PLAYER METADATA ENGINE & COMMENTS ---
+        async function openWatchPage(videoId) {
+            currentWatchKey = videoId;
+            trackHistory(videoId);
+
+            document.getElementById('page-watch').classList.remove('hidden');
+            document.getElementById('page-home').classList.add('hidden');
+            
+            // Set standard YouTube player source (Server 1)
+            setPlayerServer('youtube');
+
+            // Fetch live metadata
+            try {
+                const videoData = await fetchAPI(`/api/v1/videos/${videoId}`);
+                if(videoData) {
+                    document.getElementById('player-title').innerText = videoData.title;
+                    document.getElementById('player-description').innerText = videoData.description || "No description.";
+                    document.getElementById('player-category').innerText = videoData.genre || "YouTube Stream";
+                    document.getElementById('player-view-count').innerText = videoData.viewCount.toLocaleString();
+                    document.getElementById('player-publish-date').innerText = videoData.publishedText;
+                }
+
+                // Load YouTube comments
+                const commentsData = await fetchAPI(`/api/v1/comments/${videoId}`);
+                const commentsPanel = document.getElementById('comments-list-panel');
+                if(commentsData && commentsData.comments && commentsData.comments.length) {
+                    commentsPanel.innerHTML = commentsData.comments.slice(0, 10).map(c => `
+                        <div class="flex items-start gap-3 border-b border-ytBorder/45 pb-2.5">
+                            <div class="w-8 h-8 rounded-full bg-ytHover flex items-center justify-center text-xs font-bold text-gray-300 uppercase shrink-0">
+                                ${c.author.charAt(0)}
+                            </div>
+                            <div class="space-y-0.5 overflow-hidden">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs font-bold text-ytText">${c.author}</span>
+                                    <span class="text-[9px] text-gray-500">${c.publishedText}</span>
+                                </div>
+                                <p class="text-xs text-gray-300 leading-normal">${c.content}</p>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    commentsPanel.innerHTML = `<p class="text-xs text-gray-500 py-4 text-center">Comments disabled or unavailable. / মতামত নিষ্ক্রিয় রয়েছে।</p>`;
+                }
+
+                // Render Suggested list matching YouTube recommendations
+                if(videoData && videoData.recommended && videoData.recommended.length) {
+                    document.getElementById('suggested-videos-panel').innerHTML = videoData.recommended.slice(0, 10).map(v => `
+                        <div class="flex gap-2.5 cursor-pointer group" onclick="navigateTo('#watch/${v.videoId}')">
+                            <div class="w-28 aspect-video rounded-lg overflow-hidden bg-ytGray flex-shrink-0 relative">
+                                <img src="${v.videoThumbnails[0]?.url}" class="w-full h-full object-cover">
+                            </div>
+                            <div class="space-y-0.5 overflow-hidden">
+                                <h4 class="text-xs font-bold text-ytText leading-tight line-clamp-2 group-hover:text-ytRed transition-all">${v.title}</h4>
+                                <p class="text-[9px] text-gray-500">${v.author} <i class="fa-solid fa-circle-check text-[7px] text-gray-400"></i></p>
+                                <p class="text-[9px] text-gray-500">${v.viewCount.toLocaleString()} views</p>
+                            </div>
+                    </div>`).join('');
+                }
+            } catch (err) {
+                // Offline fallback info
+                const offlineVid = state.videos[videoId];
+                if(offlineVid) {
+                    document.getElementById('player-title').innerText = offlineVid.title;
+                    document.getElementById('player-description').innerText = offlineVid.description;
+                    document.getElementById('player-category').innerText = offlineVid.category;
+                    document.getElementById('player-view-count').innerText = offlineVid.views.toLocaleString();
+                    document.getElementById('player-publish-date').innerText = offlineVid.createdAt;
+                }
+            }
+
+            updateWatchMetadata();
+        }
+
+        // --- NEW: MULTI-SERVER PLAYER CONTROLLER (বাইপাস প্লেয়ার সল্যুশন!) ---
+        function setPlayerServer(serverType) {
+            currentPlayerServer = serverType;
+            const srvYt = document.getElementById('btn-srv-yt');
+            const srvProxy = document.getElementById('btn-srv-proxy');
+
+            if(serverType === 'youtube') {
+                // YouTube Standard Embed
+                srvYt.className = "bg-ytRed text-white text-[10px] sm:text-xs px-3.5 py-1.5 rounded-full font-bold transition-all";
+                srvProxy.className = "bg-ytGray hover:bg-ytHover text-white text-[10px] sm:text-xs px-3.5 py-1.5 rounded-full font-bold transition-all";
+                document.getElementById('youtube-iframe').src = `https://www.youtube.com/embed/${currentWatchKey}?autoplay=1`;
+                toggleAudioMode(false);
+            } else {
+                // Invidious Proxy Embed (ব্যান এবং নিষেধাজ্ঞা সম্পূর্ণ বাইপাস করে ভিডিও চালাবে)
+                srvYt.className = "bg-ytGray hover:bg-ytHover text-white text-[10px] sm:text-xs px-3.5 py-1.5 rounded-full font-bold transition-all";
+                srvProxy.className = "bg-ytRed text-white text-[10px] sm:text-xs px-3.5 py-1.5 rounded-full font-bold transition-all";
+                document.getElementById('youtube-iframe').src = `${activeInstance}/embed/${currentWatchKey}`;
+                toggleAudioMode(false);
+            }
+        }
+
+        // --- PREMIUM AUDIO-ONLY BACKGROUND PLAY ON MOBILE ---
+        async function toggleAudioMode(enable) {
+            const playerCard = document.getElementById('audio-background-player-card');
+            const videoFrame = document.getElementById('youtube-iframe');
+            const audioElement = document.getElementById('bg-audio-element');
+
+            if (enable) {
+                showToast("Extracting Direct Audio Stream... / অডিও স্ট্রিম প্রসেস হচ্ছে...");
+                try {
+                    const videoData = await fetchAPI(`/api/v1/videos/${currentWatchKey}`);
+                    if (videoData && videoData.adaptiveFormats) {
+                        const audioStreamObj = videoData.adaptiveFormats.find(f => f.type && f.type.startsWith('audio/') || f.mimeType && f.mimeType.startsWith('audio/'));
+                        if (audioStreamObj && audioStreamObj.url) {
+                            videoFrame.src = "";
+                            videoFrame.classList.add('hidden');
+                            playerCard.classList.remove('hidden');
+                            audioElement.src = audioStreamObj.url;
+                            audioElement.play();
+                            showToast("Background audio sctivated! / ব্যাকগ্রাউন্ড অডিও প্লেয়ার সচল।");
+                        } else {
+                            showToast("Audio format not found. Try Server 2. / অডিও ফাইল পাওয়া যায়নি।", "yellow");
+                        }
+                    }
+                } catch(e) {
+                    showToast("CORS blocked audio fetch. Run from localhost. / লোকাল পলিসি ত্রুটি।", "yellow");
+                }
+            } else {
+                audioElement.pause();
+                audioElement.src = "";
+                playerCard.classList.add('hidden');
+                videoFrame.classList.remove('hidden');
+                if (currentWatchKey) {
+                    setPlayerServer(currentPlayerServer);
+                }
+            }
+        }
+
+        function updateWatchMetadata() {
+            const bookmarks = JSON.parse(localStorage.getItem('kmt_bookmarks')) || [];
+            const isBookmarked = bookmarks.includes(currentWatchKey);
+            const bookIcon = document.getElementById('bookmark-icon-player');
+            const bookLabel = document.getElementById('bookmark-label-player');
+            
+            if(isBookmarked) {
+                bookIcon.className = 'fa-solid fa-bookmark text-yellow-500';
+                bookLabel.innerText = 'Bookmarked';
+            } else {
+                bookIcon.className = 'fa-regular fa-bookmark';
+                bookLabel.innerText = 'Bookmark';
+            }
+        }
+
+        // --- WATCH HISTORY ENGINE ---
+        function trackHistory(key) {
+            let history = JSON.parse(localStorage.getItem('kmt_history')) || [];
+            history = history.filter(item => item !== key);
+            history.unshift(key);
+            localStorage.setItem('kmt_history', JSON.stringify(history));
+        }
+
+        function showHistoryList() {
+            const resultsGrid = document.getElementById('dynamic-grid');
+            const stateHomeFeed = document.getElementById('main-feeds');
+            const stateDynamicFeed = document.getElementById('dynamic-feed');
+
+            document.getElementById('history-clear-btn-container').classList.remove('hidden');
+            document.getElementById('standard-clear-btn').classList.add('hidden');
+
+            stateHomeFeed.classList.add('hidden');
+            stateDynamicFeed.classList.remove('hidden');
+
+            const list = JSON.parse(localStorage.getItem('kmt_history')) || [];
+            document.getElementById('dynamic-feed-title').innerText = "History / ওয়াচ হিস্ট্রি";
+            
+            if (list.length) {
+                document.getElementById('yt-empty-state').classList.add('hidden');
+                resultsGrid.innerHTML = list.map(key => {
+                    const v = state.videos[key];
+                    if (v) return makeYtCard({ videoId: key, title: v.title, author: v.author, viewCount: v.views, publishedText: v.createdAt });
+                    return "";
+                }).join('');
+            } else {
+                resultsGrid.innerHTML = '';
+                document.getElementById('yt-empty-state').classList.remove('hidden');
+            }
+        }
+
+        function clearWatchHistory() {
+            if(confirm("আপনি কি ইতিহাস পরিষ্কার করতে চান?")) {
+                localStorage.setItem('kmt_history', JSON.stringify([]));
+                showHistoryList();
+                showToast("Watch history cleared / ওয়াচ হিস্ট্রি মুছে ফেলা হয়েছে।");
+            }
+        }
+
+        // --- BOOKMARKS ---
+        function toggleCardBookmark(event, key) {
+            event.stopPropagation();
+            let list = JSON.parse(localStorage.getItem('kmt_bookmarks')) || [];
+            if(list.includes(key)) {
+                list = list.filter(item => item !== key);
+                showToast("Bookmark / বুকমার্ক রিমুভ করা হয়েছে!");
+            } else {
+                list.push(key);
+                showToast("Watch Later / বুকমার্কে যুক্ত করা হয়েছে!");
+            }
+            localStorage.setItem('kmt_bookmarks', JSON.stringify(list));
+            renderUI();
+        }
+
+        function showWatchLaterList() {
+            const resultsGrid = document.getElementById('dynamic-grid');
+            const stateHomeFeed = document.getElementById('main-feeds');
+            const stateDynamicFeed = document.getElementById('dynamic-feed');
+
+            document.getElementById('history-clear-btn-container').classList.add('hidden');
+            document.getElementById('standard-clear-btn').classList.remove('hidden');
+
+            stateHomeFeed.classList.add('hidden');
+            stateDynamicFeed.classList.remove('hidden');
+
+            const list = JSON.parse(localStorage.getItem('kmt_bookmarks')) || [];
+            document.getElementById('dynamic-feed-title').innerText = "Bookmarks / বুকমার্ক তালিকা";
+            
+            if (list.length) {
+                document.getElementById('yt-empty-state').classList.add('hidden');
+                resultsGrid.innerHTML = list.map(key => {
+                    const v = state.videos[key];
+                    if (v) return makeYtCard({ videoId: key, title: v.title, author: v.author, viewCount: v.views, publishedText: v.createdAt });
+                    return "";
+                }).join('');
+            } else {
+                resultsGrid.innerHTML = '';
+                document.getElementById('yt-empty-state').classList.remove('hidden');
+            }
+        }
+
+        function handleBookmarkAction() {
+            let list = JSON.parse(localStorage.getItem('kmt_bookmarks')) || [];
+            if(list.includes(currentWatchKey)) {
+                list = list.filter(item => item !== currentWatchKey);
+                showToast("Watch Later / বুকমার্ক রিমুভ হয়েছে।");
+            } else {
+                list.push(currentWatchKey);
+                showToast("Added to Watch Later / বুকমার্ক করা হয়েছে।");
+            }
+            localStorage.setItem('kmt_bookmarks', JSON.stringify(list));
+            updateWatchMetadata();
+        }
+
+        // --- QR GENERATOR & THEME ---
+        function triggerQRGenerator() {
+            const modal = document.getElementById('qr-modal');
+            const qrImg = document.getElementById('qr-image-display');
+            qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.href)}`;
+            toggleQRModal();
+        }
+
+        function toggleQRModal() { document.getElementById('qr-modal').classList.toggle('hidden'); }
+
+        function toggleTheme() {
+            const body = document.body;
+            const icon = document.getElementById('theme-btn-icon');
+            if(body.classList.contains('light-mode')) {
+                body.classList.remove('light-mode');
+                icon.className = 'fa-solid fa-moon text-cyberCyan';
+                localStorage.setItem('kmt_theme', 'dark');
+            } else {
+                body.classList.add('light-mode');
+                icon.className = 'fa-solid fa-sun text-yellow-500';
+                localStorage.setItem('kmt_theme', 'light');
+            }
+        }
+
+        function toggleSidebar() {
+            const bar = document.getElementById('yt-sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            bar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+
+        function closeSidebarOnMobile() {
+            if (window.innerWidth < 768) {
+                document.getElementById('yt-sidebar').classList.add('-translate-x-full');
+                document.getElementById('sidebar-overlay').classList.add('hidden');
+            }
+        }
+
+        function navigateTo(hash) { window.location.hash = hash; }
+        
+        function handleRouting() {
+            const hash = window.location.hash || '#home';
+            document.getElementById('page-home').classList.add('hidden');
+            document.getElementById('page-watch').classList.add('hidden');
+
+            if (hash.startsWith('#watch/')) openWatchPage(hash.replace('#watch/', ''));
+            else document.getElementById('page-home').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        window.addEventListener('hashchange', handleRouting);
+        window.addEventListener('DOMContentLoaded', () => {
+            initDatabase();
+            const cachedTheme = localStorage.getItem('kmt_theme');
+            if(cachedTheme === 'light') {
+                document.body.classList.add('light-mode');
+                document.getElementById('theme-btn-icon').className = 'fa-solid fa-sun text-yellow-500';
+            }
+            handleRouting();
+            document.getElementById('yt-search-input').addEventListener('keydown', e => { if(e.key === 'Enter') triggerSearch(); });
+        });
+
+        function showToast(msg) {
+            const wrapper = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `bg-ytGray px-4 py-2.5 rounded-xl border border-ytBorder flex items-center gap-2 animate-fade-in max-w-xs`;
+            toast.innerHTML = `<i class="fa-solid fa-circle-check text-ytRed text-xs"></i><span class="text-[11px] text-ytText font-medium">${msg}</span>`;
+            wrapper.appendChild(toast);
+            setTimeout(() => { toast.remove(); }, 3000);
+        }
+    </script>
+</body>
+</html>
