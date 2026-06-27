@@ -118,7 +118,6 @@
     function App() {
       const [splash, setSplash] = useState(true);
       const [user, setUser] = useState(null);
-      const [locked, setLocked] = useState(true);
       const [pin, setPin] = useState('');
       const [setupPin, setSetupPin] = useState(false);
       const [newPin, setNewPin] = useState('');
@@ -127,16 +126,21 @@
       const [toast, setToast] = useState(null);
       
       const [transactions, setTransactions] = useState(() => {
-        const saved = localStorage.getItem('finai_txs');
+        const saved = localStorage.getItem('finai_txs_v3');
         return saved ? JSON.parse(saved) : [];
       });
 
       const [settings, setSettings] = useState(() => {
-        const saved = localStorage.getItem('finai_settings');
+        const saved = localStorage.getItem('finai_settings_v3'); // Changed key for a fresh start
         return saved ? JSON.parse(saved) : { darkMode: true, lang: 'bn', currency: '৳', sound: true, vibration: true, appLock: false, pinCode: '', animations: true };
       });
 
-      useEffect(() => { localStorage.setItem('finai_settings', JSON.stringify(settings)); }, [settings]);
+      const [locked, setLocked] = useState(() => {
+        const saved = localStorage.getItem('finai_settings_v3');
+        return saved ? JSON.parse(saved).appLock : false;
+      });
+
+      useEffect(() => { localStorage.setItem('finai_settings_v3', JSON.stringify(settings)); }, [settings]);
       useEffect(() => { setTimeout(() => setSplash(false), 2000); }, []);
       
       useEffect(() => {
@@ -152,7 +156,7 @@
             if (data.length > 0) {
                 const sorted = data.sort((a,b) => new Date(b.date) - new Date(a.date));
                 setTransactions(sorted);
-                localStorage.setItem('finai_txs', JSON.stringify(sorted));
+                localStorage.setItem('finai_txs_v3', JSON.stringify(sorted));
             }
           });
         return () => unsubscribe();
@@ -183,7 +187,7 @@
       const saveTransaction = (tx) => {
         const newTxs = [tx, ...transactions];
         setTransactions(newTxs);
-        localStorage.setItem('finai_txs', JSON.stringify(newTxs));
+        localStorage.setItem('finai_txs_v3', JSON.stringify(newTxs));
         if (user) db.collection('users').doc(user.uid).collection('transactions').doc(tx.id.toString()).set(tx).catch(() => {});
         showToast('Transaction Saved', 'success');
         navTo('dashboard');
