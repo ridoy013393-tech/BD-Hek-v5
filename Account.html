@@ -103,7 +103,7 @@
         totalBalance: 'Total Balance', income: 'Income', expense: 'Expense',
         aiInsights: 'AI Insights', highestExpense: 'Highest Expense', healthScore: 'Health Score',
         recentHistory: 'Recent History', addRecord: 'New Record', amount: 'Amount', category: 'Category',
-        save: 'Save Record', login: 'Login with Google', logout: 'Logout', language: 'Language',
+        save: 'Save Record', login: 'Login / Backup Data', logout: 'Logout', language: 'Language',
         darkMode: 'Dark Mode', currency: 'Currency', sound: 'Sound Effects', vibration: 'Vibration',
         appLock: 'App Lock (PIN)', resetData: 'Reset App Data',
         healthExcellent: 'Excellent', healthFair: 'Fair', healthPoor: 'Needs Attention'
@@ -113,7 +113,7 @@
         totalBalance: 'মোট ব্যালেন্স', income: 'আয়', expense: 'ব্যয়',
         aiInsights: 'এআই এনালাইসিস', highestExpense: 'সর্বোচ্চ ব্যয়', healthScore: 'হেলথ স্কোর',
         recentHistory: 'সাম্প্রতিক লেনদেন', addRecord: 'নতুন লেনদেন', amount: 'পরিমাণ', category: 'ক্যাটাগরি',
-        save: 'সেভ করুন', login: 'গুগল দিয়ে লগইন করুন', logout: 'লগআউট', language: 'ভাষা',
+        save: 'সেভ করুন', login: 'লগইন / ডাটা ব্যাকআপ', logout: 'লগআউট', language: 'ভাষা',
         darkMode: 'ডার্ক মোড', currency: 'মুদ্রা (Currency)', sound: 'সাউন্ড ইফেক্ট', vibration: 'ভাইব্রেশন',
         appLock: 'অ্যাপ লক (PIN)', resetData: 'সব ডাটা মুছুন',
         healthExcellent: 'চমৎকার', healthFair: 'মোটামুটি', healthPoor: 'সতর্ক হোন'
@@ -123,33 +123,40 @@
     function App() {
       const [splash, setSplash] = useState(true);
       const [user, setUser] = useState(null);
-      const [loading, setLoading] = useState(true);
       const [locked, setLocked] = useState(true);
       const [pin, setPin] = useState('');
-      const [transactions, setTransactions] = useState([]);
       const [currentRoute, setCurrentRoute] = useState('dashboard');
       const [sidebarOpen, setSidebarOpen] = useState(false);
       const [toast, setToast] = useState(null);
       
+      const [transactions, setTransactions] = useState(() => {
+        const saved = localStorage.getItem('finai_txs');
+        return saved ? JSON.parse(saved) : [];
+      });
+
       const [settings, setSettings] = useState(() => {
         const saved = localStorage.getItem('finai_settings');
-        return saved ? JSON.parse(saved) : { darkMode: true, lang: 'bn', currency: '৳', sound: true, vibration: true, appLock: true, animations: true };
+        return saved ? JSON.parse(saved) : { darkMode: true, lang: 'bn', currency: '৳', sound: true, vibration: true, appLock: false, animations: true };
       });
 
       useEffect(() => { localStorage.setItem('finai_settings', JSON.stringify(settings)); }, [settings]);
       useEffect(() => { setTimeout(() => setSplash(false), 2000); }, []);
       
       useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged((currentUser) => { setUser(currentUser); setLoading(false); });
+        const unsubscribe = auth.onAuthStateChanged((currentUser) => { setUser(currentUser); });
         return () => unsubscribe();
       }, []);
 
       useEffect(() => {
-        if (!user) { setTransactions([]); return; }
+        if (!user) return;
         const unsubscribe = db.collection('users').doc(user.uid).collection('transactions')
           .onSnapshot((snapshot) => {
-            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            setTransactions(data.sort((a,b) => new Date(b.date) - new Date(a.date)));
+            const data = snapshot.docs.map(doc => ({ id: Number(doc.id), ...doc.data() }));
+            if (data.length > 0) {
+                const sorted = data.sort((a,b) => new Date(b.date) - new Date(a.date));
+                setTransactions(sorted);
+                localStorage.setItem('finai_txs', JSON.stringify(sorted));
+            }
           });
         return () => unsubscribe();
       }, [user]);
@@ -167,26 +174,32 @@
 
       const navTo = (route) => { triggerFeedback('click', settings); setCurrentRoute(route); setSidebarOpen(false); };
 
+      const loginWithGoogle = () => {
+        auth.signInWithPopup(googleProvider).then((res) => {
+          transactions.forEach(tx => {
+             db.collection('users').doc(res.user.uid).collection('transactions').doc(tx.id.toString()).set(tx);
+          });
+          showToast('Logged in & Synced!', 'success');
+        }).catch(() => showToast('Login failed', 'error'));
+      };
+
+      const saveTransaction = (tx) => {
+        const newTxs = [tx, ...transactions];
+        setTransactions(newTxs);
+        localStorage.setItem('finai_txs', JSON.stringify(newTxs));
+        
+        if (user) {
+          db.collection('users').doc(user.uid).collection('transactions').doc(tx.id.toString()).set(tx).catch(() => console.error("Sync Error"));
+        }
+        showToast('Transaction Saved', 'success');
+        navTo('dashboard');
+      };
+
       // --- Screens ---
       if (splash) return (
         <div className={`fixed inset-0 flex flex-col items-center justify-center ${settings.darkMode ? 'bg-slate-950' : 'bg-indigo-600'} text-white z-50`}>
           <i className="fas fa-chart-line text-6xl animate-pulse mb-4 text-indigo-400"></i>
           <h1 className="text-3xl font-bold tracking-wider">FINAI PRO</h1>
-        </div>
-      );
-
-      if (loading) return <div className={`flex items-center justify-center min-h-screen ${themeClass}`}><i className="fas fa-spinner fa-spin text-4xl text-indigo-500"></i></div>;
-
-      if (!user) return (
-        <div className={`min-h-screen flex flex-col items-center justify-center ${themeClass} p-6`}>
-          <div className={`p-8 rounded-3xl ${glassClass} flex flex-col items-center text-center max-w-sm w-full`}>
-            <i className="fas fa-shield-halved text-6xl text-indigo-500 mb-6"></i>
-            <h1 className="text-2xl font-bold mb-2">FinAI Pro</h1>
-            <p className={`${textMuted} mb-8 text-sm`}>Sync your financial data securely.</p>
-            <button onClick={() => auth.signInWithPopup(googleProvider).catch(()=>alert("লগইন ব্যর্থ।"))} className="w-full flex items-center justify-center gap-3 bg-white text-slate-900 py-3 px-4 rounded-xl font-bold shadow-lg">
-              <i className="fab fa-google text-red-500 text-xl"></i> {lang.login}
-            </button>
-          </div>
         </div>
       );
 
@@ -229,10 +242,17 @@
           {sidebarOpen && <div className="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />}
           <div className={`fixed top-0 left-0 h-full w-72 z-50 ${glassClass} transform transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} overflow-y-auto`}>
             <div className="p-6 pt-12 flex justify-between items-center border-b border-white/10">
-              <div className="flex items-center gap-3">
-                <img src={user.photoURL} alt="User" className="w-10 h-10 rounded-full border-2 border-indigo-500" />
-                <div><h3 className="font-bold text-sm">{user.displayName}</h3><p className="text-xs opacity-70">{user.email}</p></div>
-              </div>
+              {user ? (
+                <div className="flex items-center gap-3">
+                  <img src={user.photoURL} alt="User" className="w-10 h-10 rounded-full border-2 border-indigo-500" />
+                  <div><h3 className="font-bold text-sm">{user.displayName}</h3><p className="text-xs opacity-70 truncate w-40">{user.email}</p></div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3" onClick={loginWithGoogle}>
+                  <div className="w-10 h-10 rounded-full border-2 border-slate-500 flex items-center justify-center bg-slate-800"><i className="fas fa-user"></i></div>
+                  <div><h3 className="font-bold text-sm">Guest User</h3><p className="text-xs text-indigo-400">Tap to Login</p></div>
+                </div>
+              )}
             </div>
             <div className="py-4 flex flex-col gap-1">
               {[{ id: 'dashboard', icon: 'fa-home' }, { id: 'transactions', icon: 'fa-list' }, { id: 'settings', icon: 'fa-gear' }, { id: 'about', icon: 'fa-circle-info' }].map(item => (
@@ -241,15 +261,19 @@
                 </button>
               ))}
               <div className="mt-8">
-                <button onClick={() => { setLocked(true); setSidebarOpen(false); }} className="flex items-center gap-4 px-6 py-3 text-amber-400 w-full text-left"><i className="fas fa-lock w-5"></i> <span className="font-medium">Lock App</span></button>
-                <button onClick={() => { auth.signOut(); setSidebarOpen(false); }} className="flex items-center gap-4 px-6 py-3 text-red-400 w-full text-left"><i className="fas fa-right-from-bracket w-5"></i> <span className="font-medium">{lang.logout}</span></button>
+                {settings.appLock && <button onClick={() => { setLocked(true); setSidebarOpen(false); }} className="flex items-center gap-4 px-6 py-3 text-amber-400 w-full text-left"><i className="fas fa-lock w-5"></i> <span className="font-medium">Lock App</span></button>}
+                {user ? (
+                  <button onClick={() => { auth.signOut(); setSidebarOpen(false); }} className="flex items-center gap-4 px-6 py-3 text-red-400 w-full text-left"><i className="fas fa-right-from-bracket w-5"></i> <span className="font-medium">{lang.logout}</span></button>
+                ) : (
+                  <button onClick={() => { loginWithGoogle(); setSidebarOpen(false); }} className="flex items-center gap-4 px-6 py-3 text-emerald-400 w-full text-left"><i className="fab fa-google w-5"></i> <span className="font-medium">{lang.login}</span></button>
+                )}
               </div>
             </div>
           </div>
 
           <main className="flex-1 overflow-y-auto p-4 pb-24 z-10 scroll-smooth">
             {currentRoute === 'dashboard' && <Dashboard lang={lang} transactions={transactions} settings={settings} glassClass={glassClass} textMuted={textMuted} />}
-            {currentRoute === 'settings' && <SettingsPage lang={lang} settings={settings} setSettings={setSettings} glassClass={glassClass} textMuted={textMuted} triggerFeedback={triggerFeedback} showToast={showToast} />}
+            {currentRoute === 'settings' && <SettingsPage lang={lang} settings={settings} setSettings={setSettings} glassClass={glassClass} textMuted={textMuted} triggerFeedback={triggerFeedback} showToast={showToast} user={user} loginWithGoogle={loginWithGoogle} />}
             {currentRoute === 'transactions' && <TransactionsPage lang={lang} transactions={transactions} settings={settings} glassClass={glassClass} textMuted={textMuted} />}
             {currentRoute === 'about' && <AboutPage glassClass={glassClass} textMuted={textMuted} />}
           </main>
@@ -264,9 +288,7 @@
             ))}
           </nav>
 
-          {currentRoute === 'add-transaction' && <AddTransactionModal lang={lang} onClose={() => navTo('dashboard')} onSave={(tx) => {
-            db.collection('users').doc(user.uid).collection('transactions').doc(tx.id.toString()).set(tx).then(() => { showToast('Transaction Saved', 'success'); navTo('dashboard'); }).catch(() => showToast('Error saving', 'error'));
-          }} settings={settings} glassClass={glassClass} textMuted={textMuted} triggerFeedback={triggerFeedback} />}
+          {currentRoute === 'add-transaction' && <AddTransactionModal lang={lang} onClose={() => navTo('dashboard')} onSave={saveTransaction} settings={settings} glassClass={glassClass} textMuted={textMuted} triggerFeedback={triggerFeedback} />}
 
           {toast && (
             <div className={`fixed top-24 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-full flex items-center gap-3 shadow-2xl transition-all duration-300 ${toast.type === 'error' ? 'bg-red-500' : toast.type === 'success' ? 'bg-emerald-500' : 'bg-slate-800'} text-white`}>
@@ -334,6 +356,7 @@
                   <p className={`font-bold ${tx.type === 'income' ? 'text-emerald-500' : 'text-rose-500'}`}>{tx.type === 'income' ? '+' : '-'}{settings.currency}{tx.amount}</p>
                 </div>
               ))}
+              {transactions.length === 0 && <p className="text-center opacity-50 py-4">No records yet.</p>}
             </div>
           </div>
         </div>
@@ -352,11 +375,12 @@
               <p className={`font-bold ${tx.type === 'income' ? 'text-emerald-500' : 'text-rose-500'}`}>{tx.type === 'income' ? '+' : '-'}{settings.currency}{tx.amount}</p>
             </div>
           ))}
+          {transactions.length === 0 && <p className="text-center opacity-50 mt-10">No records found.</p>}
         </div>
       );
     }
 
-    function SettingsPage({ lang, settings, setSettings, glassClass, textMuted, triggerFeedback, showToast }) {
+    function SettingsPage({ lang, settings, setSettings, glassClass, textMuted, triggerFeedback, showToast, user, loginWithGoogle }) {
       const toggle = (k) => { setSettings(s => { const ns = {...s, [k]: !s[k]}; triggerFeedback('click', ns); return ns; }); };
       const Row = ({ icon, label, val, action, comp }) => (
         <div className="flex items-center justify-between py-4 border-b border-white/5 last:border-0" onClick={action}>
@@ -370,6 +394,17 @@
       );
       return (
         <div className={`space-y-4 ${settings.animations ? 'animate-fade-in-up' : ''}`}>
+          
+          <div className={`p-4 rounded-2xl ${glassClass} border ${user ? 'border-emerald-500/30' : 'border-amber-500/30'}`} onClick={!user ? loginWithGoogle : undefined}>
+             <div className="flex items-center gap-4">
+                <i className={`fab fa-google text-2xl ${user ? 'text-emerald-500' : 'text-amber-500'}`}></i>
+                <div>
+                   <p className="font-bold">{user ? 'Cloud Sync Active' : lang.login}</p>
+                   <p className={`text-xs ${textMuted}`}>{user ? user.email : 'Login to backup data online'}</p>
+                </div>
+             </div>
+          </div>
+
           <div className={`p-4 rounded-2xl ${glassClass}`}>
             <h3 className="text-xs font-bold uppercase opacity-50 mb-2">Display</h3>
             <Row icon="fa-moon" label={lang.darkMode} val={settings.darkMode} action={() => toggle('darkMode')} />
@@ -384,7 +419,11 @@
           <div className={`p-4 rounded-2xl ${glassClass}`}>
             <h3 className="text-xs font-bold uppercase opacity-50 mb-2">Security</h3>
             <Row icon="fa-fingerprint" label={lang.appLock} val={settings.appLock} action={() => toggle('appLock')} />
-            <div className="flex items-center justify-between py-4 text-rose-500" onClick={() => { triggerFeedback('warning', settings); showToast('Feature in dev', 'error'); }}>
+            <div className="flex items-center justify-between py-4 text-rose-500" onClick={() => { 
+                triggerFeedback('warning', settings); 
+                localStorage.clear();
+                window.location.reload();
+            }}>
               <div className="flex items-center gap-3"><i className="fas fa-trash w-5"></i><span>{lang.resetData}</span></div>
             </div>
           </div>
@@ -421,8 +460,8 @@
             </div>
             <form onSubmit={(e) => { e.preventDefault(); if(amount) onSave({ id: Date.now(), type, amount: Number(amount), category, date: new Date().toISOString() }); }} className="space-y-6">
               <div className="flex p-1 bg-black/20 rounded-xl">
-                <button type="button" onClick={() => { triggerFeedback('click', settings); setType('expense'); }} className={`flex-1 py-2 rounded-lg font-medium transition-colors ${type === 'expense' ? 'bg-rose-500 text-white shadow-md' : 'opacity-50'}`}>{lang.expense}</button>
-                <button type="button" onClick={() => { triggerFeedback('click', settings); setType('income'); }} className={`flex-1 py-2 rounded-lg font-medium transition-colors ${type === 'income' ? 'bg-emerald-500 text-white shadow-md' : 'opacity-50'}`}>{lang.income}</button>
+                <button type="button" onClick={() => { triggerFeedback('click', settings); setType('expense'); setCategory(settings.lang === 'bn' ? 'খাবার' : 'Food'); }} className={`flex-1 py-2 rounded-lg font-medium transition-colors ${type === 'expense' ? 'bg-rose-500 text-white shadow-md' : 'opacity-50'}`}>{lang.expense}</button>
+                <button type="button" onClick={() => { triggerFeedback('click', settings); setType('income'); setCategory(settings.lang === 'bn' ? 'বেতন' : 'Salary'); }} className={`flex-1 py-2 rounded-lg font-medium transition-colors ${type === 'income' ? 'bg-emerald-500 text-white shadow-md' : 'opacity-50'}`}>{lang.income}</button>
               </div>
               <div>
                 <label className={`block text-xs font-bold uppercase mb-2 ${textMuted}`}>{lang.amount}</label>
