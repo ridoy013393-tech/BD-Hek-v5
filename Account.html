@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FinAI Pro Premium</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          animation: {
+            'fade-in-up': 'fadeInUp 0.4s ease-out forwards',
+            'slide-up': 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+            'fade-in': 'fadeIn 0.2s ease-out forwards',
+            'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          },
+          keyframes: {
+            fadeInUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+            slideUp: { '0%': { transform: 'translateY(100%)' }, '100%': { transform: 'translateY(0)' } },
+            fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
+    ::-webkit-scrollbar { display: none; }
+  </style>
+</head>
+<body class="bg-slate-950 text-white">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useMemo } = React;
+
+    // --- Firebase ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyDgbrf0Px_xYykZwLYgjYWD_AeKgV8CwKI",
+      authDomain: "emergency-services-bc51e.firebaseapp.com",
+      projectId: "emergency-services-bc51e",
+      storageBucket: "emergency-services-bc51e.firebasestorage.app",
+      messagingSenderId: "984254477080",
+      appId: "1:984254477080:web:5515ed51d48bd28015246d"
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const googleProvider = new firebase.auth.GoogleAuthProvider();
+
+    // --- Sound & Vibration ---
+    const triggerFeedback = (type, settings) => {
+      if (settings.vibration && navigator.vibrate) {
+        if (type === 'success') navigator.vibrate([100, 50, 100]);
+        else if (type === 'warning') navigator.vibrate([200]);
+        else navigator.vibrate([50]);
+      }
+      if (settings.sound) {
+        try {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          const osc = ctx.createOscillator();
+          const gainNode = ctx.createGain();
+          osc.connect(gainNode); gainNode.connect(ctx.destination);
+          
+          if (type === 'success') {
+            osc.frequency.setValueAtTime(400, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.1);
+            gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+            osc.start(); osc.stop(ctx.currentTime + 0.2);
+          } else if (type === 'warning') {
+            osc.type = 'square'; osc.frequency.setValueAtTime(200, ctx.currentTime);
+            osc.frequency.linearRampToValueAtTime(150, ctx.currentTime + 0.2);
+            gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+            osc.start(); osc.stop(ctx.currentTime + 0.3);
+          } else {
+            osc.type = 'sine'; osc.frequency.setValueAtTime(600, ctx.currentTime);
+            gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
+            osc.start(); osc.stop(ctx.currentTime + 0.05);
+          }
+        } catch (e) { console.log("Audio not supported"); }
+      }
+    };
+
+    // --- Translations ---
+    const t = {
+      en: {
+        dashboard: 'Dashboard', transactions: 'Transactions', settings: 'Settings', about: 'About App',
+        totalBalance: 'Total Balance', income: 'Income', expense: 'Expense',
+        aiInsights: 'AI Insights', highestExpense: 'Highest Expense', healthScore: 'Health Score',
+        recentHistory: 'Recent History', addRecord: 'New Record', amount: 'Amount', category: 'Category',
+        save: 'Save Record', login: 'Login with Google', logout: 'Logout', language: 'Language',
+        darkMode: 'Dark Mode', currency: 'Currency', sound: 'Sound Effects', vibration: 'Vibration',
+        appLock: 'App Lock (PIN)', resetData: 'Reset App Data',
+        healthExcellent: 'Excellent', healthFair: 'Fair', healthPoor: 'Needs Attention'
+      },
+      bn: {
+        dashboard: 'ড্যাশবোর্ড', transactions: 'লেনদেন', settings: 'সেটিংস', about: 'অ্যাপ সম্পর্কে',
+        totalBalance: 'মোট ব্যালেন্স', income: 'আয়', expense: 'ব্যয়',
+        aiInsights: 'এআই এনালাইসিস', highestExpense: 'সর্বোচ্চ ব্যয়', healthScore: 'হেলথ স্কোর',
+        recentHistory: 'সাম্প্রতিক লেনদেন', addRecord: 'নতুন লেনদেন', amount: 'পরিমাণ', category: 'ক্যাটাগরি',
+        save: 'সেভ করুন', login: 'গুগল দিয়ে লগইন করুন', logout: 'লগআউট', language: 'ভাষা',
+        darkMode: 'ডার্ক মোড', currency: 'মুদ্রা (Currency)', sound: 'সাউন্ড ইফেক্ট', vibration: 'ভাইব্রেশন',
+        appLock: 'অ্যাপ লক (PIN)', resetData: 'সব ডাটা মুছুন',
+        healthExcellent: 'চমৎকার', healthFair: 'মোটামুটি', healthPoor: 'সতর্ক হোন'
+      }
+    };
+
+    function App() {
+      const [splash, setSplash] = useState(true);
+      const [user, setUser] = useState(null);
+      const [loading, setLoading] = useState(true);
+      const [locked, setLocked] = useState(true);
+      const [pin, setPin] = useState('');
+      const [transactions, setTransactions] = useState([]);
+      const [currentRoute, setCurrentRoute] = useState('dashboard');
+      const [sidebarOpen, setSidebarOpen] = useState(false);
+      const [toast, setToast] = useState(null);
+      
+      const [settings, setSettings] = useState(() => {
+        const saved = localStorage.getItem('finai_settings');
+        return saved ? JSON.parse(saved) : { darkMode: true, lang: 'bn', currency: '৳', sound: true, vibration: true, appLock: true, animations: true };
+      });
+
+      useEffect(() => { localStorage.setItem('finai_settings', JSON.stringify(settings)); }, [settings]);
+      useEffect(() => { setTimeout(() => setSplash(false), 2000); }, []);
+      
+      useEffect(() => {
+        const unsubscribe = auth.onAuthStateChanged((currentUser) => { setUser(currentUser); setLoading(false); });
+        return () => unsubscribe();
+      }, []);
+
+      useEffect(() => {
+        if (!user) { setTransactions([]); return; }
+        const unsubscribe = db.collection('users').doc(user.uid).collection('transactions')
+          .onSnapshot((snapshot) => {
+            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setTransactions(data.sort((a,b) => new Date(b.date) - new Date(a.date)));
+          });
+        return () => unsubscribe();
+      }, [user]);
+
+      const lang = t[settings.lang];
+      const themeClass = settings.darkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900';
+      const glassClass = settings.darkMode ? 'bg-white/10 backdrop-blur-lg border border-white/10' : 'bg-white/70 backdrop-blur-lg border border-slate-200 shadow-xl';
+      const textMuted = settings.darkMode ? 'text-slate-400' : 'text-slate-500';
+
+      const showToast = (message, type = 'info') => {
+        triggerFeedback(type === 'error' ? 'warning' : type === 'success' ? 'success' : 'click', settings);
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 3000);
+      };
+
+      const navTo = (route) => { triggerFeedback('click', settings); setCurrentRoute(route); setSidebarOpen(false); };
+
+      // --- Screens ---
+      if (splash) return (
+        <div className={`fixed inset-0 flex flex-col items-center justify-center ${settings.darkMode ? 'bg-slate-950' : 'bg-indigo-600'} text-white z-50`}>
+          <i className="fas fa-chart-line text-6xl animate-pulse mb-4 text-indigo-400"></i>
+          <h1 className="text-3xl font-bold tracking-wider">FINAI PRO</h1>
+        </div>
+      );
+
+      if (loading) return <div className={`flex items-center justify-center min-h-screen ${themeClass}`}><i className="fas fa-spinner fa-spin text-4xl text-indigo-500"></i></div>;
+
+      if (!user) return (
+        <div className={`min-h-screen flex flex-col items-center justify-center ${themeClass} p-6`}>
+          <div className={`p-8 rounded-3xl ${glassClass} flex flex-col items-center text-center max-w-sm w-full`}>
+            <i className="fas fa-shield-halved text-6xl text-indigo-500 mb-6"></i>
+            <h1 className="text-2xl font-bold mb-2">FinAI Pro</h1>
+            <p className={`${textMuted} mb-8 text-sm`}>Sync your financial data securely.</p>
+            <button onClick={() => auth.signInWithPopup(googleProvider).catch(()=>alert("লগইন ব্যর্থ।"))} className="w-full flex items-center justify-center gap-3 bg-white text-slate-900 py-3 px-4 rounded-xl font-bold shadow-lg">
+              <i className="fab fa-google text-red-500 text-xl"></i> {lang.login}
+            </button>
+          </div>
+        </div>
+      );
+
+      if (settings.appLock && locked) return (
+        <div className={`fixed inset-0 flex flex-col items-center justify-center ${themeClass} z-40`}>
+          <i className="fas fa-lock text-5xl mb-6 text-indigo-500"></i>
+          <h2 className="text-2xl font-bold mb-8">Enter PIN</h2>
+          <div className="flex gap-4 mb-12">
+            {[1,2,3,4].map((_, i) => <div key={i} className={`w-4 h-4 rounded-full ${pin.length > i ? 'bg-indigo-500' : 'bg-slate-300/30'}`} />)}
+          </div>
+          <div className="grid grid-cols-3 gap-6 max-w-[280px]">
+            {[1,2,3,4,5,6,7,8,9,'C',0,'OK'].map(key => (
+              <button key={key} onClick={() => {
+                triggerFeedback('click', settings);
+                if (key === 'C') setPin('');
+                else if (key === 'OK') { if (pin === '1234') { triggerFeedback('success', settings); setLocked(false); } else { showToast('Wrong PIN! Hint: 1234', 'error'); setPin(''); } }
+                else if (pin.length < 4) setPin(p => p + key);
+              }} className={`p-6 rounded-full text-xl font-bold ${glassClass} active:scale-95 flex items-center justify-center`}>{key}</button>
+            ))}
+          </div>
+        </div>
+      );
+
+      // --- Main Layout ---
+      return (
+        <div className={`min-h-screen w-full relative overflow-hidden flex flex-col ${themeClass}`}>
+          {settings.darkMode && (
+            <React.Fragment>
+              <div className="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-600/20 blur-[100px] pointer-events-none" />
+              <div className="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-purple-600/20 blur-[100px] pointer-events-none" />
+            </React.Fragment>
+          )}
+
+          <header className={`pt-8 pb-4 px-4 flex items-center justify-between z-20 ${glassClass} rounded-b-3xl sticky top-0`}>
+            <button onClick={() => { triggerFeedback('click', settings); setSidebarOpen(true); }} className="p-2"><i className="fas fa-bars text-xl"></i></button>
+            <h1 className="text-lg font-bold">{lang[currentRoute] || 'FinAI Pro'}</h1>
+            <button onClick={() => showToast('No notifications')} className="p-2 relative"><i className="fas fa-bell text-xl"></i></button>
+          </header>
+
+          {sidebarOpen && <div className="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />}
+          <div className={`fixed top-0 left-0 h-full w-72 z-50 ${glassClass} transform transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} overflow-y-auto`}>
+            <div className="p-6 pt-12 flex justify-between items-center border-b border-white/10">
+              <div className="flex items-center gap-3">
+                <img src={user.photoURL} alt="User" className="w-10 h-10 rounded-full border-2 border-indigo-500" />
+                <div><h3 className="font-bold text-sm">{user.displayName}</h3><p className="text-xs opacity-70">{user.email}</p></div>
+              </div>
+            </div>
+            <div className="py-4 flex flex-col gap-1">
+              {[{ id: 'dashboard', icon: 'fa-home' }, { id: 'transactions', icon: 'fa-list' }, { id: 'settings', icon: 'fa-gear' }, { id: 'about', icon: 'fa-circle-info' }].map(item => (
+                <button key={item.id} onClick={() => navTo(item.id)} className={`flex items-center gap-4 px-6 py-3 w-full text-left transition-colors ${currentRoute === item.id ? 'bg-indigo-500/20 text-indigo-400' : 'hover:bg-white/5 opacity-80'}`}>
+                  <i className={`fas ${item.icon} w-5`}></i> <span className="font-medium">{lang[item.id]}</span>
+                </button>
+              ))}
+              <div className="mt-8">
+                <button onClick={() => { setLocked(true); setSidebarOpen(false); }} className="flex items-center gap-4 px-6 py-3 text-amber-400 w-full text-left"><i className="fas fa-lock w-5"></i> <span className="font-medium">Lock App</span></button>
+                <button onClick={() => { auth.signOut(); setSidebarOpen(false); }} className="flex items-center gap-4 px-6 py-3 text-red-400 w-full text-left"><i className="fas fa-right-from-bracket w-5"></i> <span className="font-medium">{lang.logout}</span></button>
+              </div>
+            </div>
+          </div>
+
+          <main className="flex-1 overflow-y-auto p-4 pb-24 z-10 scroll-smooth">
+            {currentRoute === 'dashboard' && <Dashboard lang={lang} transactions={transactions} settings={settings} glassClass={glassClass} textMuted={textMuted} />}
+            {currentRoute === 'settings' && <SettingsPage lang={lang} settings={settings} setSettings={setSettings} glassClass={glassClass} textMuted={textMuted} triggerFeedback={triggerFeedback} showToast={showToast} />}
+            {currentRoute === 'transactions' && <TransactionsPage lang={lang} transactions={transactions} settings={settings} glassClass={glassClass} textMuted={textMuted} />}
+            {currentRoute === 'about' && <AboutPage glassClass={glassClass} textMuted={textMuted} />}
+          </main>
+
+          <button onClick={() => navTo('add-transaction')} className={`fixed bottom-24 right-6 w-14 h-14 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center shadow-[0_0_20px_rgba(99,102,241,0.4)] z-30 text-white ${settings.animations ? 'active:scale-95 transition-transform' : ''}`}>
+            <i className="fas fa-plus text-xl"></i>
+          </button>
+
+          <nav className={`fixed bottom-0 w-full pb-6 pt-4 px-6 z-20 flex justify-between items-center ${glassClass} rounded-t-3xl`}>
+            {[{ id: 'dashboard', icon: 'fa-home' }, { id: 'transactions', icon: 'fa-list' }, { id: 'settings', icon: 'fa-gear' }].map(item => (
+              <button key={item.id} onClick={() => navTo(item.id)} className={`flex flex-col items-center transition-all ${currentRoute === item.id ? 'text-indigo-400 scale-110' : 'opacity-50'}`}><i className={`fas ${item.icon} text-2xl`}></i></button>
+            ))}
+          </nav>
+
+          {currentRoute === 'add-transaction' && <AddTransactionModal lang={lang} onClose={() => navTo('dashboard')} onSave={(tx) => {
+            db.collection('users').doc(user.uid).collection('transactions').doc(tx.id.toString()).set(tx).then(() => { showToast('Transaction Saved', 'success'); navTo('dashboard'); }).catch(() => showToast('Error saving', 'error'));
+          }} settings={settings} glassClass={glassClass} textMuted={textMuted} triggerFeedback={triggerFeedback} />}
+
+          {toast && (
+            <div className={`fixed top-24 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-full flex items-center gap-3 shadow-2xl transition-all duration-300 ${toast.type === 'error' ? 'bg-red-500' : toast.type === 'success' ? 'bg-emerald-500' : 'bg-slate-800'} text-white`}>
+              <i className={`fas ${toast.type === 'error' ? 'fa-triangle-exclamation' : 'fa-check-circle'}`}></i> <span className="font-medium text-sm">{toast.message}</span>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // --- Sub Components ---
+    function Dashboard({ lang, transactions, settings, glassClass, textMuted }) {
+      const stats = useMemo(() => {
+        let income = 0; let expense = 0; const catMap = {};
+        transactions.forEach(t => { if (t.type === 'income') income += Number(t.amount); else { expense += Number(t.amount); catMap[t.category] = (catMap[t.category] || 0) + Number(t.amount); } });
+        const highestCat = Object.entries(catMap).sort((a,b) => b[1] - a[1])[0] || ['-', 0];
+        const health = income === 0 ? 0 : Math.max(0, Math.round(((income - expense) / income) * 100));
+        return { income, expense, balance: income - expense, highestCat, health };
+      }, [transactions]);
+
+      return (
+        <div className={`space-y-6 ${settings.animations ? 'animate-fade-in-up' : ''}`}>
+          <div className={`p-6 rounded-3xl ${glassClass} relative overflow-hidden`}>
+            <p className={`text-sm font-medium ${textMuted} mb-1`}>{lang.totalBalance}</p>
+            <h2 className="text-4xl font-bold mb-6">{settings.currency} {stats.balance.toLocaleString()}</h2>
+            <div className="flex justify-between items-center gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center"><i className="fas fa-arrow-trend-up"></i></div>
+                <div><p className={`text-xs ${textMuted}`}>{lang.income}</p><p className="font-semibold text-emerald-500">{settings.currency}{stats.income.toLocaleString()}</p></div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-rose-500/20 text-rose-500 flex items-center justify-center"><i className="fas fa-arrow-trend-down"></i></div>
+                <div><p className={`text-xs ${textMuted}`}>{lang.expense}</p><p className="font-semibold text-rose-500">{settings.currency}{stats.expense.toLocaleString()}</p></div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <h3 className="text-sm font-bold uppercase mb-3 opacity-70 flex items-center gap-2"><i className="fas fa-robot text-indigo-400"></i> {lang.aiInsights}</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div className={`p-4 rounded-2xl ${glassClass}`}>
+                <i className="fas fa-triangle-exclamation text-amber-500 mb-2 text-xl"></i>
+                <p className={`text-xs ${textMuted}`}>{lang.highestExpense}</p>
+                <p className="font-bold">{stats.highestCat[0]}</p>
+                <p className="text-xs text-amber-500 mt-1">{settings.currency}{stats.highestCat[1].toLocaleString()}</p>
+              </div>
+              <div className={`p-4 rounded-2xl ${glassClass}`}>
+                <i className={`fas fa-shield-halved text-xl mb-2 ${stats.health > 50 ? "text-emerald-500" : "text-rose-500"}`}></i>
+                <p className={`text-xs ${textMuted}`}>{lang.healthScore}</p>
+                <div className="flex items-end gap-1"><p className="font-bold text-3xl">{stats.health}</p><span className="text-sm pb-1 opacity-50">/100</span></div>
+                <p className={`text-[10px] mt-1 ${stats.health > 70 ? 'text-emerald-500' : 'text-rose-500'}`}>{stats.health > 70 ? lang.healthExcellent : stats.health > 40 ? lang.healthFair : lang.healthPoor}</p>
+              </div>
+            </div>
+          </div>
+          <div>
+            <h3 className="text-sm font-bold uppercase mb-3 opacity-70">{lang.recentHistory}</h3>
+            <div className="space-y-3">
+              {transactions.slice(0, 5).map(tx => (
+                <div key={tx.id} className={`p-4 rounded-2xl ${glassClass} flex justify-between items-center`}>
+                  <div className="flex items-center gap-4">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${tx.type === 'income' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
+                      <i className={`fas ${tx.type === 'income' ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'}`}></i>
+                    </div>
+                    <div><p className="font-bold text-sm">{tx.category}</p><p className={`text-xs ${textMuted}`}>{new Date(tx.date).toLocaleDateString()}</p></div>
+                  </div>
+                  <p className={`font-bold ${tx.type === 'income' ? 'text-emerald-500' : 'text-rose-500'}`}>{tx.type === 'income' ? '+' : '-'}{settings.currency}{tx.amount}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function TransactionsPage({ lang, transactions, settings, glassClass, textMuted }) {
+      return (
+        <div className={`space-y-3 pb-20 ${settings.animations ? 'animate-fade-in-up' : ''}`}>
+          {transactions.map(tx => (
+            <div key={tx.id} className={`p-4 rounded-2xl ${glassClass} flex justify-between items-center`}>
+              <div className="flex items-center gap-4">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${tx.type === 'income' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}><i className="fas fa-dollar-sign"></i></div>
+                <div><p className="font-bold text-sm">{tx.category}</p><p className={`text-[10px] ${textMuted}`}>{new Date(tx.date).toLocaleDateString()}</p></div>
+              </div>
+              <p className={`font-bold ${tx.type === 'income' ? 'text-emerald-500' : 'text-rose-500'}`}>{tx.type === 'income' ? '+' : '-'}{settings.currency}{tx.amount}</p>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    function SettingsPage({ lang, settings, setSettings, glassClass, textMuted, triggerFeedback, showToast }) {
+      const toggle = (k) => { setSettings(s => { const ns = {...s, [k]: !s[k]}; triggerFeedback('click', ns); return ns; }); };
+      const Row = ({ icon, label, val, action, comp }) => (
+        <div className="flex items-center justify-between py-4 border-b border-white/5 last:border-0" onClick={action}>
+          <div className="flex items-center gap-3"><i className={`fas ${icon} w-5 ${textMuted}`}></i><span>{label}</span></div>
+          {comp ? comp : (
+            <div className={`w-12 h-6 rounded-full p-1 transition-colors ${val ? 'bg-indigo-500' : 'bg-slate-600'}`}>
+              <div className={`w-4 h-4 rounded-full bg-white transition-transform ${val ? 'translate-x-6' : 'translate-x-0'}`} />
+            </div>
+          )}
+        </div>
+      );
+      return (
+        <div className={`space-y-4 ${settings.animations ? 'animate-fade-in-up' : ''}`}>
+          <div className={`p-4 rounded-2xl ${glassClass}`}>
+            <h3 className="text-xs font-bold uppercase opacity-50 mb-2">Display</h3>
+            <Row icon="fa-moon" label={lang.darkMode} val={settings.darkMode} action={() => toggle('darkMode')} />
+            <Row icon="fa-globe" label={lang.language} comp={<span className="font-bold text-indigo-400">{settings.lang.toUpperCase()}</span>} action={() => { toggle('langFake'); setSettings(s => ({...s, lang: s.lang==='bn'?'en':'bn'})); }} />
+            <Row icon="fa-dollar-sign" label={lang.currency} comp={<span className="font-bold text-indigo-400">{settings.currency}</span>} action={() => { toggle('curFake'); setSettings(s => ({...s, currency: s.currency==='৳'?'$':'৳'})); }} />
+          </div>
+          <div className={`p-4 rounded-2xl ${glassClass}`}>
+            <h3 className="text-xs font-bold uppercase opacity-50 mb-2">Smart Features</h3>
+            <Row icon="fa-volume-high" label={lang.sound} val={settings.sound} action={() => toggle('sound')} />
+            <Row icon="fa-mobile-screen" label={lang.vibration} val={settings.vibration} action={() => toggle('vibration')} />
+          </div>
+          <div className={`p-4 rounded-2xl ${glassClass}`}>
+            <h3 className="text-xs font-bold uppercase opacity-50 mb-2">Security</h3>
+            <Row icon="fa-fingerprint" label={lang.appLock} val={settings.appLock} action={() => toggle('appLock')} />
+            <div className="flex items-center justify-between py-4 text-rose-500" onClick={() => { triggerFeedback('warning', settings); showToast('Feature in dev', 'error'); }}>
+              <div className="flex items-center gap-3"><i className="fas fa-trash w-5"></i><span>{lang.resetData}</span></div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function AboutPage({ glassClass, textMuted }) {
+      return (
+        <div className={`flex flex-col items-center text-center p-6 space-y-6 ${glassClass} rounded-3xl mt-4 animate-fade-in-up`}>
+          <div className="w-24 h-24 rounded-3xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center shadow-xl"><i className="fas fa-chart-line text-4xl text-white"></i></div>
+          <div><h2 className="text-2xl font-bold">FinAI PRO</h2><p className={`text-sm ${textMuted} mt-1`}>Version 2.0.1 (Build 402)</p></div>
+          <p className="text-sm opacity-80">Premium AI-powered financial tracking. Designed with privacy and beautiful aesthetics.</p>
+          <div className="w-full text-left space-y-3 text-sm mt-4 border-t border-white/10 pt-4">
+            <div className="flex justify-between"><span className={textMuted}>Developer</span><span className="font-medium">AFR Technology</span></div>
+            <div className="flex justify-between"><span className={textMuted}>License</span><span className="font-medium">Pro Lifetime</span></div>
+          </div>
+        </div>
+      );
+    }
+
+    function AddTransactionModal({ lang, onClose, onSave, settings, glassClass, textMuted, triggerFeedback }) {
+      const [type, setType] = useState('expense');
+      const [amount, setAmount] = useState('');
+      const [category, setCategory] = useState(settings.lang === 'en' ? 'Food' : 'খাবার');
+      const categories = settings.lang === 'bn' ? (type === 'expense' ? ['খাবার', 'যাতায়াত', 'শপিং', 'বিল', 'স্বাস্থ্য', 'অন্যান্য'] : ['বেতন', 'ফ্রিল্যান্স', 'বিনিয়োগ', 'উপহার', 'অন্যান্য']) : (type === 'expense' ? ['Food', 'Transport', 'Shopping', 'Bills', 'Health', 'Other'] : ['Salary', 'Freelance', 'Invest', 'Gift', 'Other']);
+
+      return (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className={`w-full sm:max-w-md ${glassClass} ${settings.darkMode ? 'bg-slate-900/95' : 'bg-white/95'} rounded-t-3xl sm:rounded-3xl p-6 animate-slide-up`}>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold">{lang.addRecord}</h2>
+              <button onClick={() => { triggerFeedback('click', settings); onClose(); }} className="p-2 bg-white/10 rounded-full"><i className="fas fa-times"></i></button>
+            </div>
+            <form onSubmit={(e) => { e.preventDefault(); if(amount) onSave({ id: Date.now(), type, amount: Number(amount), category, date: new Date().toISOString() }); }} className="space-y-6">
+              <div className="flex p-1 bg-black/20 rounded-xl">
+                <button type="button" onClick={() => { triggerFeedback('click', settings); setType('expense'); }} className={`flex-1 py-2 rounded-lg font-medium transition-colors ${type === 'expense' ? 'bg-rose-500 text-white shadow-md' : 'opacity-50'}`}>{lang.expense}</button>
+                <button type="button" onClick={() => { triggerFeedback('click', settings); setType('income'); }} className={`flex-1 py-2 rounded-lg font-medium transition-colors ${type === 'income' ? 'bg-emerald-500 text-white shadow-md' : 'opacity-50'}`}>{lang.income}</button>
+              </div>
+              <div>
+                <label className={`block text-xs font-bold uppercase mb-2 ${textMuted}`}>{lang.amount}</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-2xl font-light opacity-50">{settings.currency}</span>
+                  <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} className={`w-full bg-black/10 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-3xl font-bold focus:outline-none focus:ring-2 ${type === 'expense' ? 'focus:ring-rose-500' : 'focus:ring-emerald-500'} bg-transparent`} placeholder="0.00" autoFocus />
+                </div>
+              </div>
+              <div>
+                <label className={`block text-xs font-bold uppercase mb-2 ${textMuted}`}>{lang.category}</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {categories.map(c => (
+                    <button key={c} type="button" onClick={() => { triggerFeedback('click', settings); setCategory(c); }} className={`py-2 px-2 text-xs font-medium rounded-xl border transition-all ${category === c ? (type === 'expense' ? 'bg-rose-500/20 border-rose-500 text-rose-400' : 'bg-emerald-500/20 border-emerald-500 text-emerald-400') : 'border-white/10 opacity-60 bg-white/5'}`}>{c}</button>
+                  ))}
+                </div>
+              </div>
+              <button type="submit" className={`w-full py-4 rounded-xl font-bold text-lg text-white shadow-lg active:scale-95 transition-transform ${type === 'expense' ? 'bg-gradient-to-r from-rose-500 to-pink-600' : 'bg-gradient-to-r from-emerald-500 to-teal-500'}`}>{lang.save}</button>
+            </form>
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
