@@ -155,9 +155,35 @@
       const lang = t[settings.lang];
       const showToast = (message, type = 'info') => {
         triggerFeedback(type === 'error' ? 'warning' : 'success', settings);
-        setToast({ message, type }); setTimeout(() => setToast(null), 3000);
+        setToast({ message, type }); setTimeout(() => setToast(null), 4000);
       };
       const navTo = (route) => { triggerFeedback('click', settings); setCurrentRoute(route); setSidebarOpen(false); };
+
+      // জিমেইল লগইন হ্যান্ডেলার (এরর হ্যান্ডেলিং সহ)
+      const handleGoogleLogin = async () => {
+        triggerFeedback('click', settings);
+        try {
+          await auth.signInWithPopup(googleProvider);
+          showToast(settings.lang === 'bn' ? 'সফলভাবে লগইন করা হয়েছে!' : 'Logged in successfully!', 'success');
+        } catch (error) {
+          console.error("Login Error: ", error);
+          let errorMsg = error.message;
+          if (window.location.protocol === 'file:') {
+            errorMsg = settings.lang === 'bn' 
+              ? "লোকাল ফাইল (file://) থেকে গুগল লগইন সরাসরি কাজ করবে না। এটি চালাতে VS Code-এর 'Live Server' অথবা ব্রাউজার লোকাল হোস্ট ব্যবহার করুন।" 
+              : "Google Login doesn't work on local files (file://). Please run using VS Code 'Live Server' or web hosting.";
+          } else if (error.code === 'auth/operation-not-allowed') {
+            errorMsg = settings.lang === 'bn'
+              ? "আপনার Firebase কনসোলে Google Auth মেথডটি চালু (Enable) করা নেই।"
+              : "Google Sign-In is not enabled in your Firebase Console.";
+          } else if (error.code === 'auth/popup-blocked') {
+            errorMsg = settings.lang === 'bn'
+              ? "ব্রাউজারের পপ-আপ ব্লকার উইন্ডোটি আটকেছে। ব্রাউজারের পপ-আপ পারমিশন দিন।"
+              : "Popup blocked by browser. Please allow popups for this site.";
+          }
+          showToast(errorMsg, 'error');
+        }
+      };
 
       const themeClass = settings.darkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900';
       const glassClass = settings.darkMode ? 'bg-white/10 backdrop-blur-lg border border-white/10' : 'bg-white/70 backdrop-blur-lg border border-slate-200 shadow-xl';
@@ -233,7 +259,7 @@
                 <div><h3 className="font-bold text-sm truncate w-40">{user.displayName}</h3><p className="text-xs opacity-70">Pro Member</p></div></>
               ) : (
                 <><div className="w-12 h-12 rounded-full border-2 border-slate-500 flex items-center justify-center bg-slate-800"><i className="fas fa-user"></i></div>
-                <div onClick={() => auth.signInWithPopup(googleProvider)}><h3 className="font-bold text-sm">{lang.guest}</h3><p className={`text-xs ${primaryColorClass}`}>{lang.loginTip}</p></div></>
+                <div onClick={handleGoogleLogin} className="cursor-pointer"><h3 className="font-bold text-sm">{lang.guest}</h3><p className={`text-xs ${primaryColorClass}`}>{lang.loginTip}</p></div></>
               )}
             </div>
             <div className="py-2 flex flex-col h-full">
@@ -256,7 +282,7 @@
             {currentRoute === 'savings' && <SavingsPage lang={lang} extra={extraData} setExtra={setExtraData} settings={settings} glassClass={glassClass} textMuted={textMuted} pc={primaryColorClass} pbg={primaryBgClass} tf={triggerFeedback}/>}
             {currentRoute === 'calendar' && <CalendarPage lang={lang} transactions={transactions} settings={settings} glassClass={glassClass} textMuted={textMuted} pc={primaryColorClass} pbg={primaryBgClass}/>}
             {currentRoute === 'calculator' && <CalculatorPage lang={lang} settings={settings} glassClass={glassClass} textMuted={textMuted} tf={triggerFeedback}/>}
-            {currentRoute === 'settings' && <SettingsPage lang={lang} settings={settings} setSettings={setSettings} glassClass={glassClass} textMuted={textMuted} triggerFeedback={triggerFeedback} showToast={showToast} user={user} setSetupPin={setSetupPin} loginWithGoogle={()=>auth.signInWithPopup(googleProvider)}/>}
+            {currentRoute === 'settings' && <SettingsPage lang={lang} settings={settings} setSettings={setSettings} glassClass={glassClass} textMuted={textMuted} triggerFeedback={triggerFeedback} showToast={showToast} user={user} setSetupPin={setSetupPin} loginWithGoogle={handleGoogleLogin}/>}
             {currentRoute === 'about' && <AboutPage lang={lang} glassClass={glassClass} textMuted={textMuted} />}
             {currentRoute === 'transactions' && <TransactionsPage lang={lang} transactions={transactions} settings={settings} glassClass={glassClass} textMuted={textMuted} />}
           </main>
@@ -621,7 +647,7 @@
 
                     {/* Collapsible Child Transactions */}
                     {isExpanded && (
-                      <div className="bg-black/10 border-t border-white/5 divide-y divide-white/5 px-4 py-2">
+                      <div className="bg-black/10 border-t border-white/5 divide-y divide-white/5 px-4 py-2 animate-fade-in">
                         {group.items.map(item => (
                           <div key={item.id} className="flex justify-between items-center py-2 text-xs">
                             <span className={`${textMuted}`}>
@@ -686,7 +712,7 @@
 
       return (
         <div className={`space-y-4 pb-20 ${settings.animations ? 'animate-fade-in-up' : ''}`}>
-          <div className={`p-4 rounded-2xl ${glassClass} border ${user ? 'border-emerald-500/30' : 'border-amber-500/30'}`} onClick={!user ? loginWithGoogle : undefined}>
+          <div className={`p-4 rounded-2xl ${glassClass} border ${user ? 'border-emerald-500/30' : 'border-amber-500/30'} cursor-pointer`} onClick={!user ? loginWithGoogle : undefined}>
              <div className="flex items-center gap-4">
                 <i className={`fab fa-google text-2xl ${user ? 'text-emerald-500' : 'text-amber-500'}`}></i>
                 <div>
@@ -715,7 +741,7 @@
           <div className={`p-4 rounded-2xl ${glassClass}`}>
             <Row icon="fa-fingerprint" label={lang.appLock} val={settings.appLock} action={() => { if(settings.appLock){toggle('appLock');setSettings(s=>({...s,pinCode:''}))} else setSetupPin(true); }} />
             <Row icon="fa-file-export" label={lang.export} action={exportData} comp={<i className="fas fa-chevron-right text-xs opacity-50"></i>}/>
-            <div className="flex items-center justify-between py-4 text-rose-500" onClick={() => { localStorage.clear(); window.location.reload(); }}>
+            <div className="flex items-center justify-between py-4 text-rose-500 cursor-pointer" onClick={() => { localStorage.clear(); window.location.reload(); }}>
               <div className="flex items-center gap-3"><i className="fas fa-trash w-5"></i><span>{lang.reset}</span></div>
             </div>
           </div>
