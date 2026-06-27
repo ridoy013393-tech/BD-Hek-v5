@@ -46,7 +46,6 @@
   <script type="text/babel">
     const { useState, useEffect, useMemo } = React;
 
-    // --- Firebase ---
     const firebaseConfig = {
       apiKey: "AIzaSyDgbrf0Px_xYykZwLYgjYWD_AeKgV8CwKI",
       authDomain: "emergency-services-bc51e.firebaseapp.com",
@@ -60,7 +59,6 @@
     const db = firebase.firestore();
     const googleProvider = new firebase.auth.GoogleAuthProvider();
 
-    // --- Sound & Vibration ---
     const triggerFeedback = (type, settings) => {
       if (settings.vibration && navigator.vibrate) {
         if (type === 'success') navigator.vibrate([100, 50, 100]);
@@ -92,11 +90,10 @@
             gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
             osc.start(); osc.stop(ctx.currentTime + 0.05);
           }
-        } catch (e) { console.log("Audio not supported"); }
+        } catch (e) {}
       }
     };
 
-    // --- Translations ---
     const t = {
       en: {
         dashboard: 'Dashboard', transactions: 'Transactions', settings: 'Settings', about: 'About App',
@@ -105,8 +102,7 @@
         recentHistory: 'Recent History', addRecord: 'New Record', amount: 'Amount', category: 'Category',
         save: 'Save Record', login: 'Login / Backup Data', logout: 'Logout', language: 'Language',
         darkMode: 'Dark Mode', currency: 'Currency', sound: 'Sound Effects', vibration: 'Vibration',
-        appLock: 'App Lock (PIN)', resetData: 'Reset App Data',
-        healthExcellent: 'Excellent', healthFair: 'Fair', healthPoor: 'Needs Attention'
+        appLock: 'App Lock (PIN)', resetData: 'Reset App Data', setPin: 'Set New PIN', enterPin: 'Enter PIN'
       },
       bn: {
         dashboard: 'ড্যাশবোর্ড', transactions: 'লেনদেন', settings: 'সেটিংস', about: 'অ্যাপ সম্পর্কে',
@@ -114,9 +110,8 @@
         aiInsights: 'এআই এনালাইসিস', highestExpense: 'সর্বোচ্চ ব্যয়', healthScore: 'হেলথ স্কোর',
         recentHistory: 'সাম্প্রতিক লেনদেন', addRecord: 'নতুন লেনদেন', amount: 'পরিমাণ', category: 'ক্যাটাগরি',
         save: 'সেভ করুন', login: 'লগইন / ডাটা ব্যাকআপ', logout: 'লগআউট', language: 'ভাষা',
-        darkMode: 'ডার্ক মোড', currency: 'মুদ্রা (Currency)', sound: 'সাউন্ড ইফেক্ট', vibration: 'ভাইব্রেশন',
-        appLock: 'অ্যাপ লক (PIN)', resetData: 'সব ডাটা মুছুন',
-        healthExcellent: 'চমৎকার', healthFair: 'মোটামুটি', healthPoor: 'সতর্ক হোন'
+        darkMode: 'ডার্ক মোড', currency: 'মুদ্রা', sound: 'সাউন্ড ইফেক্ট', vibration: 'ভাইব্রেশন',
+        appLock: 'অ্যাপ লক (PIN)', resetData: 'সব ডাটা মুছুন', setPin: 'নতুন পিন সেট করুন', enterPin: 'পিন দিন'
       }
     };
 
@@ -125,6 +120,8 @@
       const [user, setUser] = useState(null);
       const [locked, setLocked] = useState(true);
       const [pin, setPin] = useState('');
+      const [setupPin, setSetupPin] = useState(false);
+      const [newPin, setNewPin] = useState('');
       const [currentRoute, setCurrentRoute] = useState('dashboard');
       const [sidebarOpen, setSidebarOpen] = useState(false);
       const [toast, setToast] = useState(null);
@@ -136,7 +133,7 @@
 
       const [settings, setSettings] = useState(() => {
         const saved = localStorage.getItem('finai_settings');
-        return saved ? JSON.parse(saved) : { darkMode: true, lang: 'bn', currency: '৳', sound: true, vibration: true, appLock: false, animations: true };
+        return saved ? JSON.parse(saved) : { darkMode: true, lang: 'bn', currency: '৳', sound: true, vibration: true, appLock: false, pinCode: '', animations: true };
       });
 
       useEffect(() => { localStorage.setItem('finai_settings', JSON.stringify(settings)); }, [settings]);
@@ -187,10 +184,7 @@
         const newTxs = [tx, ...transactions];
         setTransactions(newTxs);
         localStorage.setItem('finai_txs', JSON.stringify(newTxs));
-        
-        if (user) {
-          db.collection('users').doc(user.uid).collection('transactions').doc(tx.id.toString()).set(tx).catch(() => console.error("Sync Error"));
-        }
+        if (user) db.collection('users').doc(user.uid).collection('transactions').doc(tx.id.toString()).set(tx).catch(() => {});
         showToast('Transaction Saved', 'success');
         navTo('dashboard');
       };
@@ -203,10 +197,40 @@
         </div>
       );
 
+      // PIN Setup Screen
+      if (setupPin) return (
+        <div className={`fixed inset-0 flex flex-col items-center justify-center ${themeClass} z-50`}>
+          <button onClick={() => setSetupPin(false)} className="absolute top-8 right-8 p-2"><i className="fas fa-times text-2xl"></i></button>
+          <i className="fas fa-shield-halved text-5xl mb-6 text-emerald-500"></i>
+          <h2 className="text-2xl font-bold mb-8">{lang.setPin}</h2>
+          <div className="flex gap-4 mb-12">
+            {[1,2,3,4].map((_, i) => <div key={i} className={`w-4 h-4 rounded-full ${newPin.length > i ? 'bg-emerald-500' : 'bg-slate-300/30'}`} />)}
+          </div>
+          <div className="grid grid-cols-3 gap-6 max-w-[280px]">
+            {[1,2,3,4,5,6,7,8,9,'C',0,'OK'].map(key => (
+              <button key={key} onClick={() => {
+                triggerFeedback('click', settings);
+                if (key === 'C') setNewPin('');
+                else if (key === 'OK') { 
+                  if (newPin.length === 4) {
+                    setSettings(s => ({...s, appLock: true, pinCode: newPin}));
+                    setSetupPin(false);
+                    setNewPin('');
+                    showToast('PIN Set Successfully', 'success');
+                  } else showToast('Enter 4 digits', 'error');
+                }
+                else if (newPin.length < 4) setNewPin(p => p + key);
+              }} className={`p-6 rounded-full text-xl font-bold ${glassClass} active:scale-95 flex items-center justify-center`}>{key}</button>
+            ))}
+          </div>
+        </div>
+      );
+
+      // App Lock Screen
       if (settings.appLock && locked) return (
         <div className={`fixed inset-0 flex flex-col items-center justify-center ${themeClass} z-40`}>
           <i className="fas fa-lock text-5xl mb-6 text-indigo-500"></i>
-          <h2 className="text-2xl font-bold mb-8">Enter PIN</h2>
+          <h2 className="text-2xl font-bold mb-8">{lang.enterPin}</h2>
           <div className="flex gap-4 mb-12">
             {[1,2,3,4].map((_, i) => <div key={i} className={`w-4 h-4 rounded-full ${pin.length > i ? 'bg-indigo-500' : 'bg-slate-300/30'}`} />)}
           </div>
@@ -215,7 +239,10 @@
               <button key={key} onClick={() => {
                 triggerFeedback('click', settings);
                 if (key === 'C') setPin('');
-                else if (key === 'OK') { if (pin === '1234') { triggerFeedback('success', settings); setLocked(false); } else { showToast('Wrong PIN! Hint: 1234', 'error'); setPin(''); } }
+                else if (key === 'OK') { 
+                  if (pin === settings.pinCode) { triggerFeedback('success', settings); setLocked(false); setPin(''); } 
+                  else { showToast('Wrong PIN!', 'error'); setPin(''); } 
+                }
                 else if (pin.length < 4) setPin(p => p + key);
               }} className={`p-6 rounded-full text-xl font-bold ${glassClass} active:scale-95 flex items-center justify-center`}>{key}</button>
             ))}
@@ -273,7 +300,7 @@
 
           <main className="flex-1 overflow-y-auto p-4 pb-24 z-10 scroll-smooth">
             {currentRoute === 'dashboard' && <Dashboard lang={lang} transactions={transactions} settings={settings} glassClass={glassClass} textMuted={textMuted} />}
-            {currentRoute === 'settings' && <SettingsPage lang={lang} settings={settings} setSettings={setSettings} glassClass={glassClass} textMuted={textMuted} triggerFeedback={triggerFeedback} showToast={showToast} user={user} loginWithGoogle={loginWithGoogle} />}
+            {currentRoute === 'settings' && <SettingsPage lang={lang} settings={settings} setSettings={setSettings} glassClass={glassClass} textMuted={textMuted} triggerFeedback={triggerFeedback} showToast={showToast} user={user} loginWithGoogle={loginWithGoogle} setSetupPin={setSetupPin} />}
             {currentRoute === 'transactions' && <TransactionsPage lang={lang} transactions={transactions} settings={settings} glassClass={glassClass} textMuted={textMuted} />}
             {currentRoute === 'about' && <AboutPage glassClass={glassClass} textMuted={textMuted} />}
           </main>
@@ -299,7 +326,6 @@
       );
     }
 
-    // --- Sub Components ---
     function Dashboard({ lang, transactions, settings, glassClass, textMuted }) {
       const stats = useMemo(() => {
         let income = 0; let expense = 0; const catMap = {};
@@ -380,7 +406,7 @@
       );
     }
 
-    function SettingsPage({ lang, settings, setSettings, glassClass, textMuted, triggerFeedback, showToast, user, loginWithGoogle }) {
+    function SettingsPage({ lang, settings, setSettings, glassClass, textMuted, triggerFeedback, showToast, user, loginWithGoogle, setSetupPin }) {
       const toggle = (k) => { setSettings(s => { const ns = {...s, [k]: !s[k]}; triggerFeedback('click', ns); return ns; }); };
       const Row = ({ icon, label, val, action, comp }) => (
         <div className="flex items-center justify-between py-4 border-b border-white/5 last:border-0" onClick={action}>
@@ -394,7 +420,6 @@
       );
       return (
         <div className={`space-y-4 ${settings.animations ? 'animate-fade-in-up' : ''}`}>
-          
           <div className={`p-4 rounded-2xl ${glassClass} border ${user ? 'border-emerald-500/30' : 'border-amber-500/30'}`} onClick={!user ? loginWithGoogle : undefined}>
              <div className="flex items-center gap-4">
                 <i className={`fab fa-google text-2xl ${user ? 'text-emerald-500' : 'text-amber-500'}`}></i>
@@ -418,7 +443,14 @@
           </div>
           <div className={`p-4 rounded-2xl ${glassClass}`}>
             <h3 className="text-xs font-bold uppercase opacity-50 mb-2">Security</h3>
-            <Row icon="fa-fingerprint" label={lang.appLock} val={settings.appLock} action={() => toggle('appLock')} />
+            <Row icon="fa-fingerprint" label={lang.appLock} val={settings.appLock} action={() => {
+                if (settings.appLock) {
+                    toggle('appLock');
+                    setSettings(s => ({...s, pinCode: ''}));
+                } else {
+                    setSetupPin(true);
+                }
+            }} />
             <div className="flex items-center justify-between py-4 text-rose-500" onClick={() => { 
                 triggerFeedback('warning', settings); 
                 localStorage.clear();
