@@ -4,18 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FinAI Pro Premium</title>
-  
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
+    body { font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
+    ::-webkit-scrollbar { display: none; }
+    .stylish-name { font-family: 'Pacifico', cursive; }
+  </style>
   <script>
     tailwind.config = {
       theme: {
@@ -23,24 +26,18 @@
           animation: {
             'fade-in-up': 'fadeInUp 0.4s ease-out forwards',
             'slide-up': 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-            'fade-in': 'fadeIn 0.2s ease-out forwards',
-            'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
           },
           keyframes: {
             fadeInUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
             slideUp: { '0%': { transform: 'translateY(100%)' }, '100%': { transform: 'translateY(0)' } },
-            fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
           }
         }
       }
     }
   </script>
-  <style>
-    body { font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
-    ::-webkit-scrollbar { display: none; }
-  </style>
 </head>
-<body class="bg-slate-950 text-white">
+<body class="bg-slate-950 text-white transition-colors duration-500">
   <div id="root"></div>
 
   <script type="text/babel">
@@ -68,261 +65,220 @@
       if (settings.sound) {
         try {
           const ctx = new (window.AudioContext || window.webkitAudioContext)();
-          const osc = ctx.createOscillator();
-          const gainNode = ctx.createGain();
+          const osc = ctx.createOscillator(); const gainNode = ctx.createGain();
           osc.connect(gainNode); gainNode.connect(ctx.destination);
-          
-          if (type === 'success') {
-            osc.frequency.setValueAtTime(400, ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.1);
-            gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
-            osc.start(); osc.stop(ctx.currentTime + 0.2);
-          } else if (type === 'warning') {
-            osc.type = 'square'; osc.frequency.setValueAtTime(200, ctx.currentTime);
-            osc.frequency.linearRampToValueAtTime(150, ctx.currentTime + 0.2);
-            gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
-            osc.start(); osc.stop(ctx.currentTime + 0.3);
-          } else {
-            osc.type = 'sine'; osc.frequency.setValueAtTime(600, ctx.currentTime);
-            gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
-            osc.start(); osc.stop(ctx.currentTime + 0.05);
-          }
+          osc.type = type === 'warning' ? 'square' : 'sine';
+          osc.frequency.setValueAtTime(type === 'success' ? 400 : (type === 'warning' ? 200 : 600), ctx.currentTime);
+          if (type === 'success') osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.1);
+          gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + (type==='click'?0.05:0.2));
+          osc.start(); osc.stop(ctx.currentTime + (type==='click'?0.05:0.2));
         } catch (e) {}
       }
     };
 
     const t = {
       en: {
-        dashboard: 'Dashboard', transactions: 'Transactions', settings: 'Settings', about: 'About App',
-        totalBalance: 'Total Balance', income: 'Income', expense: 'Expense',
-        aiInsights: 'AI Insights', highestExpense: 'Highest Expense', healthScore: 'Health Score',
-        recentHistory: 'Recent History', addRecord: 'New Record', amount: 'Amount', category: 'Category',
-        save: 'Save Record', login: 'Login / Backup Data', logout: 'Logout', language: 'Language',
-        darkMode: 'Dark Mode', currency: 'Currency', sound: 'Sound Effects', vibration: 'Vibration',
-        appLock: 'App Lock (PIN)', resetData: 'Reset App Data', setPin: 'Set New PIN', enterPin: 'Enter PIN'
+        dashboard: 'Dashboard', transactions: 'Transactions', reports: 'AI Reports', 
+        budget: 'Budget & Wallet', savings: 'Savings', calendar: 'Calendar', 
+        calculator: 'Calculator', settings: 'Settings', about: 'About App',
+        balance: 'Cash Balance', income: 'Total Income', expense: 'Total Expense',
+        quickActions: 'Quick Actions', recent: 'Recent Transactions',
+        addRecord: 'New Record', amount: 'Amount', category: 'Category', save: 'Save Record',
+        aiTitle: 'AI Financial Analysis', health: 'Financial Health', avgDaily: 'Avg Daily Expense',
+        biggestExp: 'Biggest Expense', biggestInc: 'Biggest Income', whereSpend: 'Where you spend the most',
+        aiTip: 'AI Suggestion', noRecords: 'No records found.', guest: 'Guest',
+        loginTip: 'Tap to Login', lockApp: 'Lock App', logout: 'Logout',
+        darkMode: 'Dark Mode', language: 'Language', currency: 'Currency', theme: 'Theme Color',
+        sound: 'Sound Effects', vibration: 'Vibration', appLock: 'App Lock (PIN)',
+        export: 'Export Data', reset: 'Factory Reset', enterPin: 'Enter PIN', setPin: 'Set New PIN',
+        dev: 'Developer', version: 'Version',
+        catFood: 'Food', catTransport: 'Transport', catShop: 'Shopping', catBill: 'Bills', catHealth: 'Health', catOther: 'Other',
+        catSalary: 'Salary', catFree: 'Freelance', catInv: 'Invest', catGift: 'Gift',
+        qaTransfer: 'Transfer', qaRequest: 'Request', qaTopUp: 'Top Up', qaBills: 'Bills',
+        budgetLimit: 'Monthly Budget Limit', setBudget: 'Set Budget', totalSpent: 'Total Spent',
+        savingsGoal: 'Savings Goal', addSavings: 'Add to Savings', target: 'Target', clear: 'Clear', result: 'Result',
+        desc: 'Description / Name', folderView: 'Folder View', allTx: 'All Transactions'
       },
       bn: {
-        dashboard: 'ড্যাশবোর্ড', transactions: 'লেনদেন', settings: 'সেটিংস', about: 'অ্যাপ সম্পর্কে',
-        totalBalance: 'মোট ব্যালেন্স', income: 'আয়', expense: 'ব্যয়',
-        aiInsights: 'এআই এনালাইসিস', highestExpense: 'সর্বোচ্চ ব্যয়', healthScore: 'হেলথ স্কোর',
-        recentHistory: 'সাম্প্রতিক লেনদেন', addRecord: 'নতুন লেনদেন', amount: 'পরিমাণ', category: 'ক্যাটাগরি',
-        save: 'সেভ করুন', login: 'লগইন / ডাটা ব্যাকআপ', logout: 'লগআউট', language: 'ভাষা',
-        darkMode: 'ডার্ক মোড', currency: 'মুদ্রা', sound: 'সাউন্ড ইফেক্ট', vibration: 'ভাইব্রেশন',
-        appLock: 'অ্যাপ লক (PIN)', resetData: 'সব ডাটা মুছুন', setPin: 'নতুন পিন সেট করুন', enterPin: 'পিন দিন'
+        dashboard: 'ড্যাশবোর্ড', transactions: 'লেনদেন', reports: 'এআই রিপোর্ট', 
+        budget: 'বাজেট ও ওয়ালেট', savings: 'সঞ্চয়', calendar: 'ক্যালেন্ডার', 
+        calculator: 'ক্যালকুলেটর', settings: 'সেটিংস', about: 'অ্যাপ সম্পর্কে',
+        balance: 'ক্যাশ ব্যালেন্স', income: 'মোট আয়', expense: 'মোট খরচ',
+        quickActions: 'কুইক অ্যাকশন', recent: 'সাম্প্রতিক লেনদেন',
+        addRecord: 'নতুন হিসাব', amount: 'টাকার পরিমাণ', category: 'ক্যাটাগরি', save: 'সেভ করুন',
+        aiTitle: 'এআই আর্থিক বিশ্লেষণ', health: 'আর্থিক স্বাস্থ্য', avgDaily: 'দৈনিক গড় খরচ',
+        biggestExp: 'সবচেয়ে বড় খরচ', biggestInc: 'সবচেয়ে বড় আয়', whereSpend: 'যেখানে বেশি খরচ করেছেন',
+        aiTip: 'এআই পরামর্শ', noRecords: 'কোনো হিসাব নেই।', guest: 'গেস্ট',
+        loginTip: 'লগইন করতে চাপুন', lockApp: 'অ্যাপ লক করুন', logout: 'লগআউট',
+        darkMode: 'ডার্ক মোড', language: 'ভাষা (Language)', currency: 'মুদ্রা', theme: 'থিম কালার',
+        sound: 'সাউন্ড ইফেক্ট', vibration: 'ভাইব্রেশন', appLock: 'অ্যাপ লক (PIN)',
+        export: 'ডাটা এক্সপোর্ট', reset: 'সব ডাটা মুছুন', enterPin: 'পিন দিন', setPin: 'নতুন পিন সেট করুন',
+        dev: 'ডেভেলপার', version: 'ভার্সন',
+        catFood: 'খাবার', catTransport: 'যাতায়াত', catShop: 'শপিং', catBill: 'বিল', catHealth: 'স্বাস্থ্য', catOther: 'অন্যান্য',
+        catSalary: 'বেতন', catFree: 'ফ্রিল্যান্স', catInv: 'বিনিয়োগ', catGift: 'উপহার',
+        qaTransfer: 'ট্রান্সফার', qaRequest: 'রিকোয়েস্ট', qaTopUp: 'টপ আপ', qaBills: 'পেমেন্ট',
+        budgetLimit: 'মাসিক বাজেট লিমিট', setBudget: 'বাজেট সেট করুন', totalSpent: 'মোট খরচ হয়েছে',
+        savingsGoal: 'সঞ্চয়ের লক্ষ্য', addSavings: 'সঞ্চয় জমা করুন', target: 'লক্ষ্য', clear: 'মুছুন', result: 'ফলাফল',
+        desc: 'বিবরণ / নাম', folderView: 'ফোল্ডার ভিউ', allTx: 'সব লেনদেন'
       }
     };
 
     function App() {
       const [splash, setSplash] = useState(true);
       const [user, setUser] = useState(null);
+      const [locked, setLocked] = useState(true);
       const [pin, setPin] = useState('');
       const [setupPin, setSetupPin] = useState(false);
-      const [newPin, setNewPin] = useState('');
       const [currentRoute, setCurrentRoute] = useState('dashboard');
       const [sidebarOpen, setSidebarOpen] = useState(false);
       const [toast, setToast] = useState(null);
       
-      const [transactions, setTransactions] = useState(() => {
-        const saved = localStorage.getItem('finai_txs_v3');
-        return saved ? JSON.parse(saved) : [];
+      const [transactions, setTransactions] = useState(() => JSON.parse(localStorage.getItem('finai_txs_v6')) || []);
+      const [extraData, setExtraData] = useState(() => JSON.parse(localStorage.getItem('finai_extra_v6')) || { budget: 0, savings: 0, target: 0 });
+      const [settings, setSettings] = useState(() => JSON.parse(localStorage.getItem('finai_settings_v6')) || { 
+          darkMode: true, lang: 'bn', currency: '৳', sound: true, vibration: true, appLock: false, pinCode: '', animations: true, themeColor: 'indigo', fontSize: 'text-base' 
       });
 
-      const [settings, setSettings] = useState(() => {
-        const saved = localStorage.getItem('finai_settings_v3'); // Changed key for a fresh start
-        return saved ? JSON.parse(saved) : { darkMode: true, lang: 'bn', currency: '৳', sound: true, vibration: true, appLock: false, pinCode: '', animations: true };
-      });
-
-      const [locked, setLocked] = useState(() => {
-        const saved = localStorage.getItem('finai_settings_v3');
-        return saved ? JSON.parse(saved).appLock : false;
-      });
-
-      useEffect(() => { localStorage.setItem('finai_settings_v3', JSON.stringify(settings)); }, [settings]);
+      useEffect(() => { localStorage.setItem('finai_settings_v6', JSON.stringify(settings)); }, [settings]);
+      useEffect(() => { localStorage.setItem('finai_extra_v6', JSON.stringify(extraData)); }, [extraData]);
       useEffect(() => { setTimeout(() => setSplash(false), 2000); }, []);
-      
-      useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged((currentUser) => { setUser(currentUser); });
-        return () => unsubscribe();
-      }, []);
-
+      useEffect(() => { auth.onAuthStateChanged(setUser); }, []);
       useEffect(() => {
         if (!user) return;
-        const unsubscribe = db.collection('users').doc(user.uid).collection('transactions')
-          .onSnapshot((snapshot) => {
-            const data = snapshot.docs.map(doc => ({ id: Number(doc.id), ...doc.data() }));
-            if (data.length > 0) {
-                const sorted = data.sort((a,b) => new Date(b.date) - new Date(a.date));
-                setTransactions(sorted);
-                localStorage.setItem('finai_txs_v3', JSON.stringify(sorted));
-            }
-          });
-        return () => unsubscribe();
+        return db.collection('users').doc(user.uid).collection('transactions').onSnapshot((snapshot) => {
+            const data = snapshot.docs.map(doc => ({ id: Number(doc.id), ...doc.data() })).sort((a,b) => new Date(b.date) - new Date(a.date));
+            if (data.length > 0) { setTransactions(data); localStorage.setItem('finai_txs_v6', JSON.stringify(data)); }
+        });
       }, [user]);
 
       const lang = t[settings.lang];
+      const showToast = (message, type = 'info') => {
+        triggerFeedback(type === 'error' ? 'warning' : 'success', settings);
+        setToast({ message, type }); setTimeout(() => setToast(null), 3000);
+      };
+      const navTo = (route) => { triggerFeedback('click', settings); setCurrentRoute(route); setSidebarOpen(false); };
+
       const themeClass = settings.darkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900';
       const glassClass = settings.darkMode ? 'bg-white/10 backdrop-blur-lg border border-white/10' : 'bg-white/70 backdrop-blur-lg border border-slate-200 shadow-xl';
       const textMuted = settings.darkMode ? 'text-slate-400' : 'text-slate-500';
+      const primaryColorClass = `text-${settings.themeColor}-500`;
+      const primaryBgClass = `bg-${settings.themeColor}-500`;
 
-      const showToast = (message, type = 'info') => {
-        triggerFeedback(type === 'error' ? 'warning' : type === 'success' ? 'success' : 'click', settings);
-        setToast({ message, type });
-        setTimeout(() => setToast(null), 3000);
-      };
-
-      const navTo = (route) => { triggerFeedback('click', settings); setCurrentRoute(route); setSidebarOpen(false); };
-
-      const loginWithGoogle = () => {
-        auth.signInWithPopup(googleProvider).then((res) => {
-          transactions.forEach(tx => {
-             db.collection('users').doc(res.user.uid).collection('transactions').doc(tx.id.toString()).set(tx);
-          });
-          showToast('Logged in & Synced!', 'success');
-        }).catch(() => showToast('Login failed', 'error'));
-      };
-
-      const saveTransaction = (tx) => {
-        const newTxs = [tx, ...transactions];
-        setTransactions(newTxs);
-        localStorage.setItem('finai_txs_v3', JSON.stringify(newTxs));
-        if (user) db.collection('users').doc(user.uid).collection('transactions').doc(tx.id.toString()).set(tx).catch(() => {});
-        showToast('Transaction Saved', 'success');
-        navTo('dashboard');
-      };
-
-      // --- Screens ---
       if (splash) return (
-        <div className={`fixed inset-0 flex flex-col items-center justify-center ${settings.darkMode ? 'bg-slate-950' : 'bg-indigo-600'} text-white z-50`}>
-          <i className="fas fa-chart-line text-6xl animate-pulse mb-4 text-indigo-400"></i>
-          <h1 className="text-3xl font-bold tracking-wider">FINAI PRO</h1>
+        <div className={`fixed inset-0 flex flex-col items-center justify-center ${settings.darkMode ? 'bg-slate-950' : primaryBgClass} text-white z-50`}>
+          <i className="fas fa-chart-pie text-7xl animate-pulse-slow mb-4 shadow-lg rounded-full"></i>
+          <h1 className="text-4xl font-extrabold tracking-widest">FINAI PRO</h1>
+          <div className="absolute bottom-10 flex space-x-2"><div className="w-2 h-2 bg-white rounded-full animate-bounce"></div><div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{animationDelay:'0.1s'}}></div><div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{animationDelay:'0.2s'}}></div></div>
         </div>
       );
 
-      // PIN Setup Screen
-      if (setupPin) return (
+      if (setupPin || (settings.appLock && locked)) return (
         <div className={`fixed inset-0 flex flex-col items-center justify-center ${themeClass} z-50`}>
-          <button onClick={() => setSetupPin(false)} className="absolute top-8 right-8 p-2"><i className="fas fa-times text-2xl"></i></button>
-          <i className="fas fa-shield-halved text-5xl mb-6 text-emerald-500"></i>
-          <h2 className="text-2xl font-bold mb-8">{lang.setPin}</h2>
+          {setupPin && <button onClick={() => setSetupPin(false)} className="absolute top-8 right-8 p-2"><i className="fas fa-times text-2xl"></i></button>}
+          <i className={`fas ${setupPin ? 'fa-shield-halved text-emerald-500' : 'fa-lock ' + primaryColorClass} text-5xl mb-6`}></i>
+          <h2 className="text-2xl font-bold mb-8">{setupPin ? lang.setPin : lang.enterPin}</h2>
           <div className="flex gap-4 mb-12">
-            {[1,2,3,4].map((_, i) => <div key={i} className={`w-4 h-4 rounded-full ${newPin.length > i ? 'bg-emerald-500' : 'bg-slate-300/30'}`} />)}
+            {[1,2,3,4].map((_, i) => <div key={i} className={`w-4 h-4 rounded-full ${pin.length > i ? (setupPin ? 'bg-emerald-500' : primaryBgClass) : 'bg-slate-300/30'}`} />)}
           </div>
-          <div className="grid grid-cols-3 gap-6 max-w-[280px]">
-            {[1,2,3,4,5,6,7,8,9,'C',0,'OK'].map(key => (
-              <button key={key} onClick={() => {
-                triggerFeedback('click', settings);
-                if (key === 'C') setNewPin('');
-                else if (key === 'OK') { 
-                  if (newPin.length === 4) {
-                    setSettings(s => ({...s, appLock: true, pinCode: newPin}));
-                    setSetupPin(false);
-                    setNewPin('');
-                    showToast('PIN Set Successfully', 'success');
-                  } else showToast('Enter 4 digits', 'error');
-                }
-                else if (newPin.length < 4) setNewPin(p => p + key);
-              }} className={`p-6 rounded-full text-xl font-bold ${glassClass} active:scale-95 flex items-center justify-center`}>{key}</button>
-            ))}
-          </div>
-        </div>
-      );
-
-      // App Lock Screen
-      if (settings.appLock && locked) return (
-        <div className={`fixed inset-0 flex flex-col items-center justify-center ${themeClass} z-40`}>
-          <i className="fas fa-lock text-5xl mb-6 text-indigo-500"></i>
-          <h2 className="text-2xl font-bold mb-8">{lang.enterPin}</h2>
-          <div className="flex gap-4 mb-12">
-            {[1,2,3,4].map((_, i) => <div key={i} className={`w-4 h-4 rounded-full ${pin.length > i ? 'bg-indigo-500' : 'bg-slate-300/30'}`} />)}
-          </div>
-          <div className="grid grid-cols-3 gap-6 max-w-[280px]">
+          <div className="grid grid-cols-3 gap-6">
             {[1,2,3,4,5,6,7,8,9,'C',0,'OK'].map(key => (
               <button key={key} onClick={() => {
                 triggerFeedback('click', settings);
                 if (key === 'C') setPin('');
                 else if (key === 'OK') { 
-                  if (pin === settings.pinCode) { triggerFeedback('success', settings); setLocked(false); setPin(''); } 
-                  else { showToast('Wrong PIN!', 'error'); setPin(''); } 
-                }
-                else if (pin.length < 4) setPin(p => p + key);
+                  if (setupPin && pin.length === 4) { setSettings(s => ({...s, appLock: true, pinCode: pin})); setSetupPin(false); setPin(''); showToast('PIN Set', 'success'); }
+                  else if (!setupPin && pin === settings.pinCode) { triggerFeedback('success', settings); setLocked(false); setPin(''); } 
+                  else { showToast('Error', 'error'); setPin(''); }
+                } else if (pin.length < 4) setPin(p => p + key);
               }} className={`p-6 rounded-full text-xl font-bold ${glassClass} active:scale-95 flex items-center justify-center`}>{key}</button>
             ))}
           </div>
         </div>
       );
 
-      // --- Main Layout ---
+      const sidebarItems = [
+        { id: 'dashboard', icon: 'fa-home', label: lang.dashboard },
+        { id: 'transactions', icon: 'fa-list-ul', label: lang.transactions },
+        { id: 'reports', icon: 'fa-chart-pie', label: lang.reports },
+        { id: 'budget', icon: 'fa-wallet', label: lang.budget },
+        { id: 'savings', icon: 'fa-piggy-bank', label: lang.savings },
+        { id: 'calendar', icon: 'fa-calendar-days', label: lang.calendar },
+        { id: 'calculator', icon: 'fa-calculator', label: lang.calculator },
+        { id: 'settings', icon: 'fa-gear', label: lang.settings },
+        { id: 'about', icon: 'fa-circle-info', label: lang.about }
+      ];
+
       return (
-        <div className={`min-h-screen w-full relative overflow-hidden flex flex-col ${themeClass}`}>
+        <div className={`min-h-screen w-full relative overflow-hidden flex flex-col ${themeClass} ${settings.fontSize}`}>
           {settings.darkMode && (
             <React.Fragment>
-              <div className="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-600/20 blur-[100px] pointer-events-none" />
+              <div className={`fixed top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-${settings.themeColor}-600/20 blur-[100px] pointer-events-none`} />
               <div className="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-purple-600/20 blur-[100px] pointer-events-none" />
             </React.Fragment>
           )}
 
-          <header className={`pt-8 pb-4 px-4 flex items-center justify-between z-20 ${glassClass} rounded-b-3xl sticky top-0`}>
+          <header className={`pt-8 pb-4 px-4 flex items-center justify-between z-20 ${glassClass} rounded-b-3xl sticky top-0 shadow-sm`}>
             <button onClick={() => { triggerFeedback('click', settings); setSidebarOpen(true); }} className="p-2"><i className="fas fa-bars text-xl"></i></button>
             <h1 className="text-lg font-bold">{lang[currentRoute] || 'FinAI Pro'}</h1>
-            <button onClick={() => showToast('No notifications')} className="p-2 relative"><i className="fas fa-bell text-xl"></i></button>
+            <button className="p-2 relative"><i className="fas fa-bell text-xl"></i></button>
           </header>
 
-          {sidebarOpen && <div className="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />}
-          <div className={`fixed top-0 left-0 h-full w-72 z-50 ${glassClass} transform transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} overflow-y-auto`}>
-            <div className="p-6 pt-12 flex justify-between items-center border-b border-white/10">
+          {/* Sidebar */}
+          {sidebarOpen && <div className="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm transition-opacity" onClick={() => setSidebarOpen(false)} />}
+          <div className={`fixed top-0 left-0 h-full w-72 z-50 ${glassClass} transform transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} overflow-y-auto pb-10`}>
+            <div className="p-6 pt-12 flex items-center gap-4 border-b border-white/10">
               {user ? (
-                <div className="flex items-center gap-3">
-                  <img src={user.photoURL} alt="User" className="w-10 h-10 rounded-full border-2 border-indigo-500" />
-                  <div><h3 className="font-bold text-sm">{user.displayName}</h3><p className="text-xs opacity-70 truncate w-40">{user.email}</p></div>
-                </div>
+                <><img src={user.photoURL} className={`w-12 h-12 rounded-full border-2 border-${settings.themeColor}-500`} />
+                <div><h3 className="font-bold text-sm truncate w-40">{user.displayName}</h3><p className="text-xs opacity-70">Pro Member</p></div></>
               ) : (
-                <div className="flex items-center gap-3" onClick={loginWithGoogle}>
-                  <div className="w-10 h-10 rounded-full border-2 border-slate-500 flex items-center justify-center bg-slate-800"><i className="fas fa-user"></i></div>
-                  <div><h3 className="font-bold text-sm">Guest User</h3><p className="text-xs text-indigo-400">Tap to Login</p></div>
-                </div>
+                <><div className="w-12 h-12 rounded-full border-2 border-slate-500 flex items-center justify-center bg-slate-800"><i className="fas fa-user"></i></div>
+                <div onClick={() => auth.signInWithPopup(googleProvider)}><h3 className="font-bold text-sm">{lang.guest}</h3><p className={`text-xs ${primaryColorClass}`}>{lang.loginTip}</p></div></>
               )}
             </div>
-            <div className="py-4 flex flex-col gap-1">
-              {[{ id: 'dashboard', icon: 'fa-home' }, { id: 'transactions', icon: 'fa-list' }, { id: 'settings', icon: 'fa-gear' }, { id: 'about', icon: 'fa-circle-info' }].map(item => (
-                <button key={item.id} onClick={() => navTo(item.id)} className={`flex items-center gap-4 px-6 py-3 w-full text-left transition-colors ${currentRoute === item.id ? 'bg-indigo-500/20 text-indigo-400' : 'hover:bg-white/5 opacity-80'}`}>
-                  <i className={`fas ${item.icon} w-5`}></i> <span className="font-medium">{lang[item.id]}</span>
+            <div className="py-2 flex flex-col h-full">
+              {sidebarItems.map(item => (
+                <button key={item.id} onClick={() => navTo(item.id)} className={`flex items-center gap-4 px-6 py-3 w-full text-left transition-colors ${currentRoute === item.id ? `bg-${settings.themeColor}-500/20 ${primaryColorClass} border-r-4 border-${settings.themeColor}-500` : 'hover:bg-white/5 opacity-80'}`}>
+                  <i className={`fas ${item.icon} w-5`}></i> <span className="font-medium">{item.label}</span>
                 </button>
               ))}
-              <div className="mt-8">
-                {settings.appLock && <button onClick={() => { setLocked(true); setSidebarOpen(false); }} className="flex items-center gap-4 px-6 py-3 text-amber-400 w-full text-left"><i className="fas fa-lock w-5"></i> <span className="font-medium">Lock App</span></button>}
-                {user ? (
-                  <button onClick={() => { auth.signOut(); setSidebarOpen(false); }} className="flex items-center gap-4 px-6 py-3 text-red-400 w-full text-left"><i className="fas fa-right-from-bracket w-5"></i> <span className="font-medium">{lang.logout}</span></button>
-                ) : (
-                  <button onClick={() => { loginWithGoogle(); setSidebarOpen(false); }} className="flex items-center gap-4 px-6 py-3 text-emerald-400 w-full text-left"><i className="fab fa-google w-5"></i> <span className="font-medium">{lang.login}</span></button>
-                )}
+              <div className="mt-8 border-t border-white/5 pt-4">
+                 {settings.appLock && <button onClick={() => { setLocked(true); setSidebarOpen(false); }} className="flex items-center gap-4 px-6 py-3 text-amber-400 w-full text-left"><i className="fas fa-lock w-5"></i> <span className="font-medium">{lang.lockApp}</span></button>}
+                 {user && <button onClick={() => { auth.signOut(); setSidebarOpen(false); }} className="flex items-center gap-4 px-6 py-3 text-red-400 w-full text-left"><i className="fas fa-right-from-bracket w-5"></i> <span className="font-medium">{lang.logout}</span></button>}
               </div>
             </div>
           </div>
 
           <main className="flex-1 overflow-y-auto p-4 pb-24 z-10 scroll-smooth">
-            {currentRoute === 'dashboard' && <Dashboard lang={lang} transactions={transactions} settings={settings} glassClass={glassClass} textMuted={textMuted} />}
-            {currentRoute === 'settings' && <SettingsPage lang={lang} settings={settings} setSettings={setSettings} glassClass={glassClass} textMuted={textMuted} triggerFeedback={triggerFeedback} showToast={showToast} user={user} loginWithGoogle={loginWithGoogle} setSetupPin={setSetupPin} />}
+            {currentRoute === 'dashboard' && <Dashboard lang={lang} transactions={transactions} settings={settings} glassClass={glassClass} textMuted={textMuted} pc={primaryColorClass} pbg={primaryBgClass}/>}
+            {currentRoute === 'reports' && <ReportsPage lang={lang} transactions={transactions} settings={settings} glassClass={glassClass} textMuted={textMuted} pc={primaryColorClass} pbg={primaryBgClass}/>}
+            {currentRoute === 'budget' && <BudgetPage lang={lang} transactions={transactions} extra={extraData} setExtra={setExtraData} settings={settings} glassClass={glassClass} textMuted={textMuted} pc={primaryColorClass} pbg={primaryBgClass} tf={triggerFeedback}/>}
+            {currentRoute === 'savings' && <SavingsPage lang={lang} extra={extraData} setExtra={setExtraData} settings={settings} glassClass={glassClass} textMuted={textMuted} pc={primaryColorClass} pbg={primaryBgClass} tf={triggerFeedback}/>}
+            {currentRoute === 'calendar' && <CalendarPage lang={lang} transactions={transactions} settings={settings} glassClass={glassClass} textMuted={textMuted} pc={primaryColorClass} pbg={primaryBgClass}/>}
+            {currentRoute === 'calculator' && <CalculatorPage lang={lang} settings={settings} glassClass={glassClass} textMuted={textMuted} tf={triggerFeedback}/>}
+            {currentRoute === 'settings' && <SettingsPage lang={lang} settings={settings} setSettings={setSettings} glassClass={glassClass} textMuted={textMuted} triggerFeedback={triggerFeedback} showToast={showToast} user={user} setSetupPin={setSetupPin} loginWithGoogle={()=>auth.signInWithPopup(googleProvider)}/>}
+            {currentRoute === 'about' && <AboutPage lang={lang} glassClass={glassClass} textMuted={textMuted} />}
             {currentRoute === 'transactions' && <TransactionsPage lang={lang} transactions={transactions} settings={settings} glassClass={glassClass} textMuted={textMuted} />}
-            {currentRoute === 'about' && <AboutPage glassClass={glassClass} textMuted={textMuted} />}
           </main>
 
-          <button onClick={() => navTo('add-transaction')} className={`fixed bottom-24 right-6 w-14 h-14 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center shadow-[0_0_20px_rgba(99,102,241,0.4)] z-30 text-white ${settings.animations ? 'active:scale-95 transition-transform' : ''}`}>
+          <button onClick={() => navTo('add-transaction')} className={`fixed bottom-24 right-6 w-14 h-14 rounded-full ${primaryBgClass} flex items-center justify-center shadow-lg z-30 text-white ${settings.animations ? 'active:scale-95 transition-transform' : ''}`}>
             <i className="fas fa-plus text-xl"></i>
           </button>
 
-          <nav className={`fixed bottom-0 w-full pb-6 pt-4 px-6 z-20 flex justify-between items-center ${glassClass} rounded-t-3xl`}>
-            {[{ id: 'dashboard', icon: 'fa-home' }, { id: 'transactions', icon: 'fa-list' }, { id: 'settings', icon: 'fa-gear' }].map(item => (
-              <button key={item.id} onClick={() => navTo(item.id)} className={`flex flex-col items-center transition-all ${currentRoute === item.id ? 'text-indigo-400 scale-110' : 'opacity-50'}`}><i className={`fas ${item.icon} text-2xl`}></i></button>
+          <nav className={`fixed bottom-0 w-full pb-6 pt-4 px-6 z-20 flex justify-between items-center ${glassClass} rounded-t-3xl border-t border-white/5`}>
+            {[{ id: 'dashboard', icon: 'fa-home' }, { id: 'transactions', icon: 'fa-list' }, { id: 'reports', icon: 'fa-chart-pie'}, { id: 'settings', icon: 'fa-gear' }].map(item => (
+              <button key={item.id} onClick={() => navTo(item.id)} className={`flex flex-col items-center transition-all ${currentRoute === item.id ? `${primaryColorClass} scale-110 drop-shadow-md` : 'opacity-50'}`}><i className={`fas ${item.icon} text-2xl`}></i></button>
             ))}
           </nav>
 
-          {currentRoute === 'add-transaction' && <AddTransactionModal lang={lang} onClose={() => navTo('dashboard')} onSave={saveTransaction} settings={settings} glassClass={glassClass} textMuted={textMuted} triggerFeedback={triggerFeedback} />}
+          {currentRoute === 'add-transaction' && <AddTransactionModal lang={lang} onClose={() => navTo('dashboard')} onSave={(tx)=>{
+              const newTxs = [tx, ...transactions]; setTransactions(newTxs); localStorage.setItem('finai_txs_v6', JSON.stringify(newTxs));
+              if(user) db.collection('users').doc(user.uid).collection('transactions').doc(tx.id.toString()).set(tx);
+              showToast('Saved successfully', 'success'); navTo('dashboard');
+          }} settings={settings} glassClass={glassClass} textMuted={textMuted} pbg={primaryBgClass} tf={triggerFeedback}/>}
 
           {toast && (
-            <div className={`fixed top-24 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-full flex items-center gap-3 shadow-2xl transition-all duration-300 ${toast.type === 'error' ? 'bg-red-500' : toast.type === 'success' ? 'bg-emerald-500' : 'bg-slate-800'} text-white`}>
+            <div className={`fixed top-24 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-full flex items-center gap-3 shadow-2xl transition-all duration-300 ${toast.type === 'error' ? 'bg-rose-500' : 'bg-emerald-500'} text-white`}>
               <i className={`fas ${toast.type === 'error' ? 'fa-triangle-exclamation' : 'fa-check-circle'}`}></i> <span className="font-medium text-sm">{toast.message}</span>
             </div>
           )}
@@ -330,191 +286,529 @@
       );
     }
 
-    function Dashboard({ lang, transactions, settings, glassClass, textMuted }) {
+    // --- Components ---
+    function Dashboard({ lang, transactions, settings, glassClass, textMuted, pc, pbg }) {
       const stats = useMemo(() => {
-        let income = 0; let expense = 0; const catMap = {};
-        transactions.forEach(t => { if (t.type === 'income') income += Number(t.amount); else { expense += Number(t.amount); catMap[t.category] = (catMap[t.category] || 0) + Number(t.amount); } });
-        const highestCat = Object.entries(catMap).sort((a,b) => b[1] - a[1])[0] || ['-', 0];
-        const health = income === 0 ? 0 : Math.max(0, Math.round(((income - expense) / income) * 100));
-        return { income, expense, balance: income - expense, highestCat, health };
+        let income = 0; let expense = 0;
+        transactions.forEach(t => { if (t.type === 'income') income += Number(t.amount); else expense += Number(t.amount); });
+        return { income, expense, balance: income - expense };
       }, [transactions]);
 
       return (
         <div className={`space-y-6 ${settings.animations ? 'animate-fade-in-up' : ''}`}>
-          <div className={`p-6 rounded-3xl ${glassClass} relative overflow-hidden`}>
-            <p className={`text-sm font-medium ${textMuted} mb-1`}>{lang.totalBalance}</p>
-            <h2 className="text-4xl font-bold mb-6">{settings.currency} {stats.balance.toLocaleString()}</h2>
-            <div className="flex justify-between items-center gap-4">
+          <div className={`p-6 rounded-3xl ${glassClass} relative overflow-hidden shadow-lg border border-white/10`}>
+            <div className={`absolute -right-10 -top-10 w-32 h-32 ${pbg} opacity-20 rounded-full blur-2xl`}></div>
+            <p className={`text-sm font-bold uppercase tracking-wider ${pc} mb-1`}><i className="fas fa-wallet"></i> {lang.balance}</p>
+            <h2 className="text-4xl font-extrabold mb-6 tracking-tight">{settings.currency}{stats.balance.toLocaleString()}</h2>
+            
+            <div className="flex justify-between items-center gap-4 bg-black/10 p-4 rounded-2xl">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center"><i className="fas fa-arrow-trend-up"></i></div>
-                <div><p className={`text-xs ${textMuted}`}>{lang.income}</p><p className="font-semibold text-emerald-500">{settings.currency}{stats.income.toLocaleString()}</p></div>
+                <div><p className={`text-xs ${textMuted}`}>{lang.income}</p><p className="font-bold text-emerald-500">{settings.currency}{stats.income.toLocaleString()}</p></div>
               </div>
+              <div className="w-px h-8 bg-white/10"></div>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-rose-500/20 text-rose-500 flex items-center justify-center"><i className="fas fa-arrow-trend-down"></i></div>
-                <div><p className={`text-xs ${textMuted}`}>{lang.expense}</p><p className="font-semibold text-rose-500">{settings.currency}{stats.expense.toLocaleString()}</p></div>
+                <div><p className={`text-xs ${textMuted}`}>{lang.expense}</p><p className="font-bold text-rose-500">{settings.currency}{stats.expense.toLocaleString()}</p></div>
               </div>
             </div>
           </div>
           <div>
-            <h3 className="text-sm font-bold uppercase mb-3 opacity-70 flex items-center gap-2"><i className="fas fa-robot text-indigo-400"></i> {lang.aiInsights}</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div className={`p-4 rounded-2xl ${glassClass}`}>
-                <i className="fas fa-triangle-exclamation text-amber-500 mb-2 text-xl"></i>
-                <p className={`text-xs ${textMuted}`}>{lang.highestExpense}</p>
-                <p className="font-bold">{stats.highestCat[0]}</p>
-                <p className="text-xs text-amber-500 mt-1">{settings.currency}{stats.highestCat[1].toLocaleString()}</p>
-              </div>
-              <div className={`p-4 rounded-2xl ${glassClass}`}>
-                <i className={`fas fa-shield-halved text-xl mb-2 ${stats.health > 50 ? "text-emerald-500" : "text-rose-500"}`}></i>
-                <p className={`text-xs ${textMuted}`}>{lang.healthScore}</p>
-                <div className="flex items-end gap-1"><p className="font-bold text-3xl">{stats.health}</p><span className="text-sm pb-1 opacity-50">/100</span></div>
-                <p className={`text-[10px] mt-1 ${stats.health > 70 ? 'text-emerald-500' : 'text-rose-500'}`}>{stats.health > 70 ? lang.healthExcellent : stats.health > 40 ? lang.healthFair : lang.healthPoor}</p>
-              </div>
+            <h3 className="text-sm font-bold uppercase mb-3 opacity-70 flex items-center gap-2"><i className={`fas fa-bolt ${pc}`}></i> {lang.quickActions}</h3>
+            <div className="grid grid-cols-4 gap-3 text-center">
+               {[lang.qaTransfer, lang.qaRequest, lang.qaTopUp, lang.qaBills].map((lbl, i) => (
+                 <div key={lbl} className={`p-3 rounded-2xl ${glassClass} flex flex-col items-center justify-center gap-2 opacity-70`}>
+                   <i className={`fas ${['fa-paper-plane','fa-hand-holding-dollar','fa-credit-card','fa-file-invoice'][i]} text-lg`}></i>
+                   <span className="text-[10px] font-bold truncate w-full">{lbl}</span>
+                 </div>
+               ))}
             </div>
           </div>
           <div>
-            <h3 className="text-sm font-bold uppercase mb-3 opacity-70">{lang.recentHistory}</h3>
+            <h3 className="text-sm font-bold uppercase mb-3 opacity-70">{lang.recent}</h3>
             <div className="space-y-3">
-              {transactions.slice(0, 5).map(tx => (
+              {transactions.slice(0, 4).map(tx => (
                 <div key={tx.id} className={`p-4 rounded-2xl ${glassClass} flex justify-between items-center`}>
                   <div className="flex items-center gap-4">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${tx.type === 'income' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
-                      <i className={`fas ${tx.type === 'income' ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'}`}></i>
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${tx.type === 'income' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}><i className={`fas ${tx.type === 'income' ? 'fa-arrow-down' : 'fa-arrow-up'}`}></i></div>
+                    <div>
+                      <p className="font-bold text-sm">{tx.description || tx.category}</p>
+                      <p className={`text-[10px] ${textMuted}`}>{tx.category} • {new Date(tx.date).toLocaleDateString()}</p>
                     </div>
-                    <div><p className="font-bold text-sm">{tx.category}</p><p className={`text-xs ${textMuted}`}>{new Date(tx.date).toLocaleDateString()}</p></div>
                   </div>
                   <p className={`font-bold ${tx.type === 'income' ? 'text-emerald-500' : 'text-rose-500'}`}>{tx.type === 'income' ? '+' : '-'}{settings.currency}{tx.amount}</p>
                 </div>
               ))}
-              {transactions.length === 0 && <p className="text-center opacity-50 py-4">No records yet.</p>}
+              {transactions.length === 0 && <p className="text-center opacity-50 py-4">{lang.noRecords}</p>}
             </div>
+          </div>
+        </div>
+      );
+    }
+
+    // New Sub Pages Implementations
+    function BudgetPage({ lang, transactions, extra, setExtra, settings, glassClass, textMuted, pc, pbg, tf }) {
+      const [input, setInput] = useState('');
+      const spent = useMemo(() => transactions.filter(t => t.type === 'expense').reduce((acc, curr) => acc + Number(curr.amount), 0), [transactions]);
+      const percentage = extra.budget > 0 ? Math.min(100, (spent / extra.budget) * 100) : 0;
+      
+      return (
+        <div className={`space-y-6 pb-20 ${settings.animations ? 'animate-fade-in-up' : ''}`}>
+           <div className={`p-6 rounded-3xl ${glassClass} text-center`}>
+              <i className={`fas fa-wallet text-4xl mb-4 ${pc}`}></i>
+              <h3 className={`text-sm ${textMuted} mb-1`}>{lang.budgetLimit}</h3>
+              <h2 className="text-3xl font-bold">{settings.currency}{extra.budget.toLocaleString()}</h2>
+              
+              <div className="mt-6 text-left">
+                <div className="flex justify-between text-sm mb-2"><span className="font-medium">{lang.totalSpent}</span><span className={percentage >= 90 ? 'text-rose-500 font-bold' : ''}>{settings.currency}{spent.toLocaleString()}</span></div>
+                <div className="w-full bg-black/20 rounded-full h-3">
+                  <div className={`h-3 rounded-full ${percentage >= 90 ? 'bg-rose-500' : pbg}`} style={{width: `${percentage}%`}}></div>
+                </div>
+              </div>
+           </div>
+           
+           <div className={`p-4 rounded-2xl ${glassClass}`}>
+             <h3 className="text-sm font-bold uppercase mb-4">{lang.setBudget}</h3>
+             <div className="flex gap-2">
+               <input type="number" value={input} onChange={e=>setInput(e.target.value)} placeholder="0.00" className="flex-1 bg-black/10 border border-white/10 rounded-xl px-4 py-3 focus:outline-none bg-transparent" />
+               <button onClick={()=>{tf('click',settings); if(input) { setExtra({...extra, budget: Number(input)}); setInput(''); }}} className={`px-6 py-3 rounded-xl font-bold text-white shadow-lg ${pbg}`}>Set</button>
+             </div>
+           </div>
+        </div>
+      );
+    }
+
+    function SavingsPage({ lang, extra, setExtra, settings, glassClass, textMuted, pc, pbg, tf }) {
+      const [input, setInput] = useState('');
+      const [targetInput, setTargetInput] = useState('');
+      const percentage = extra.target > 0 ? Math.min(100, (extra.savings / extra.target) * 100) : 0;
+
+      return (
+        <div className={`space-y-6 pb-20 ${settings.animations ? 'animate-fade-in-up' : ''}`}>
+           <div className={`p-6 rounded-3xl ${glassClass} text-center relative overflow-hidden`}>
+              <i className={`fas fa-piggy-bank text-5xl mb-4 text-emerald-500`}></i>
+              <h3 className={`text-sm ${textMuted} mb-1`}>{lang.savingsGoal}</h3>
+              <h2 className="text-4xl font-bold text-emerald-500">{settings.currency}{extra.savings.toLocaleString()}</h2>
+              <p className={`text-xs mt-2 ${textMuted}`}>{lang.target}: {settings.currency}{extra.target.toLocaleString()}</p>
+              
+              <div className="mt-6 relative w-full h-4 bg-black/20 rounded-full overflow-hidden border border-white/10">
+                <div className="absolute top-0 left-0 h-full bg-emerald-500 transition-all duration-1000" style={{width: `${percentage}%`}}></div>
+              </div>
+              <p className="text-xs font-bold mt-2 opacity-70">{percentage.toFixed(1)}% Completed</p>
+           </div>
+           
+           <div className={`p-4 rounded-2xl ${glassClass} space-y-4`}>
+             <div>
+               <h3 className="text-xs font-bold uppercase mb-2 opacity-70">{lang.addSavings}</h3>
+               <div className="flex gap-2">
+                 <input type="number" value={input} onChange={e=>setInput(e.target.value)} placeholder="0.00" className="flex-1 bg-black/10 border border-white/10 rounded-xl px-4 py-2 focus:outline-none bg-transparent" />
+                 <button onClick={()=>{tf('success',settings); if(input) { setExtra({...extra, savings: extra.savings + Number(input)}); setInput(''); }}} className="px-6 py-2 rounded-xl font-bold text-white bg-emerald-500"><i className="fas fa-plus"></i></button>
+               </div>
+             </div>
+             <div className="border-t border-white/5 pt-4">
+               <h3 className="text-xs font-bold uppercase mb-2 opacity-70">Set {lang.target}</h3>
+               <div className="flex gap-2">
+                 <input type="number" value={targetInput} onChange={e=>setTargetInput(e.target.value)} placeholder="0.00" className="flex-1 bg-black/10 border border-white/10 rounded-xl px-4 py-2 focus:outline-none bg-transparent" />
+                 <button onClick={()=>{tf('click',settings); if(targetInput) { setExtra({...extra, target: Number(targetInput)}); setTargetInput(''); }}} className={`px-6 py-2 rounded-xl font-bold text-white ${pbg}`}>Set</button>
+               </div>
+             </div>
+           </div>
+        </div>
+      );
+    }
+
+    function CalendarPage({ lang, transactions, settings, glassClass, textMuted, pc }) {
+      const grouped = useMemo(() => {
+        const groups = {};
+        transactions.forEach(tx => {
+          const d = new Date(tx.date).toLocaleDateString();
+          if(!groups[d]) groups[d] = [];
+          groups[d].push(tx);
+        });
+        return groups;
+      }, [transactions]);
+
+      return (
+        <div className={`space-y-6 pb-20 ${settings.animations ? 'animate-fade-in-up' : ''}`}>
+           {Object.keys(grouped).length === 0 ? (
+              <div className="text-center opacity-50 pt-10"><i className="fas fa-calendar-xmark text-4xl mb-3"></i><p>{lang.noRecords}</p></div>
+           ) : (
+              Object.entries(grouped).map(([date, txs]) => (
+                <div key={date} className={`p-4 rounded-2xl ${glassClass}`}>
+                   <h3 className={`text-sm font-bold mb-3 ${pc} flex items-center gap-2`}><i className="fas fa-calendar-day"></i> {date}</h3>
+                   <div className="space-y-3">
+                     {txs.map(tx => (
+                        <div key={tx.id} className="flex justify-between items-center bg-black/10 p-3 rounded-xl">
+                          <div className="flex items-center gap-3">
+                            <i className={`fas ${tx.type==='income'?'fa-arrow-down text-emerald-500':'fa-arrow-up text-rose-500'}`}></i>
+                            <span className="text-sm font-medium">{tx.description || tx.category}</span>
+                          </div>
+                          <span className={`font-bold ${tx.type==='income'?'text-emerald-500':'text-rose-500'}`}>{tx.type==='income'?'+':'-'}{settings.currency}{tx.amount}</span>
+                        </div>
+                     ))}
+                   </div>
+                </div>
+              ))
+           )}
+        </div>
+      );
+    }
+
+    function CalculatorPage({ lang, settings, glassClass, textMuted, tf }) {
+      const [calc, setCalc] = useState('');
+      const [result, setResult] = useState('0');
+
+      const handleCalc = (val) => {
+        tf('click', settings);
+        if (val === 'C') { setCalc(''); setResult('0'); }
+        else if (val === '=') {
+          try { const res = eval(calc); setResult(res.toString()); } 
+          catch(e) { setResult('Error'); }
+        } else { setCalc(calc + val); }
+      };
+
+      const btns = ['7','8','9','/','4','5','6','*','1','2','3','-','C','0','=','+'];
+
+      return (
+        <div className={`flex flex-col h-[70vh] pb-10 ${settings.animations ? 'animate-fade-in-up' : ''}`}>
+           <div className={`flex-1 p-6 rounded-3xl ${glassClass} flex flex-col justify-end items-end mb-6`}>
+              <p className={`text-lg ${textMuted} tracking-widest overflow-x-auto w-full text-right h-8`}>{calc}</p>
+              <h1 className="text-5xl font-extrabold mt-2 truncate w-full text-right">{result}</h1>
+           </div>
+           <div className={`grid grid-cols-4 gap-4 p-6 rounded-3xl ${glassClass}`}>
+              {btns.map(b => (
+                 <button key={b} onClick={() => handleCalc(b)} className={`p-4 text-2xl font-bold rounded-2xl active:scale-95 transition-transform ${b==='=' || b==='C' ? (b==='=' ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white') : 'bg-white/5 hover:bg-white/10'}`}>{b}</button>
+              ))}
+           </div>
+        </div>
+      );
+    }
+
+    // Existing reports and transaction pages
+    function ReportsPage({ lang, transactions, settings, glassClass, textMuted, pc }) {
+      const stats = useMemo(() => {
+        let expense = 0; let income = 0; let maxExp = 0; let maxInc = 0;
+        const catMap = {};
+        transactions.forEach(t => { 
+          const amt = Number(t.amount);
+          if (t.type === 'expense') { expense += amt; if(amt>maxExp) maxExp=amt; catMap[t.category] = (catMap[t.category] || 0) + amt; }
+          else { income += amt; if(amt>maxInc) maxInc=amt; }
+        });
+        const highestCat = Object.entries(catMap).sort((a,b) => b[1] - a[1]);
+        const health = income === 0 ? 0 : Math.max(0, Math.round(((income - expense) / income) * 100));
+        const days = transactions.length > 0 ? Math.max(1, Math.floor((new Date() - new Date(transactions[transactions.length-1].date)) / (1000*60*60*24))) : 1;
+        return { expense, maxExp, maxInc, topCats: highestCat.slice(0,5), health, avgDaily: (expense/days).toFixed(0) };
+      }, [transactions]);
+
+      return (
+        <div className={`space-y-4 pb-20 ${settings.animations ? 'animate-fade-in-up' : ''}`}>
+          <div className={`p-5 rounded-3xl ${glassClass} text-center`}>
+             <i className={`fas fa-robot text-4xl mb-2 ${pc}`}></i>
+             <h2 className="text-xl font-bold">{lang.aiTitle}</h2>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+             <div className={`p-4 rounded-2xl ${glassClass}`}>
+               <p className={`text-[10px] uppercase font-bold ${textMuted} mb-1`}>{lang.health}</p>
+               <div className="flex items-end gap-1"><p className={`font-bold text-3xl ${stats.health > 50 ? 'text-emerald-500' : 'text-rose-500'}`}>{stats.health}</p><span className="text-sm pb-1 opacity-50">/100</span></div>
+             </div>
+             <div className={`p-4 rounded-2xl ${glassClass}`}>
+               <p className={`text-[10px] uppercase font-bold ${textMuted} mb-1`}>{lang.avgDaily}</p>
+               <p className="font-bold text-xl">{settings.currency}{stats.avgDaily}</p>
+             </div>
+             <div className={`p-4 rounded-2xl ${glassClass}`}>
+               <p className={`text-[10px] uppercase font-bold ${textMuted} mb-1`}>{lang.biggestExp}</p>
+               <p className="font-bold text-xl text-rose-500">{settings.currency}{stats.maxExp}</p>
+             </div>
+             <div className={`p-4 rounded-2xl ${glassClass}`}>
+               <p className={`text-[10px] uppercase font-bold ${textMuted} mb-1`}>{lang.biggestInc}</p>
+               <p className="font-bold text-xl text-emerald-500">{settings.currency}{stats.maxInc}</p>
+             </div>
+          </div>
+
+          <div className={`p-4 rounded-2xl ${glassClass}`}>
+            <h3 className="text-sm font-bold uppercase mb-3 flex items-center gap-2"><i className="fas fa-fire text-amber-500"></i> {lang.whereSpend}</h3>
+            {stats.topCats.map((cat, i) => (
+              <div key={cat[0]} className="mb-3 last:mb-0">
+                <div className="flex justify-between text-sm mb-1"><span className="font-medium">{cat[0]}</span><span>{settings.currency}{cat[1]}</span></div>
+                <div className="w-full bg-black/20 rounded-full h-2"><div className={`bg-${['rose','amber','indigo','emerald','purple'][i%5]}-500 h-2 rounded-full`} style={{width: `${Math.min(100, (cat[1]/stats.expense)*100)}%`}}></div></div>
+              </div>
+            ))}
+          </div>
+
+          <div className={`p-4 rounded-2xl ${glassClass} border border-emerald-500/30 bg-emerald-500/5`}>
+             <h3 className="text-sm font-bold flex items-center gap-2 mb-2"><i className="fas fa-lightbulb text-emerald-500"></i> {lang.aiTip}</h3>
+             <p className="text-xs leading-relaxed opacity-80">Highest spending is on ({stats.topCats[0]?.[0] || 'N/A'}). Consider controlling this category to boost your score.</p>
           </div>
         </div>
       );
     }
 
     function TransactionsPage({ lang, transactions, settings, glassClass, textMuted }) {
+      const [viewMode, setViewMode] = useState('grouped'); // 'grouped' (Folder view) or 'individual' (Detailed raw list)
+      const [expandedGroups, setExpandedGroups] = useState({});
+
+      const groupedTransactions = useMemo(() => {
+        const groups = {};
+        transactions.forEach(tx => {
+          const rawName = (tx.description || tx.category || '').trim();
+          const name = rawName === '' ? tx.category : rawName;
+          const groupKey = `${tx.type}_${name.toLowerCase()}`;
+          
+          if (!groups[groupKey]) {
+            groups[groupKey] = {
+              key: groupKey,
+              displayName: name,
+              category: tx.category,
+              type: tx.type,
+              total: 0,
+              items: []
+            };
+          }
+          groups[groupKey].total += Number(tx.amount);
+          groups[groupKey].items.push(tx);
+        });
+        return Object.values(groups);
+      }, [transactions]);
+
+      const toggleGroup = (key) => {
+        setExpandedGroups(prev => ({ ...prev, [key]: !prev[key] }));
+      };
+
       return (
-        <div className={`space-y-3 pb-20 ${settings.animations ? 'animate-fade-in-up' : ''}`}>
-          {transactions.map(tx => (
-            <div key={tx.id} className={`p-4 rounded-2xl ${glassClass} flex justify-between items-center`}>
-              <div className="flex items-center gap-4">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${tx.type === 'income' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}><i className="fas fa-dollar-sign"></i></div>
-                <div><p className="font-bold text-sm">{tx.category}</p><p className={`text-[10px] ${textMuted}`}>{new Date(tx.date).toLocaleDateString()}</p></div>
-              </div>
-              <p className={`font-bold ${tx.type === 'income' ? 'text-emerald-500' : 'text-rose-500'}`}>{tx.type === 'income' ? '+' : '-'}{settings.currency}{tx.amount}</p>
+        <div className={`space-y-4 pb-20 ${settings.animations ? 'animate-fade-in-up' : ''}`}>
+          {/* View Switcher Controls */}
+          <div className="flex justify-end mb-2">
+            <div className={`flex p-1 rounded-xl ${glassClass} text-xs font-bold`}>
+              <button onClick={() => setViewMode('grouped')} className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 ${viewMode === 'grouped' ? 'bg-indigo-500 text-white' : 'opacity-60'}`}>
+                <i className="fas fa-folder-open"></i> {lang.folderView}
+              </button>
+              <button onClick={() => setViewMode('individual')} className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 ${viewMode === 'individual' ? 'bg-indigo-500 text-white' : 'opacity-60'}`}>
+                <i className="fas fa-list"></i> {lang.allTx}
+              </button>
             </div>
-          ))}
-          {transactions.length === 0 && <p className="text-center opacity-50 mt-10">No records found.</p>}
+          </div>
+
+          {viewMode === 'grouped' ? (
+            <div className="space-y-3">
+              {groupedTransactions.map(group => {
+                const isExpanded = expandedGroups[group.key];
+                return (
+                  <div key={group.key} className={`rounded-2xl ${glassClass} overflow-hidden transition-all duration-300`}>
+                    {/* Header Item */}
+                    <div onClick={() => toggleGroup(group.key)} className="p-4 flex justify-between items-center cursor-pointer hover:bg-white/5 active:bg-white/10 transition-colors">
+                      <div className="flex items-center gap-4">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${group.type === 'income' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
+                          <i className={`fas ${isExpanded ? 'fa-folder-open' : 'fa-folder'}`}></i>
+                        </div>
+                        <div>
+                          <p className="font-bold text-sm flex items-center gap-2">
+                            {group.displayName}
+                            <span className="text-[10px] bg-white/10 px-2 py-0.5 rounded-full font-normal opacity-70">
+                              {group.items.length} {lang.lang === 'bn' ? 'বার' : 'times'}
+                            </span>
+                          </p>
+                          <p className={`text-[10px] ${textMuted}`}>{group.category}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <p className={`font-bold ${group.type === 'income' ? 'text-emerald-500' : 'text-rose-500'}`}>
+                          {group.type === 'income' ? '+' : '-'}{settings.currency}{group.total.toLocaleString()}
+                        </p>
+                        <i className={`fas fa-chevron-down text-xs transition-transform duration-300 opacity-50 ${isExpanded ? 'rotate-180' : ''}`}></i>
+                      </div>
+                    </div>
+
+                    {/* Collapsible Child Transactions */}
+                    {isExpanded && (
+                      <div className="bg-black/10 border-t border-white/5 divide-y divide-white/5 px-4 py-2">
+                        {group.items.map(item => (
+                          <div key={item.id} className="flex justify-between items-center py-2 text-xs">
+                            <span className={`${textMuted}`}>
+                              {new Date(item.date).toLocaleDateString(lang.lang === 'bn' ? 'bn-BD' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                            </span>
+                            <span className={`font-semibold ${item.type === 'income' ? 'text-emerald-500' : 'text-rose-500'}`}>
+                              {item.type === 'income' ? '+' : '-'}{settings.currency}{item.amount.toLocaleString()}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+              {groupedTransactions.length === 0 && <p className="text-center opacity-50 mt-10">{lang.noRecords}</p>}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {transactions.map(tx => (
+                <div key={tx.id} className={`p-4 rounded-2xl ${glassClass} flex justify-between items-center`}>
+                  <div className="flex items-center gap-4">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${tx.type === 'income' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}><i className="fas fa-dollar-sign"></i></div>
+                    <div>
+                      <p className="font-bold text-sm">{tx.description || tx.category}</p>
+                      <p className={`text-[10px] ${textMuted}`}>{tx.category} • {new Date(tx.date).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                  <p className={`font-bold ${tx.type === 'income' ? 'text-emerald-500' : 'text-rose-500'}`}>{tx.type === 'income' ? '+' : '-'}{settings.currency}{tx.amount}</p>
+                </div>
+              ))}
+              {transactions.length === 0 && <p className="text-center opacity-50 mt-10">{lang.noRecords}</p>}
+            </div>
+          )}
         </div>
       );
     }
 
     function SettingsPage({ lang, settings, setSettings, glassClass, textMuted, triggerFeedback, showToast, user, loginWithGoogle, setSetupPin }) {
       const toggle = (k) => { setSettings(s => { const ns = {...s, [k]: !s[k]}; triggerFeedback('click', ns); return ns; }); };
+      const changeColor = (color) => { setSettings(s => ({...s, themeColor: color})); triggerFeedback('click', settings); };
+      
       const Row = ({ icon, label, val, action, comp }) => (
         <div className="flex items-center justify-between py-4 border-b border-white/5 last:border-0" onClick={action}>
           <div className="flex items-center gap-3"><i className={`fas ${icon} w-5 ${textMuted}`}></i><span>{label}</span></div>
           {comp ? comp : (
-            <div className={`w-12 h-6 rounded-full p-1 transition-colors ${val ? 'bg-indigo-500' : 'bg-slate-600'}`}>
+            <div className={`w-12 h-6 rounded-full p-1 transition-colors ${val ? 'bg-emerald-500' : 'bg-slate-600'}`}>
               <div className={`w-4 h-4 rounded-full bg-white transition-transform ${val ? 'translate-x-6' : 'translate-x-0'}`} />
             </div>
           )}
         </div>
       );
+
+      const exportData = () => {
+        const data = localStorage.getItem('finai_txs_v6');
+        const blob = new Blob([data], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url; a.download = "FinAI_Backup.json"; a.click();
+        showToast("Data Exported", "success");
+      };
+
       return (
-        <div className={`space-y-4 ${settings.animations ? 'animate-fade-in-up' : ''}`}>
+        <div className={`space-y-4 pb-20 ${settings.animations ? 'animate-fade-in-up' : ''}`}>
           <div className={`p-4 rounded-2xl ${glassClass} border ${user ? 'border-emerald-500/30' : 'border-amber-500/30'}`} onClick={!user ? loginWithGoogle : undefined}>
              <div className="flex items-center gap-4">
                 <i className={`fab fa-google text-2xl ${user ? 'text-emerald-500' : 'text-amber-500'}`}></i>
                 <div>
-                   <p className="font-bold">{user ? 'Cloud Sync Active' : lang.login}</p>
-                   <p className={`text-xs ${textMuted}`}>{user ? user.email : 'Login to backup data online'}</p>
+                   <p className="font-bold">{user ? 'Cloud Sync Active' : lang.loginTip}</p>
+                   <p className={`text-xs ${textMuted}`}>{user ? user.email : 'Backup data online'}</p>
                 </div>
              </div>
           </div>
 
           <div className={`p-4 rounded-2xl ${glassClass}`}>
-            <h3 className="text-xs font-bold uppercase opacity-50 mb-2">Display</h3>
             <Row icon="fa-moon" label={lang.darkMode} val={settings.darkMode} action={() => toggle('darkMode')} />
-            <Row icon="fa-globe" label={lang.language} comp={<span className="font-bold text-indigo-400">{settings.lang.toUpperCase()}</span>} action={() => { toggle('langFake'); setSettings(s => ({...s, lang: s.lang==='bn'?'en':'bn'})); }} />
-            <Row icon="fa-dollar-sign" label={lang.currency} comp={<span className="font-bold text-indigo-400">{settings.currency}</span>} action={() => { toggle('curFake'); setSettings(s => ({...s, currency: s.currency==='৳'?'$':'৳'})); }} />
+            <Row icon="fa-globe" label={lang.language} comp={<span className="font-bold text-indigo-400">{settings.lang.toUpperCase()}</span>} action={() => { setSettings(s => ({...s, lang: s.lang==='bn'?'en':'bn'})); triggerFeedback('click', settings);}} />
+            <Row icon="fa-dollar-sign" label={lang.currency} comp={<span className="font-bold text-indigo-400">{settings.currency}</span>} action={() => { setSettings(s => ({...s, currency: s.currency==='৳'?'$':'৳'})); triggerFeedback('click', settings);}} />
+            <Row icon="fa-palette" label={lang.theme} comp={
+              <div className="flex gap-2">
+                {['indigo', 'rose', 'emerald', 'amber'].map(c => <div key={c} onClick={(e)=>{e.stopPropagation(); changeColor(c)}} className={`w-6 h-6 rounded-full bg-${c}-500 ${settings.themeColor===c?'ring-2 ring-white':''}`}></div>)}
+              </div>
+            }/>
           </div>
+          
           <div className={`p-4 rounded-2xl ${glassClass}`}>
-            <h3 className="text-xs font-bold uppercase opacity-50 mb-2">Smart Features</h3>
             <Row icon="fa-volume-high" label={lang.sound} val={settings.sound} action={() => toggle('sound')} />
             <Row icon="fa-mobile-screen" label={lang.vibration} val={settings.vibration} action={() => toggle('vibration')} />
           </div>
+
           <div className={`p-4 rounded-2xl ${glassClass}`}>
-            <h3 className="text-xs font-bold uppercase opacity-50 mb-2">Security</h3>
-            <Row icon="fa-fingerprint" label={lang.appLock} val={settings.appLock} action={() => {
-                if (settings.appLock) {
-                    toggle('appLock');
-                    setSettings(s => ({...s, pinCode: ''}));
-                } else {
-                    setSetupPin(true);
-                }
-            }} />
-            <div className="flex items-center justify-between py-4 text-rose-500" onClick={() => { 
-                triggerFeedback('warning', settings); 
-                localStorage.clear();
-                window.location.reload();
-            }}>
-              <div className="flex items-center gap-3"><i className="fas fa-trash w-5"></i><span>{lang.resetData}</span></div>
+            <Row icon="fa-fingerprint" label={lang.appLock} val={settings.appLock} action={() => { if(settings.appLock){toggle('appLock');setSettings(s=>({...s,pinCode:''}))} else setSetupPin(true); }} />
+            <Row icon="fa-file-export" label={lang.export} action={exportData} comp={<i className="fas fa-chevron-right text-xs opacity-50"></i>}/>
+            <div className="flex items-center justify-between py-4 text-rose-500" onClick={() => { localStorage.clear(); window.location.reload(); }}>
+              <div className="flex items-center gap-3"><i className="fas fa-trash w-5"></i><span>{lang.reset}</span></div>
             </div>
           </div>
         </div>
       );
     }
 
-    function AboutPage({ glassClass, textMuted }) {
+    function AboutPage({ lang, glassClass, textMuted }) {
       return (
-        <div className={`flex flex-col items-center text-center p-6 space-y-6 ${glassClass} rounded-3xl mt-4 animate-fade-in-up`}>
+        <div className={`flex flex-col items-center text-center p-6 space-y-6 ${glassClass} rounded-3xl mt-4 animate-fade-in-up pb-20`}>
           <div className="w-24 h-24 rounded-3xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center shadow-xl"><i className="fas fa-chart-line text-4xl text-white"></i></div>
-          <div><h2 className="text-2xl font-bold">FinAI PRO</h2><p className={`text-sm ${textMuted} mt-1`}>Version 2.0.1 (Build 402)</p></div>
-          <p className="text-sm opacity-80">Premium AI-powered financial tracking. Designed with privacy and beautiful aesthetics.</p>
-          <div className="w-full text-left space-y-3 text-sm mt-4 border-t border-white/10 pt-4">
-            <div className="flex justify-between"><span className={textMuted}>Developer</span><span className="font-medium">AFR Technology</span></div>
+          <div>
+            <h2 className="text-2xl font-bold">FinAI PRO</h2>
+            <p className={`text-sm ${textMuted} mt-1`}>{lang.version} 5.0.0 (Build 602)</p>
+          </div>
+          
+          <div className="flex gap-4 my-2">
+             <a href="https://www.facebook.com/" target="_blank" className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white hover:scale-110 transition-transform"><i className="fab fa-facebook-f"></i></a>
+             <a href="https://wa.me/8801690191751" target="_blank" className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white hover:scale-110 transition-transform"><i className="fab fa-whatsapp"></i></a>
+             <a href="https://t.me/+8801690191751" target="_blank" className="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center text-white hover:scale-110 transition-transform"><i className="fab fa-telegram-plane"></i></a>
+          </div>
+
+          <div className="w-full text-left space-y-3 text-sm border-t border-white/10 pt-4">
+            <div className="flex justify-between items-center">
+                <span className={textMuted}>{lang.dev}</span>
+                <span className="stylish-name text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">M H Ridoy</span>
+            </div>
             <div className="flex justify-between"><span className={textMuted}>License</span><span className="font-medium">Pro Lifetime</span></div>
           </div>
         </div>
       );
     }
 
-    function AddTransactionModal({ lang, onClose, onSave, settings, glassClass, textMuted, triggerFeedback }) {
+    function AddTransactionModal({ lang, onClose, onSave, settings, glassClass, textMuted, pbg, tf }) {
       const [type, setType] = useState('expense');
       const [amount, setAmount] = useState('');
-      const [category, setCategory] = useState(settings.lang === 'en' ? 'Food' : 'খাবার');
-      const categories = settings.lang === 'bn' ? (type === 'expense' ? ['খাবার', 'যাতায়াত', 'শপিং', 'বিল', 'স্বাস্থ্য', 'অন্যান্য'] : ['বেতন', 'ফ্রিল্যান্স', 'বিনিয়োগ', 'উপহার', 'অন্যান্য']) : (type === 'expense' ? ['Food', 'Transport', 'Shopping', 'Bills', 'Health', 'Other'] : ['Salary', 'Freelance', 'Invest', 'Gift', 'Other']);
+      const [description, setDescription] = useState('');
+      const [category, setCategory] = useState(lang.catFood);
+      
+      const expCats = [lang.catFood, lang.catTransport, lang.catShop, lang.catBill, lang.catHealth, lang.catOther];
+      const incCats = [lang.catSalary, lang.catFree, lang.catInv, lang.catGift, lang.catOther];
+      const categories = type === 'expense' ? expCats : incCats;
 
       return (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className={`w-full sm:max-w-md ${glassClass} ${settings.darkMode ? 'bg-slate-900/95' : 'bg-white/95'} rounded-t-3xl sm:rounded-3xl p-6 animate-slide-up`}>
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className={`w-full ${glassClass} ${settings.darkMode ? 'bg-slate-900/95' : 'bg-white/95'} rounded-t-3xl p-6 animate-slide-up pb-10`}>
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold">{lang.addRecord}</h2>
-              <button onClick={() => { triggerFeedback('click', settings); onClose(); }} className="p-2 bg-white/10 rounded-full"><i className="fas fa-times"></i></button>
+              <button onClick={() => { tf('click', settings); onClose(); }} className="p-2 bg-white/10 rounded-full"><i className="fas fa-times"></i></button>
             </div>
-            <form onSubmit={(e) => { e.preventDefault(); if(amount) onSave({ id: Date.now(), type, amount: Number(amount), category, date: new Date().toISOString() }); }} className="space-y-6">
+            <form onSubmit={(e) => { 
+              e.preventDefault(); 
+              if(amount) {
+                onSave({ 
+                  id: Date.now(), 
+                  type, 
+                  amount: Number(amount), 
+                  category, 
+                  description: description.trim(), 
+                  date: new Date().toISOString() 
+                }); 
+              }
+            }} className="space-y-4">
               <div className="flex p-1 bg-black/20 rounded-xl">
-                <button type="button" onClick={() => { triggerFeedback('click', settings); setType('expense'); setCategory(settings.lang === 'bn' ? 'খাবার' : 'Food'); }} className={`flex-1 py-2 rounded-lg font-medium transition-colors ${type === 'expense' ? 'bg-rose-500 text-white shadow-md' : 'opacity-50'}`}>{lang.expense}</button>
-                <button type="button" onClick={() => { triggerFeedback('click', settings); setType('income'); setCategory(settings.lang === 'bn' ? 'বেতন' : 'Salary'); }} className={`flex-1 py-2 rounded-lg font-medium transition-colors ${type === 'income' ? 'bg-emerald-500 text-white shadow-md' : 'opacity-50'}`}>{lang.income}</button>
+                <button type="button" onClick={() => { tf('click', settings); setType('expense'); setCategory(lang.catFood); }} className={`flex-1 py-2 rounded-lg text-sm font-bold transition-colors ${type === 'expense' ? 'bg-rose-500 text-white shadow-md' : 'opacity-50'}`}>{lang.expense.split(' ')[1]}</button>
+                <button type="button" onClick={() => { tf('click', settings); setType('income'); setCategory(lang.catSalary); }} className={`flex-1 py-2 rounded-lg text-sm font-bold transition-colors ${type === 'income' ? 'bg-emerald-500 text-white shadow-md' : 'opacity-50'}`}>{lang.income.split(' ')[1]}</button>
               </div>
-              <div>
-                <label className={`block text-xs font-bold uppercase mb-2 ${textMuted}`}>{lang.amount}</label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-2xl font-light opacity-50">{settings.currency}</span>
-                  <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} className={`w-full bg-black/10 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-3xl font-bold focus:outline-none focus:ring-2 ${type === 'expense' ? 'focus:ring-rose-500' : 'focus:ring-emerald-500'} bg-transparent`} placeholder="0.00" autoFocus />
-                </div>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-2xl opacity-50">{settings.currency}</span>
+                <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} className="w-full bg-black/10 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-3xl font-bold focus:outline-none bg-transparent" placeholder="0.00" autoFocus />
               </div>
+              
+              {/* Description Input Field */}
               <div>
-                <label className={`block text-xs font-bold uppercase mb-2 ${textMuted}`}>{lang.category}</label>
+                <p className={`text-xs font-bold uppercase mb-2 ${textMuted}`}>{lang.desc}</p>
+                <input 
+                  type="text" 
+                  value={description} 
+                  onChange={(e) => setDescription(e.target.value)} 
+                  className="w-full bg-black/10 border border-white/10 rounded-2xl py-3 px-4 text-sm focus:outline-none bg-transparent" 
+                  placeholder={settings.lang === 'bn' ? 'যেমন: গাড়ি ভাড়া, দুপুরের খাবার' : 'e.g. Car rent, Lunch'} 
+                />
+              </div>
+
+              <div>
+                <p className={`text-xs font-bold uppercase mb-2 ${textMuted}`}>{lang.category}</p>
                 <div className="grid grid-cols-3 gap-2">
                   {categories.map(c => (
-                    <button key={c} type="button" onClick={() => { triggerFeedback('click', settings); setCategory(c); }} className={`py-2 px-2 text-xs font-medium rounded-xl border transition-all ${category === c ? (type === 'expense' ? 'bg-rose-500/20 border-rose-500 text-rose-400' : 'bg-emerald-500/20 border-emerald-500 text-emerald-400') : 'border-white/10 opacity-60 bg-white/5'}`}>{c}</button>
+                    <button key={c} type="button" onClick={() => { tf('click', settings); setCategory(c); }} className={`py-2 text-xs font-bold rounded-xl border ${category === c ? (type==='expense'?'bg-rose-500/20 border-rose-500 text-rose-400':'bg-emerald-500/20 border-emerald-500 text-emerald-400') : 'border-white/10 opacity-60'}`}>{c}</button>
                   ))}
                 </div>
               </div>
-              <button type="submit" className={`w-full py-4 rounded-xl font-bold text-lg text-white shadow-lg active:scale-95 transition-transform ${type === 'expense' ? 'bg-gradient-to-r from-rose-500 to-pink-600' : 'bg-gradient-to-r from-emerald-500 to-teal-500'}`}>{lang.save}</button>
+              <button type="submit" className={`w-full py-4 mt-4 rounded-xl font-bold text-lg text-white shadow-lg active:scale-95 transition-transform ${pbg}`}>{lang.save}</button>
             </form>
           </div>
         </div>
