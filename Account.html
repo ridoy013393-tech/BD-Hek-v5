@@ -7,7 +7,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
@@ -52,9 +51,7 @@
       appId: "1:984254477080:web:5515ed51d48bd28015246d"
     };
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
     const db = firebase.firestore();
-    const googleProvider = new firebase.auth.GoogleAuthProvider();
 
     const triggerFeedback = (type, settings) => {
       if (settings.vibration && navigator.vibrate) {
@@ -87,8 +84,8 @@
         addRecord: 'New Record', amount: 'Amount', category: 'Category', save: 'Save Record',
         aiTitle: 'AI Financial Analysis', health: 'Financial Health', avgDaily: 'Avg Daily Expense',
         biggestExp: 'Biggest Expense', biggestInc: 'Biggest Income', whereSpend: 'Where you spend the most',
-        aiTip: 'AI Suggestion', noRecords: 'No records found.', guest: 'Guest',
-        loginTip: 'Tap to Login', lockApp: 'Lock App', logout: 'Logout',
+        aiTip: 'AI Suggestion', noRecords: 'No records found.', guest: 'Guest / Offline',
+        loginTip: 'Set Sync Key in Settings', lockApp: 'Lock App', logout: 'Logout',
         darkMode: 'Dark Mode', language: 'Language', currency: 'Currency', theme: 'Theme Color',
         sound: 'Sound Effects', vibration: 'Vibration', appLock: 'App Lock (PIN)',
         export: 'Export Data', reset: 'Factory Reset', enterPin: 'Enter PIN', setPin: 'Set New PIN',
@@ -98,7 +95,9 @@
         qaTransfer: 'Transfer', qaRequest: 'Request', qaTopUp: 'Top Up', qaBills: 'Bills',
         budgetLimit: 'Monthly Budget Limit', setBudget: 'Set Budget', totalSpent: 'Total Spent',
         savingsGoal: 'Savings Goal', addSavings: 'Add to Savings', target: 'Target', clear: 'Clear', result: 'Result',
-        desc: 'Description / Name', folderView: 'Folder View', allTx: 'All Transactions'
+        desc: 'Description / Name', folderView: 'Folder View', allTx: 'All Transactions',
+        backupTitle: 'Cloud Backup & Sync', backupCode: 'Secret Sync Key', backupBtn: 'Backup to Cloud', restoreBtn: 'Restore Data',
+        backupSuccess: 'Data successfully backed up to cloud!', restoreSuccess: 'Data restored successfully!', enterCode: 'Please enter a Sync Key'
       },
       bn: {
         dashboard: 'ড্যাশবোর্ড', transactions: 'লেনদেন', reports: 'এআই রিপোর্ট', 
@@ -109,8 +108,8 @@
         addRecord: 'নতুন হিসাব', amount: 'টাকার পরিমাণ', category: 'ক্যাটাগরি', save: 'সেভ করুন',
         aiTitle: 'এআই আর্থিক বিশ্লেষণ', health: 'আর্থিক স্বাস্থ্য', avgDaily: 'দৈনিক গড় খরচ',
         biggestExp: 'সবচেয়ে বড় খরচ', biggestInc: 'সবচেয়ে বড় আয়', whereSpend: 'যেখানে বেশি খরচ করেছেন',
-        aiTip: 'এআই পরামর্শ', noRecords: 'কোনো হিসাব নেই।', guest: 'গেস্ট',
-        loginTip: 'লগইন করতে চাপুন', lockApp: 'অ্যাপ লক করুন', logout: 'লগআউট',
+        aiTip: 'এআই পরামর্শ', noRecords: 'কোনো হিসাব নেই।', guest: 'গেস্ট / অফলাইন',
+        loginTip: 'সেটিংস থেকে ব্যাকআপ কোড দিন', lockApp: 'অ্যাপ লক করুন', logout: 'লগআউট',
         darkMode: 'ডার্ক মোড', language: 'ভাষা (Language)', currency: 'মুদ্রা', theme: 'থিম কালার',
         sound: 'সাউন্ড ইফেক্ট', vibration: 'ভাইব্রেশন', appLock: 'অ্যাপ লক (PIN)',
         export: 'ডাটা এক্সপোর্ট', reset: 'সব ডাটা মুছুন', enterPin: 'পিন দিন', setPin: 'নতুন পিন সেট করুন',
@@ -120,13 +119,14 @@
         qaTransfer: 'ট্রান্সফার', qaRequest: 'রিকোয়েস্ট', qaTopUp: 'টপ আপ', qaBills: 'পেমেন্ট',
         budgetLimit: 'মাসিক বাজেট লিমিট', setBudget: 'বাজেট সেট করুন', totalSpent: 'মোট খরচ হয়েছে',
         savingsGoal: 'সঞ্চয়ের লক্ষ্য', addSavings: 'সঞ্চয় জমা করুন', target: 'লক্ষ্য', clear: 'মুছুন', result: 'ফলাফল',
-        desc: 'বিবরণ / নাম', folderView: 'ফোল্ডার ভিউ', allTx: 'সব লেনদেন'
+        desc: 'বিবরণ / নাম', folderView: 'ফোল্ডার ভিউ', allTx: 'সব লেনদেন',
+        backupTitle: 'ক্লাউড ব্যাকআপ ও সিঙ্ক', backupCode: 'সিক্রেট সিঙ্ক কী (যেমন: ফোন নাম্বার)', backupBtn: 'ক্লাউডে ব্যাকআপ রাখুন', restoreBtn: 'তথ্য ফিরিয়ে আনুন',
+        backupSuccess: 'সফলভাবে ক্লাউডে ব্যাকআপ নেওয়া হয়েছে!', restoreSuccess: 'আপনার আগের সমস্ত তথ্য ফিরে এসেছে!', enterCode: 'অনুগ্রহ করে একটি সিঙ্ক কী দিন'
       }
     };
 
     function App() {
       const [splash, setSplash] = useState(true);
-      const [user, setUser] = useState(null);
       const [locked, setLocked] = useState(true);
       const [pin, setPin] = useState('');
       const [setupPin, setSetupPin] = useState(false);
@@ -139,18 +139,12 @@
       const [settings, setSettings] = useState(() => JSON.parse(localStorage.getItem('finai_settings_v6')) || { 
           darkMode: true, lang: 'bn', currency: '৳', sound: true, vibration: true, appLock: false, pinCode: '', animations: true, themeColor: 'indigo', fontSize: 'text-base' 
       });
+      const [syncCode, setSyncCode] = useState(() => localStorage.getItem('finai_synccode_v6') || '');
 
       useEffect(() => { localStorage.setItem('finai_settings_v6', JSON.stringify(settings)); }, [settings]);
       useEffect(() => { localStorage.setItem('finai_extra_v6', JSON.stringify(extraData)); }, [extraData]);
+      useEffect(() => { localStorage.setItem('finai_synccode_v6', syncCode); }, [syncCode]);
       useEffect(() => { setTimeout(() => setSplash(false), 2000); }, []);
-      useEffect(() => { auth.onAuthStateChanged(setUser); }, []);
-      useEffect(() => {
-        if (!user) return;
-        return db.collection('users').doc(user.uid).collection('transactions').onSnapshot((snapshot) => {
-            const data = snapshot.docs.map(doc => ({ id: Number(doc.id), ...doc.data() })).sort((a,b) => new Date(b.date) - new Date(a.date));
-            if (data.length > 0) { setTransactions(data); localStorage.setItem('finai_txs_v6', JSON.stringify(data)); }
-        });
-      }, [user]);
 
       const lang = t[settings.lang];
       const showToast = (message, type = 'info') => {
@@ -159,29 +153,61 @@
       };
       const navTo = (route) => { triggerFeedback('click', settings); setCurrentRoute(route); setSidebarOpen(false); };
 
-      // জিমেইল লগইন হ্যান্ডেলার (এরর হ্যান্ডেলিং সহ)
-      const handleGoogleLogin = async () => {
+      // ম্যানুয়াল ক্লাউড ব্যাকআপ ফাংশন
+      const handleCloudBackup = async (code) => {
+        if (!code.trim()) {
+          showToast(lang.enterCode, 'error');
+          return;
+        }
         triggerFeedback('click', settings);
         try {
-          await auth.signInWithPopup(googleProvider);
-          showToast(settings.lang === 'bn' ? 'সফলভাবে লগইন করা হয়েছে!' : 'Logged in successfully!', 'success');
-        } catch (error) {
-          console.error("Login Error: ", error);
-          let errorMsg = error.message;
-          if (window.location.protocol === 'file:') {
-            errorMsg = settings.lang === 'bn' 
-              ? "লোকাল ফাইল (file://) থেকে গুগল লগইন সরাসরি কাজ করবে না। এটি চালাতে VS Code-এর 'Live Server' অথবা ব্রাউজার লোকাল হোস্ট ব্যবহার করুন।" 
-              : "Google Login doesn't work on local files (file://). Please run using VS Code 'Live Server' or web hosting.";
-          } else if (error.code === 'auth/operation-not-allowed') {
-            errorMsg = settings.lang === 'bn'
-              ? "আপনার Firebase কনসোলে Google Auth মেথডটি চালু (Enable) করা নেই।"
-              : "Google Sign-In is not enabled in your Firebase Console.";
-          } else if (error.code === 'auth/popup-blocked') {
-            errorMsg = settings.lang === 'bn'
-              ? "ব্রাউজারের পপ-আপ ব্লকার উইন্ডোটি আটকেছে। ব্রাউজারের পপ-আপ পারমিশন দিন।"
-              : "Popup blocked by browser. Please allow popups for this site.";
+          const cleanCode = code.trim().toLowerCase();
+          await db.collection('backups').doc(cleanCode).set({
+            transactions,
+            extraData,
+            settings,
+            updatedAt: new Date().toISOString()
+          });
+          setSyncCode(cleanCode);
+          showToast(lang.backupSuccess, 'success');
+        } catch (e) {
+          console.error(e);
+          showToast('Backup failed: ' + e.message, 'error');
+        }
+      };
+
+      // ক্লাউড থেকে ডাটা পুনরুদ্ধার করার ফাংশন
+      const handleCloudRestore = async (code) => {
+        if (!code.trim()) {
+          showToast(lang.enterCode, 'error');
+          return;
+        }
+        triggerFeedback('click', settings);
+        try {
+          const cleanCode = code.trim().toLowerCase();
+          const doc = await db.collection('backups').doc(cleanCode).get();
+          if (doc.exists) {
+            const data = doc.data();
+            if (data.transactions) {
+              setTransactions(data.transactions);
+              localStorage.setItem('finai_txs_v6', JSON.stringify(data.transactions));
+            }
+            if (data.extraData) {
+              setExtraData(data.extraData);
+              localStorage.setItem('finai_extra_v6', JSON.stringify(data.extraData));
+            }
+            if (data.settings) {
+              setSettings(data.settings);
+              localStorage.setItem('finai_settings_v6', JSON.stringify(data.settings));
+            }
+            setSyncCode(cleanCode);
+            showToast(lang.restoreSuccess, 'success');
+          } else {
+            showToast(settings.lang === 'bn' ? 'এই কোড দিয়ে কোনো ব্যাকআপ পাওয়া যায়নি!' : 'No backup found with this key!', 'error');
           }
-          showToast(errorMsg, 'error');
+        } catch (e) {
+          console.error(e);
+          showToast('Restore failed: ' + e.message, 'error');
         }
       };
 
@@ -254,12 +280,26 @@
           {sidebarOpen && <div className="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm transition-opacity" onClick={() => setSidebarOpen(false)} />}
           <div className={`fixed top-0 left-0 h-full w-72 z-50 ${glassClass} transform transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} overflow-y-auto pb-10`}>
             <div className="p-6 pt-12 flex items-center gap-4 border-b border-white/10">
-              {user ? (
-                <><img src={user.photoURL} className={`w-12 h-12 rounded-full border-2 border-${settings.themeColor}-500`} />
-                <div><h3 className="font-bold text-sm truncate w-40">{user.displayName}</h3><p className="text-xs opacity-70">Pro Member</p></div></>
+              {syncCode ? (
+                <>
+                  <div className={`w-12 h-12 rounded-full border-2 border-${settings.themeColor}-500 flex items-center justify-center bg-${settings.themeColor}-500/10`}>
+                    <i className={`fas fa-cloud text-xl text-${settings.themeColor}-500`}></i>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-sm truncate w-40">{syncCode.toUpperCase()}</h3>
+                    <p className="text-xs opacity-70">Cloud Sync Active</p>
+                  </div>
+                </>
               ) : (
-                <><div className="w-12 h-12 rounded-full border-2 border-slate-500 flex items-center justify-center bg-slate-800"><i className="fas fa-user"></i></div>
-                <div onClick={handleGoogleLogin} className="cursor-pointer"><h3 className="font-bold text-sm">{lang.guest}</h3><p className={`text-xs ${primaryColorClass}`}>{lang.loginTip}</p></div></>
+                <>
+                  <div className="w-12 h-12 rounded-full border-2 border-slate-500 flex items-center justify-center bg-slate-800">
+                    <i className="fas fa-user-slash text-slate-400"></i>
+                  </div>
+                  <div onClick={() => navTo('settings')} className="cursor-pointer">
+                    <h3 className="font-bold text-sm">{lang.guest}</h3>
+                    <p className={`text-xs ${primaryColorClass}`}>{lang.loginTip}</p>
+                  </div>
+                </>
               )}
             </div>
             <div className="py-2 flex flex-col h-full">
@@ -270,7 +310,6 @@
               ))}
               <div className="mt-8 border-t border-white/5 pt-4">
                  {settings.appLock && <button onClick={() => { setLocked(true); setSidebarOpen(false); }} className="flex items-center gap-4 px-6 py-3 text-amber-400 w-full text-left"><i className="fas fa-lock w-5"></i> <span className="font-medium">{lang.lockApp}</span></button>}
-                 {user && <button onClick={() => { auth.signOut(); setSidebarOpen(false); }} className="flex items-center gap-4 px-6 py-3 text-red-400 w-full text-left"><i className="fas fa-right-from-bracket w-5"></i> <span className="font-medium">{lang.logout}</span></button>}
               </div>
             </div>
           </div>
@@ -282,7 +321,7 @@
             {currentRoute === 'savings' && <SavingsPage lang={lang} extra={extraData} setExtra={setExtraData} settings={settings} glassClass={glassClass} textMuted={textMuted} pc={primaryColorClass} pbg={primaryBgClass} tf={triggerFeedback}/>}
             {currentRoute === 'calendar' && <CalendarPage lang={lang} transactions={transactions} settings={settings} glassClass={glassClass} textMuted={textMuted} pc={primaryColorClass} pbg={primaryBgClass}/>}
             {currentRoute === 'calculator' && <CalculatorPage lang={lang} settings={settings} glassClass={glassClass} textMuted={textMuted} tf={triggerFeedback}/>}
-            {currentRoute === 'settings' && <SettingsPage lang={lang} settings={settings} setSettings={setSettings} glassClass={glassClass} textMuted={textMuted} triggerFeedback={triggerFeedback} showToast={showToast} user={user} setSetupPin={setSetupPin} loginWithGoogle={handleGoogleLogin}/>}
+            {currentRoute === 'settings' && <SettingsPage lang={lang} settings={settings} setSettings={setSettings} glassClass={glassClass} textMuted={textMuted} triggerFeedback={triggerFeedback} showToast={showToast} syncCode={syncCode} setSyncCode={setSyncCode} handleCloudBackup={handleCloudBackup} handleCloudRestore={handleCloudRestore} setSetupPin={setSetupPin} />}
             {currentRoute === 'about' && <AboutPage lang={lang} glassClass={glassClass} textMuted={textMuted} />}
             {currentRoute === 'transactions' && <TransactionsPage lang={lang} transactions={transactions} settings={settings} glassClass={glassClass} textMuted={textMuted} />}
           </main>
@@ -298,9 +337,23 @@
           </nav>
 
           {currentRoute === 'add-transaction' && <AddTransactionModal lang={lang} onClose={() => navTo('dashboard')} onSave={(tx)=>{
-              const newTxs = [tx, ...transactions]; setTransactions(newTxs); localStorage.setItem('finai_txs_v6', JSON.stringify(newTxs));
-              if(user) db.collection('users').doc(user.uid).collection('transactions').doc(tx.id.toString()).set(tx);
-              showToast('Saved successfully', 'success'); navTo('dashboard');
+              const newTxs = [tx, ...transactions]; 
+              setTransactions(newTxs); 
+              localStorage.setItem('finai_txs_v6', JSON.stringify(newTxs));
+              
+              // অটো-ব্যাকআপ সিস্টেম (সিঙ্ক কী সক্রিয় থাকলে ডাটা স্বয়ংক্রিয়ভাবে জমা হবে)
+              if (syncCode) {
+                const cleanCode = syncCode.trim().toLowerCase();
+                db.collection('backups').doc(cleanCode).set({
+                  transactions: newTxs,
+                  extraData: extraData,
+                  settings: settings,
+                  updatedAt: new Date().toISOString()
+                }).catch(err => console.log("Auto-sync error:", err));
+              }
+
+              showToast('Saved successfully', 'success'); 
+              navTo('dashboard');
           }} settings={settings} glassClass={glassClass} textMuted={textMuted} pbg={primaryBgClass} tf={triggerFeedback}/>}
 
           {toast && (
@@ -686,7 +739,8 @@
       );
     }
 
-    function SettingsPage({ lang, settings, setSettings, glassClass, textMuted, triggerFeedback, showToast, user, loginWithGoogle, setSetupPin }) {
+    function SettingsPage({ lang, settings, setSettings, glassClass, textMuted, triggerFeedback, showToast, syncCode, setSyncCode, handleCloudBackup, handleCloudRestore, setSetupPin }) {
+      const [localCode, setLocalCode] = useState(syncCode);
       const toggle = (k) => { setSettings(s => { const ns = {...s, [k]: !s[k]}; triggerFeedback('click', ns); return ns; }); };
       const changeColor = (color) => { setSettings(s => ({...s, themeColor: color})); triggerFeedback('click', settings); };
       
@@ -712,13 +766,47 @@
 
       return (
         <div className={`space-y-4 pb-20 ${settings.animations ? 'animate-fade-in-up' : ''}`}>
-          <div className={`p-4 rounded-2xl ${glassClass} border ${user ? 'border-emerald-500/30' : 'border-amber-500/30'} cursor-pointer`} onClick={!user ? loginWithGoogle : undefined}>
-             <div className="flex items-center gap-4">
-                <i className={`fab fa-google text-2xl ${user ? 'text-emerald-500' : 'text-amber-500'}`}></i>
+          
+          {/* Cloud Sync Key Card */}
+          <div className={`p-5 rounded-2xl ${glassClass} border border-indigo-500/30 space-y-4`}>
+             <div className="flex items-center gap-3">
+                <i className="fas fa-cloud-arrow-up text-2xl text-indigo-400"></i>
                 <div>
-                   <p className="font-bold">{user ? 'Cloud Sync Active' : lang.loginTip}</p>
-                   <p className={`text-xs ${textMuted}`}>{user ? user.email : 'Backup data online'}</p>
+                   <p className="font-bold">{lang.backupTitle}</p>
+                   <p className={`text-xs ${textMuted}`}>{settings.lang === 'bn' ? 'যেকোনো ডিভাইসে ডেটা ফিরিয়ে আনতে গোপন কোডটি লিখে রিস্টোর চাপুন।' : 'Use your secret key to restore data on any device.'}</p>
                 </div>
+             </div>
+             
+             <div className="space-y-2 pt-1">
+               <p className={`text-[10px] font-bold uppercase tracking-wider ${textMuted}`}>{lang.backupCode}</p>
+               <input 
+                 type="text" 
+                 value={localCode} 
+                 onChange={(e) => setLocalCode(e.target.value)} 
+                 className="w-full bg-black/20 border border-white/10 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:border-indigo-500 bg-transparent text-white" 
+                 placeholder={settings.lang === 'bn' ? 'যেমন: আপনার ফোন নম্বর বা যেকোনো পাসওয়ার্ড' : 'e.g. Phone number or secure word'} 
+               />
+             </div>
+
+             <div className="grid grid-cols-2 gap-3 pt-1">
+               <button 
+                 onClick={() => {
+                   setSyncCode(localCode);
+                   handleCloudBackup(localCode);
+                 }} 
+                 className="py-3 px-4 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 active:scale-95 transition-transform flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/20"
+               >
+                 <i className="fas fa-upload"></i> {lang.backupBtn}
+               </button>
+               <button 
+                 onClick={() => {
+                   setSyncCode(localCode);
+                   handleCloudRestore(localCode);
+                 }} 
+                 className="py-3 px-4 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:scale-95 transition-transform flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20"
+               >
+                 <i className="fas fa-download"></i> {lang.restoreBtn}
+               </button>
              </div>
           </div>
 
