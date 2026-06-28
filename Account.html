@@ -53,7 +53,7 @@
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // অফলাইন পারসিস্টেন্স বা লোকাল ক্যাশিং চালু করা
+    // অফলাইন ফায়ারস্টোর পারসিস্টেন্স বা ডাটাবেজ ক্যাশিং চালু করা
     db.enablePersistence({ synchronizeTabs: true }).catch((err) => {
       console.warn("Firestore offline persistence status: ", err.code);
     });
@@ -172,7 +172,7 @@
         };
       }, [settings.lang]);
 
-      // অফলাইনে কাজ শেষ করে পুনরায় অনলাইনে আসলে স্বয়ংক্রিয় সিঙ্ক চালু করা
+      // অফলাইনে কাজ শেষ করে পুনরায় অনলাইনে আসলে স্বয়ংক্রিয় সিঙ্ক সচল করা
       useEffect(() => {
         if (isOnline && syncCode && transactions.length > 0) {
           const cleanCode = syncCode.trim().toLowerCase();
@@ -183,13 +183,13 @@
             .then(() => {
               setLastBackup(timeNow);
               localStorage.setItem('finai_last_backup_v6', timeNow);
-              showToast(settings.lang === 'bn' ? 'অফলাইন ডেটা ক্লাউডে সিঙ্ক হয়েছে!' : 'Offline data successfully synced to cloud!', 'success');
+              showToast(settings.lang === 'bn' ? 'অফলাইন ডেটা সফলভাবে ক্লাউডে সিঙ্ক হয়েছে!' : 'Offline data successfully synced to cloud!', 'success');
             })
             .catch(err => {
               console.warn("Auto-sync to Firestore failed, attempting Failsafe...", err);
               fetch(`https://kvdb.io/uR9v8WjL4m6P3qN7yZ5X/finai_backup_${cleanCode}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'text/plain' },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
               })
               .then(res => {
@@ -261,7 +261,7 @@
           if (!saved) {
             const res = await fetch(`https://kvdb.io/uR9v8WjL4m6P3qN7yZ5X/finai_backup_${newKey}`, {
               method: 'PUT',
-              headers: { 'Content-Type': 'text/plain' },
+              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(payload)
             });
             if (!res.ok) throw new Error("Failsafe server rejected write");
@@ -314,7 +314,7 @@
         try {
           const res = await fetch(`https://kvdb.io/uR9v8WjL4m6P3qN7yZ5X/finai_backup_${cleanCode}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'text/plain' },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
           });
           if (res.ok) {
@@ -364,7 +364,7 @@
             const data = await res.json();
             applyRestoredData(data, cleanCode);
           } else {
-            showToast(settings.lang === 'bn' ? 'ভুল কোড! কোনো ব্যাকআপ পাওয়া যায়নি।', 'error');
+            showToast(settings.lang === 'bn' ? 'ভুল কোড! কোনো ব্যাকআপ পাওয়া যায়নি।' : 'Invalid Code! No backup found.', 'error');
             alert(settings.lang === 'bn' ? 'ভুল কোড! কোনো ব্যাকআপ পাওয়া যায়নি।' : 'Invalid Code! No backup found.');
           }
         } catch (e) {
@@ -515,7 +515,6 @@
               navTo('dashboard');
 
               if (syncCode) {
-                // ইন্টারনেট অফ থাকলে ক্লাউড আপডেট এড়িয়ে যাবে এবং ইন্টারনেট আসার পরে অটো সিঙ্ক হবে
                 if (!navigator.onLine) {
                   showToast(settings.lang === 'bn' ? 'অফলাইন! ইন্টারনেট কানেক্ট হলে ক্লাউডে সিঙ্ক হবে।' : 'Offline! Will sync when online.', 'info');
                   return;
@@ -534,7 +533,7 @@
                   console.warn("Auto-sync to Firestore failed, attempting Failsafe...", err);
                   fetch(`https://kvdb.io/uR9v8WjL4m6P3qN7yZ5X/finai_backup_${cleanCode}`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'text/plain' },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                   })
                   .then(res => {
@@ -617,6 +616,7 @@
       );
     }
 
+    // New Sub Pages Implementations
     function BudgetPage({ lang, transactions, extra, setExtra, settings, glassClass, textMuted, pc, pbg, tf }) {
       const [input, setInput] = useState('');
       const spent = useMemo(() => transactions.filter(t => t.type === 'expense').reduce((acc, curr) => acc + Number(curr.amount), 0), [transactions]);
@@ -754,6 +754,7 @@
       );
     }
 
+    // Existing reports and transaction pages
     function ReportsPage({ lang, transactions, settings, glassClass, textMuted, pc }) {
       const stats = useMemo(() => {
         let expense = 0; let income = 0; let maxExp = 0; let maxInc = 0;
@@ -814,7 +815,7 @@
     }
 
     function TransactionsPage({ lang, transactions, settings, glassClass, textMuted }) {
-      const [viewMode, setViewMode] = useState('grouped'); 
+      const [viewMode, setViewMode] = useState('grouped'); // 'grouped' (Folder view) or 'individual' (Detailed raw list)
       const [expandedGroups, setExpandedGroups] = useState({});
 
       const groupedTransactions = useMemo(() => {
@@ -846,6 +847,7 @@
 
       return (
         <div className={`space-y-4 pb-20 ${settings.animations ? 'animate-fade-in-up' : ''}`}>
+          {/* View Switcher Controls */}
           <div className="flex justify-end mb-2">
             <div className={`flex p-1 rounded-xl ${glassClass} text-xs font-bold`}>
               <button onClick={() => setViewMode('grouped')} className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 ${viewMode === 'grouped' ? 'bg-indigo-500 text-white' : 'opacity-60'}`}>
@@ -863,6 +865,7 @@
                 const isExpanded = expandedGroups[group.key];
                 return (
                   <div key={group.key} className={`rounded-2xl ${glassClass} overflow-hidden transition-all duration-300`}>
+                    {/* Header Item */}
                     <div onClick={() => toggleGroup(group.key)} className="p-4 flex justify-between items-center cursor-pointer hover:bg-white/5 active:bg-white/10 transition-colors">
                       <div className="flex items-center gap-4">
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center ${group.type === 'income' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
@@ -886,6 +889,7 @@
                       </div>
                     </div>
 
+                    {/* Collapsible Child Transactions */}
                     {isExpanded && (
                       <div className="bg-black/10 border-t border-white/5 divide-y divide-white/5 px-4 py-2 animate-fade-in">
                         {group.items.map(item => (
@@ -929,6 +933,7 @@
     function SettingsPage({ lang, settings, setSettings, glassClass, textMuted, triggerFeedback, showToast, syncCode, setSyncCode, handleCloudBackupNew, handleCloudBackupUpdate, handleCloudRestore, setSetupPin, lastBackup, isOnline }) {
       const [localCode, setLocalCode] = useState(syncCode);
 
+      // রিয়েল-টাইমে গ্লোবাল সিঙ্ক কোড এর সাথে লোকাল কোড আপডেট রাখা
       useEffect(() => {
         setLocalCode(syncCode);
       }, [syncCode]);
@@ -1058,6 +1063,7 @@
       );
     }
 
+    // Existing reports and transaction pages
     function AboutPage({ lang, glassClass, textMuted }) {
       return (
         <div className={`flex flex-col items-center text-center p-6 space-y-6 ${glassClass} rounded-3xl mt-4 animate-fade-in-up pb-20`}>
@@ -1123,6 +1129,7 @@
                 <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} className="w-full bg-black/10 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-3xl font-bold focus:outline-none bg-transparent" placeholder="0.00" autoFocus />
               </div>
               
+              {/* Description Input Field */}
               <div>
                 <p className={`text-xs font-bold uppercase mb-2 ${textMuted}`}>{lang.desc}</p>
                 <input 
