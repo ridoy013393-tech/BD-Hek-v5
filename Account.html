@@ -53,6 +53,11 @@
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
+    // অফলাইন পারসিস্টেন্স বা লোকাল ক্যাশিং চালু করা
+    db.enablePersistence({ synchronizeTabs: true }).catch((err) => {
+      console.warn("Firestore offline persistence status: ", err.code);
+    });
+
     const triggerFeedback = (type, settings) => {
       if (settings.vibration && navigator.vibrate) {
         if (type === 'success') navigator.vibrate([100, 50, 100]);
@@ -133,6 +138,7 @@
       const [currentRoute, setCurrentRoute] = useState('dashboard');
       const [sidebarOpen, setSidebarOpen] = useState(false);
       const [toast, setToast] = useState(null);
+      const [isOnline, setIsOnline] = useState(navigator.onLine);
       
       const [transactions, setTransactions] = useState(() => JSON.parse(localStorage.getItem('finai_txs_v6')) || []);
       const [extraData, setExtraData] = useState(() => JSON.parse(localStorage.getItem('finai_extra_v6')) || { budget: 0, savings: 0, target: 0 });
@@ -140,11 +146,62 @@
           darkMode: true, lang: 'bn', currency: '৳', sound: true, vibration: true, appLock: false, pinCode: '', animations: true, themeColor: 'indigo', fontSize: 'text-base' 
       });
       const [syncCode, setSyncCode] = useState(() => localStorage.getItem('finai_synccode_v6') || '');
+      const [lastBackup, setLastBackup] = useState(() => localStorage.getItem('finai_last_backup_v6') || '');
 
       useEffect(() => { localStorage.setItem('finai_settings_v6', JSON.stringify(settings)); }, [settings]);
       useEffect(() => { localStorage.setItem('finai_extra_v6', JSON.stringify(extraData)); }, [extraData]);
       useEffect(() => { localStorage.setItem('finai_synccode_v6', syncCode); }, [syncCode]);
+      useEffect(() => { localStorage.setItem('finai_last_backup_v6', lastBackup); }, [lastBackup]);
       useEffect(() => { setTimeout(() => setSplash(false), 2000); }, []);
+
+      // ইন্টারনেট সংযোগ পর্যবেক্ষণ
+      useEffect(() => {
+        const handleOnline = () => {
+          setIsOnline(true);
+          showToast(settings.lang === 'bn' ? 'ইন্টারনেট কানেক্ট হয়েছে!' : 'Back online!', 'success');
+        };
+        const handleOffline = () => {
+          setIsOnline(false);
+          showToast(settings.lang === 'bn' ? 'ইন্টারনেট কানেকশন হারিয়ে গেছে!' : 'Connection lost!', 'error');
+        };
+        window.addEventListener('online', handleOnline);
+        window.addEventListener('offline', handleOffline);
+        return () => {
+          window.removeEventListener('online', handleOnline);
+          window.removeEventListener('offline', handleOffline);
+        };
+      }, [settings.lang]);
+
+      // অফলাইনে কাজ শেষ করে পুনরায় অনলাইনে আসলে স্বয়ংক্রিয় সিঙ্ক চালু করা
+      useEffect(() => {
+        if (isOnline && syncCode && transactions.length > 0) {
+          const cleanCode = syncCode.trim().toLowerCase();
+          const payload = { transactions, extraData, settings, updatedAt: new Date().toISOString() };
+          const timeNow = new Date().toLocaleString();
+
+          db.collection('backups').doc(cleanCode).set(payload)
+            .then(() => {
+              setLastBackup(timeNow);
+              localStorage.setItem('finai_last_backup_v6', timeNow);
+              showToast(settings.lang === 'bn' ? 'অফলাইন ডেটা ক্লাউডে সিঙ্ক হয়েছে!' : 'Offline data successfully synced to cloud!', 'success');
+            })
+            .catch(err => {
+              console.warn("Auto-sync to Firestore failed, attempting Failsafe...", err);
+              fetch(`https://kvdb.io/uR9v8WjL4m6P3qN7yZ5X/finai_backup_${cleanCode}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify(payload)
+              })
+              .then(res => {
+                if (res.ok) {
+                  setLastBackup(timeNow);
+                  localStorage.setItem('finai_last_backup_v6', timeNow);
+                }
+              })
+              .catch(e => console.error("Failsafe auto-sync failed:", e));
+            });
+        }
+      }, [isOnline]);
 
       const lang = t[settings.lang];
       const showToast = (message, type = 'info') => {
@@ -153,7 +210,6 @@
       };
       const navTo = (route) => { triggerFeedback('click', settings); setCurrentRoute(route); setSidebarOpen(false); };
 
-      // র্যান্ডম ইউনিক কী জেনারেটর (অফলাইন ফাস্ট)
       const generateRandomKey = () => {
         const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
         let result = '';
@@ -161,119 +217,6 @@
           result += chars.charAt(Math.floor(Math.random() * chars.length));
         }
         return `fin_${result}`;
-      };
-
-      // ক্লাউড ব্যাকআপ - নতুন কোড তৈরি করা
-      const handleCloudBackupNew = async () => {
-        triggerFeedback('click', settings);
-        try {
-          showToast(settings.lang === 'bn' ? 'ব্যাকআপ তৈরি হচ্ছে...' : 'Creating backup...', 'info');
-          const newKey = generateRandomKey();
-          const payload = { transactions, extraData, settings, updatedAt: new Date().toISOString() };
-
-          let saved = false;
-          // ১. প্রথমে ফায়ারবেসে চেষ্টা করা
-          try {
-            await db.collection('backups').doc(newKey).set(payload);
-            saved = true;
-          } catch (e) {
-            console.warn("Firestore new-key error, using failsafe...", e);
-          }
-
-          // ২. ফায়ারবেস কাজ না করলে Failsafe গ্লোবাল সার্ভার
-          if (!saved) {
-            const res = await fetch(`https://kvdb.io/uR9v8WjL4m6P3qN7yZ5X/finai_backup_${newKey}`, {
-              method: 'POST',
-              body: JSON.stringify(payload)
-            });
-            if (!res.ok) throw new Error("Failsafe server rejected write");
-          }
-
-          setSyncCode(newKey);
-          showToast(settings.lang === 'bn' ? 'নতুন ব্যাকআপ তৈরি হয়েছে! কোডটি কপি করে রাখুন।' : 'New backup created! Please copy the key.', 'success');
-        } catch (e) {
-          console.error(e);
-          showToast('Backup failed: ' + e.message, 'error');
-        }
-      };
-
-      // ক্লাউড ব্যাকআপ - বিদ্যমান কোড আপডেট করা
-      const handleCloudBackupUpdate = async (code) => {
-        if (!code.trim()) {
-          showToast(lang.enterCode, 'error');
-          return;
-        }
-        triggerFeedback('click', settings);
-        const cleanCode = code.trim().toLowerCase();
-        const payload = { transactions, extraData, settings, updatedAt: new Date().toISOString() };
-
-        showToast(settings.lang === 'bn' ? 'ব্যাকআপ আপডেট হচ্ছে...' : 'Updating backup...', 'info');
-
-        let saved = false;
-        // ১. প্রথমে ফায়ারবেসে চেষ্টা করা
-        try {
-          await db.collection('backups').doc(cleanCode).set(payload);
-          saved = true;
-          setSyncCode(cleanCode);
-          showToast(lang.backupSuccess, 'success');
-          return;
-        } catch (e) {
-          console.warn("Firestore update error, using failsafe...", e);
-        }
-
-        // ২. ফায়ারবেস রুলস ব্লক থাকলে Failsafe সার্ভার
-        try {
-          const res = await fetch(`https://kvdb.io/uR9v8WjL4m6P3qN7yZ5X/finai_backup_${cleanCode}`, {
-            method: 'POST',
-            body: JSON.stringify(payload)
-          });
-          if (res.ok) {
-            setSyncCode(cleanCode);
-            showToast(lang.backupSuccess, 'success');
-          } else {
-            showToast('Update failed: Server rejected write', 'error');
-          }
-        } catch (e) {
-          console.error(e);
-          showToast('Update failed: ' + e.message, 'error');
-        }
-      };
-
-      // ক্লাউড থেকে তথ্য পুনরুদ্ধার (Restore) করা
-      const handleCloudRestore = async (code) => {
-        if (!code.trim()) {
-          showToast(lang.enterCode, 'error');
-          return;
-        }
-        triggerFeedback('click', settings);
-        const cleanCode = code.trim().toLowerCase();
-
-        showToast(settings.lang === 'bn' ? 'তথ্য খোঁজা হচ্ছে...' : 'Fetching data...', 'info');
-
-        // ১. প্রথমে ফায়ারবেস থেকে ডাটা চেক করা
-        try {
-          const doc = await db.collection('backups').doc(cleanCode).get();
-          if (doc.exists) {
-            applyRestoredData(doc.data(), cleanCode);
-            return;
-          }
-        } catch (e) {
-          console.warn("Firestore fetch error, checking failsafe server...", e);
-        }
-
-        // ২. ফায়ারবেসে না পাওয়া গেলে Failsafe ক্লাউড থেকে রিস্টোর
-        try {
-          const res = await fetch(`https://kvdb.io/uR9v8WjL4m6P3qN7yZ5X/finai_backup_${cleanCode}`);
-          if (res.ok) {
-            const data = await res.json();
-            applyRestoredData(data, cleanCode);
-          } else {
-            showToast(settings.lang === 'bn' ? 'ভুল কোড! কোনো ব্যাকআপ পাওয়া যায়নি।' : 'Invalid Key! No backup found.', 'error');
-          }
-        } catch (e) {
-          console.error(e);
-          showToast('Restore failed: ' + e.message, 'error');
-        }
       };
 
       const applyRestoredData = (data, cleanCode) => {
@@ -290,7 +233,145 @@
           localStorage.setItem('finai_settings_v6', JSON.stringify(data.settings));
         }
         setSyncCode(cleanCode);
+        const timeNow = new Date().toLocaleString();
+        setLastBackup(timeNow);
         showToast(lang.restoreSuccess, 'success');
+        alert(settings.lang === 'bn' ? "তথ্য সফলভাবে ক্লাউড থেকে ফিরিয়ে আনা হয়েছে!" : "Data restored successfully!");
+      };
+
+      const handleCloudBackupNew = async () => {
+        if (!isOnline) {
+          showToast(settings.lang === 'bn' ? 'অফলাইনে ব্যাকআপ কোড তৈরি করা সম্ভব নয়!' : 'Cannot generate backup key while offline!', 'error');
+          return;
+        }
+        triggerFeedback('click', settings);
+        try {
+          showToast(settings.lang === 'bn' ? 'ব্যাকআপ তৈরি হচ্ছে...' : 'Creating backup...', 'info');
+          const newKey = generateRandomKey();
+          const payload = { transactions, extraData, settings, updatedAt: new Date().toISOString() };
+
+          let saved = false;
+          try {
+            await db.collection('backups').doc(newKey).set(payload);
+            saved = true;
+          } catch (e) {
+            console.warn("Firestore new-key error, using failsafe...", e);
+          }
+
+          if (!saved) {
+            const res = await fetch(`https://kvdb.io/uR9v8WjL4m6P3qN7yZ5X/finai_backup_${newKey}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'text/plain' },
+              body: JSON.stringify(payload)
+            });
+            if (!res.ok) throw new Error("Failsafe server rejected write");
+          }
+
+          setSyncCode(newKey);
+          const timeNow = new Date().toLocaleString();
+          setLastBackup(timeNow);
+          showToast(settings.lang === 'bn' ? 'নতুন ব্যাকআপ তৈরি হয়েছে! কোডটি কপি করে রাখুন।' : 'New backup created! Please copy the key.', 'success');
+          alert(settings.lang === 'bn' 
+            ? `নতুন ব্যাকআপ কোড তৈরি হয়েছে!\n\nআপনার গোপন কোড: ${newKey.toUpperCase()}\n\nপরবর্তীতে ডেটা পুনরুদ্ধারের জন্য এটি লিখে বা কপি করে রাখুন!` 
+            : `New Backup Key Generated!\n\nYour Secret Key: ${newKey.toUpperCase()}\n\nPlease copy and keep it safe!`
+          );
+        } catch (e) {
+          console.error(e);
+          showToast('Backup failed: ' + e.message, 'error');
+          alert('Backup failed: ' + e.message);
+        }
+      };
+
+      const handleCloudBackupUpdate = async (code) => {
+        if (!code.trim()) {
+          showToast(lang.enterCode, 'error');
+          return;
+        }
+        if (!isOnline) {
+          showToast(settings.lang === 'bn' ? 'অফলাইন! এই মুহূর্তে ক্লাউড ডাটা আপডেট করা সম্ভব নয়।' : 'Offline! Cannot upload backup currently.', 'error');
+          return;
+        }
+        triggerFeedback('click', settings);
+        const cleanCode = code.trim().toLowerCase();
+        const payload = { transactions, extraData, settings, updatedAt: new Date().toISOString() };
+
+        showToast(settings.lang === 'bn' ? 'ব্যাকআপ আপডেট হচ্ছে...' : 'Updating backup...', 'info');
+
+        let saved = false;
+        try {
+          await db.collection('backups').doc(cleanCode).set(payload);
+          saved = true;
+          setSyncCode(cleanCode);
+          const timeNow = new Date().toLocaleString();
+          setLastBackup(timeNow);
+          showToast(lang.backupSuccess, 'success');
+          alert(settings.lang === 'bn' ? "আপনার ডাটা সফলভাবে ক্লাউডে ব্যাকআপ নেওয়া হয়েছে!" : "Data successfully backed up to cloud!");
+          return;
+        } catch (e) {
+          console.warn("Firestore update error, using failsafe...", e);
+        }
+
+        try {
+          const res = await fetch(`https://kvdb.io/uR9v8WjL4m6P3qN7yZ5X/finai_backup_${cleanCode}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify(payload)
+          });
+          if (res.ok) {
+            setSyncCode(cleanCode);
+            const timeNow = new Date().toLocaleString();
+            setLastBackup(timeNow);
+            showToast(lang.backupSuccess, 'success');
+            alert(settings.lang === 'bn' ? "আপনার ডাটা সফলভাবে ক্লাউডে ব্যাকআপ নেওয়া হয়েছে!" : "Data successfully backed up to cloud!");
+          } else {
+            showToast('Update failed: Server rejected write', 'error');
+            alert('Update failed: Server rejected write');
+          }
+        } catch (e) {
+          console.error(e);
+          showToast('Update failed: ' + e.message, 'error');
+          alert('Update failed: ' + e.message);
+        }
+      };
+
+      const handleCloudRestore = async (code) => {
+        if (!code.trim()) {
+          showToast(lang.enterCode, 'error');
+          return;
+        }
+        if (!isOnline) {
+          showToast(settings.lang === 'bn' ? 'ডাটা রিস্টোর করার জন্য ইন্টারনেট সংযোগ আবশ্যক!' : 'Internet connection is required to restore data!', 'error');
+          return;
+        }
+        triggerFeedback('click', settings);
+        const cleanCode = code.trim().toLowerCase();
+
+        showToast(settings.lang === 'bn' ? 'তথ্য খোঁজা হচ্ছে...' : 'Fetching data...', 'info');
+
+        try {
+          const doc = await db.collection('backups').doc(cleanCode).get();
+          if (doc.exists) {
+            applyRestoredData(doc.data(), cleanCode);
+            return;
+          }
+        } catch (e) {
+          console.warn("Firestore fetch error, checking failsafe server...", e);
+        }
+
+        try {
+          const res = await fetch(`https://kvdb.io/uR9v8WjL4m6P3qN7yZ5X/finai_backup_${cleanCode}`);
+          if (res.ok) {
+            const data = await res.json();
+            applyRestoredData(data, cleanCode);
+          } else {
+            showToast(settings.lang === 'bn' ? 'ভুল কোড! কোনো ব্যাকআপ পাওয়া যায়নি।', 'error');
+            alert(settings.lang === 'bn' ? 'ভুল কোড! কোনো ব্যাকআপ পাওয়া যায়নি।' : 'Invalid Code! No backup found.');
+          }
+        } catch (e) {
+          console.error(e);
+          showToast('Restore failed: ' + e.message, 'error');
+          alert('Restore failed: ' + e.message);
+        }
       };
 
       const themeClass = settings.darkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900';
@@ -354,7 +435,14 @@
 
           <header className={`pt-8 pb-4 px-4 flex items-center justify-between z-20 ${glassClass} rounded-b-3xl sticky top-0 shadow-sm`}>
             <button onClick={() => { triggerFeedback('click', settings); setSidebarOpen(true); }} className="p-2"><i className="fas fa-bars text-xl"></i></button>
-            <h1 className="text-lg font-bold">{lang[currentRoute] || 'FinAI Pro'}</h1>
+            <div className="flex flex-col items-center">
+              <h1 className="text-lg font-bold">{lang[currentRoute] || 'FinAI Pro'}</h1>
+              {!isOnline && (
+                <span className="text-[10px] bg-rose-500 text-white px-2 py-0.5 rounded-full mt-1 flex items-center gap-1 animate-pulse font-bold">
+                  <i className="fas fa-wifi-slash"></i> Offline
+                </span>
+              )}
+            </div>
             <button className="p-2 relative"><i className="fas fa-bell text-xl"></i></button>
           </header>
 
@@ -403,7 +491,7 @@
             {currentRoute === 'savings' && <SavingsPage lang={lang} extra={extraData} setExtra={setExtraData} settings={settings} glassClass={glassClass} textMuted={textMuted} pc={primaryColorClass} pbg={primaryBgClass} tf={triggerFeedback}/>}
             {currentRoute === 'calendar' && <CalendarPage lang={lang} transactions={transactions} settings={settings} glassClass={glassClass} textMuted={textMuted} pc={primaryColorClass} pbg={primaryBgClass}/>}
             {currentRoute === 'calculator' && <CalculatorPage lang={lang} settings={settings} glassClass={glassClass} textMuted={textMuted} tf={triggerFeedback}/>}
-            {currentRoute === 'settings' && <SettingsPage lang={lang} settings={settings} setSettings={setSettings} glassClass={glassClass} textMuted={textMuted} triggerFeedback={triggerFeedback} showToast={showToast} syncCode={syncCode} setSyncCode={setSyncCode} handleCloudBackupNew={handleCloudBackupNew} handleCloudBackupUpdate={handleCloudBackupUpdate} handleCloudRestore={handleCloudRestore} setSetupPin={setSetupPin} />}
+            {currentRoute === 'settings' && <SettingsPage lang={lang} settings={settings} setSettings={setSettings} glassClass={glassClass} textMuted={textMuted} triggerFeedback={triggerFeedback} showToast={showToast} syncCode={syncCode} setSyncCode={setSyncCode} handleCloudBackupNew={handleCloudBackupNew} handleCloudBackupUpdate={handleCloudBackupUpdate} handleCloudRestore={handleCloudRestore} setSetupPin={setSetupPin} lastBackup={lastBackup} isOnline={isOnline} />}
             {currentRoute === 'about' && <AboutPage lang={lang} glassClass={glassClass} textMuted={textMuted} />}
             {currentRoute === 'transactions' && <TransactionsPage lang={lang} transactions={transactions} settings={settings} glassClass={glassClass} textMuted={textMuted} />}
           </main>
@@ -423,25 +511,41 @@
               setTransactions(newTxs); 
               localStorage.setItem('finai_txs_v6', JSON.stringify(newTxs));
               
-              // অটো-ব্যাকআপ সিস্টেম (সিঙ্ক কী সক্রিয় থাকলে ক্লাউডে অটো-আপডেট হবে)
-              if (syncCode) {
-                const cleanCode = syncCode.trim().toLowerCase();
-                const payload = { transactions: newTxs, extraData, settings };
+              showToast(settings.lang === 'bn' ? 'সফলভাবে সেভ হয়েছে!' : 'Saved successfully', 'success'); 
+              navTo('dashboard');
 
-                // প্রথমে Firestore-এ অটো-সিঙ্ক চেষ্টা করা
+              if (syncCode) {
+                // ইন্টারনেট অফ থাকলে ক্লাউড আপডেট এড়িয়ে যাবে এবং ইন্টারনেট আসার পরে অটো সিঙ্ক হবে
+                if (!navigator.onLine) {
+                  showToast(settings.lang === 'bn' ? 'অফলাইন! ইন্টারনেট কানেক্ট হলে ক্লাউডে সিঙ্ক হবে।' : 'Offline! Will sync when online.', 'info');
+                  return;
+                }
+
+                const cleanCode = syncCode.trim().toLowerCase();
+                const payload = { transactions: newTxs, extraData, settings, updatedAt: new Date().toISOString() };
+                const timeNow = new Date().toLocaleString();
+
                 db.collection('backups').doc(cleanCode).set(payload)
+                .then(() => {
+                  setLastBackup(timeNow);
+                  localStorage.setItem('finai_last_backup_v6', timeNow);
+                })
                 .catch(err => {
                   console.warn("Auto-sync to Firestore failed, attempting Failsafe...", err);
-                  // ফায়ারবেস ব্যর্থ হলে Failsafe ক্লাউড
                   fetch(`https://kvdb.io/uR9v8WjL4m6P3qN7yZ5X/finai_backup_${cleanCode}`, {
-                    method: 'POST',
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify(payload)
-                  }).catch(e => console.error("Failsafe auto-sync failed:", e));
+                  })
+                  .then(res => {
+                    if (res.ok) {
+                      setLastBackup(timeNow);
+                      localStorage.setItem('finai_last_backup_v6', timeNow);
+                    }
+                  })
+                  .catch(e => console.error("Failsafe auto-sync failed:", e));
                 });
               }
-
-              showToast('Saved successfully', 'success'); 
-              navTo('dashboard');
           }} settings={settings} glassClass={glassClass} textMuted={textMuted} pbg={primaryBgClass} tf={triggerFeedback}/>}
 
           {toast && (
@@ -513,7 +617,6 @@
       );
     }
 
-    // New Sub Pages Implementations
     function BudgetPage({ lang, transactions, extra, setExtra, settings, glassClass, textMuted, pc, pbg, tf }) {
       const [input, setInput] = useState('');
       const spent = useMemo(() => transactions.filter(t => t.type === 'expense').reduce((acc, curr) => acc + Number(curr.amount), 0), [transactions]);
@@ -575,7 +678,7 @@
              <div className="border-t border-white/5 pt-4">
                <h3 className="text-xs font-bold uppercase mb-2 opacity-70">Set {lang.target}</h3>
                <div className="flex gap-2">
-                 <input type="number" value={targetInput} onChange={setTargetInput(e.target.value)} placeholder="0.00" className="flex-1 bg-black/10 border border-white/10 rounded-xl px-4 py-2 focus:outline-none bg-transparent" />
+                 <input type="number" value={targetInput} onChange={(e) => setTargetInput(e.target.value)} placeholder="0.00" className="flex-1 bg-black/10 border border-white/10 rounded-xl px-4 py-2 focus:outline-none bg-transparent" />
                  <button onClick={()=>{tf('click',settings); if(targetInput) { setExtra({...extra, target: Number(targetInput)}); setTargetInput(''); }}} className={`px-6 py-2 rounded-xl font-bold text-white ${pbg}`}>Set</button>
                </div>
              </div>
@@ -651,7 +754,6 @@
       );
     }
 
-    // Existing reports and transaction pages
     function ReportsPage({ lang, transactions, settings, glassClass, textMuted, pc }) {
       const stats = useMemo(() => {
         let expense = 0; let income = 0; let maxExp = 0; let maxInc = 0;
@@ -712,7 +814,7 @@
     }
 
     function TransactionsPage({ lang, transactions, settings, glassClass, textMuted }) {
-      const [viewMode, setViewMode] = useState('grouped'); // 'grouped' (Folder view) or 'individual' (Detailed raw list)
+      const [viewMode, setViewMode] = useState('grouped'); 
       const [expandedGroups, setExpandedGroups] = useState({});
 
       const groupedTransactions = useMemo(() => {
@@ -744,7 +846,6 @@
 
       return (
         <div className={`space-y-4 pb-20 ${settings.animations ? 'animate-fade-in-up' : ''}`}>
-          {/* View Switcher Controls */}
           <div className="flex justify-end mb-2">
             <div className={`flex p-1 rounded-xl ${glassClass} text-xs font-bold`}>
               <button onClick={() => setViewMode('grouped')} className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 ${viewMode === 'grouped' ? 'bg-indigo-500 text-white' : 'opacity-60'}`}>
@@ -762,7 +863,6 @@
                 const isExpanded = expandedGroups[group.key];
                 return (
                   <div key={group.key} className={`rounded-2xl ${glassClass} overflow-hidden transition-all duration-300`}>
-                    {/* Header Item */}
                     <div onClick={() => toggleGroup(group.key)} className="p-4 flex justify-between items-center cursor-pointer hover:bg-white/5 active:bg-white/10 transition-colors">
                       <div className="flex items-center gap-4">
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center ${group.type === 'income' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
@@ -786,7 +886,6 @@
                       </div>
                     </div>
 
-                    {/* Collapsible Child Transactions */}
                     {isExpanded && (
                       <div className="bg-black/10 border-t border-white/5 divide-y divide-white/5 px-4 py-2 animate-fade-in">
                         {group.items.map(item => (
@@ -827,10 +926,9 @@
       );
     }
 
-    function SettingsPage({ lang, settings, setSettings, glassClass, textMuted, triggerFeedback, showToast, syncCode, setSyncCode, handleCloudBackupNew, handleCloudBackupUpdate, handleCloudRestore, setSetupPin }) {
+    function SettingsPage({ lang, settings, setSettings, glassClass, textMuted, triggerFeedback, showToast, syncCode, setSyncCode, handleCloudBackupNew, handleCloudBackupUpdate, handleCloudRestore, setSetupPin, lastBackup, isOnline }) {
       const [localCode, setLocalCode] = useState(syncCode);
 
-      // রিয়েল-টাইমে গ্লোবাল সিঙ্ক কোড এর সাথে লোকাল কোড আপডেট রাখা
       useEffect(() => {
         setLocalCode(syncCode);
       }, [syncCode]);
@@ -864,10 +962,16 @@
           {/* Cloud Sync Key Card */}
           <div className={`p-5 rounded-2xl ${glassClass} border border-indigo-500/30 space-y-4`}>
              <div className="flex items-center gap-3">
-                <i className="fas fa-cloud-arrow-up text-2xl text-indigo-400"></i>
+                <i className={`fas ${isOnline ? 'fa-cloud-arrow-up text-indigo-400' : 'fa-cloud-slash text-rose-400 animate-pulse'} text-2xl`}></i>
                 <div>
-                   <p className="font-bold">{lang.backupTitle}</p>
+                   <p className="font-bold">{lang.backupTitle} {!isOnline && <span className="text-[10px] text-rose-500 font-bold ml-1">({lang.lang === 'bn' ? 'অফলাইন' : 'Offline'})</span>}</p>
                    <p className={`text-xs ${textMuted}`}>{settings.lang === 'bn' ? 'যেকোনো ডিভাইসে ডেটা ফিরিয়ে আনতে গোপন কোডটি লিখে রিস্টোর চাপুন।' : 'Use your secret key to restore data on any device.'}</p>
+                   {lastBackup && (
+                     <p className="text-[11px] text-emerald-400 font-medium mt-1 flex items-center gap-1">
+                       <i className="fas fa-check-circle"></i>
+                       {settings.lang === 'bn' ? `সর্বশেষ ব্যাকআপ: ${lastBackup}` : `Last Sync: ${lastBackup}`}
+                     </p>
+                   )}
                 </div>
              </div>
              
@@ -954,7 +1058,6 @@
       );
     }
 
-    // Existing reports and transaction pages
     function AboutPage({ lang, glassClass, textMuted }) {
       return (
         <div className={`flex flex-col items-center text-center p-6 space-y-6 ${glassClass} rounded-3xl mt-4 animate-fade-in-up pb-20`}>
@@ -1020,7 +1123,6 @@
                 <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} className="w-full bg-black/10 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-3xl font-bold focus:outline-none bg-transparent" placeholder="0.00" autoFocus />
               </div>
               
-              {/* Description Input Field */}
               <div>
                 <p className={`text-xs font-bold uppercase mb-2 ${textMuted}`}>{lang.desc}</p>
                 <input 
@@ -1049,6 +1151,17 @@
 
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(<App />);
+  </script>
+
+  <!-- অফলাইনে সম্পূর্ণ অ্যাপ (CSS/JS assets) লোড করার জন্য সার্ভিস ওয়ার্কার রেজিস্ট্রেশন -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('Service Worker registered successfully!', reg.scope))
+          .catch(err => console.log('Service Worker registration failed:', err));
+      });
+    }
   </script>
 </body>
 </html>
