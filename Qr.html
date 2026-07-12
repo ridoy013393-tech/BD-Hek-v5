@@ -1,0 +1,2394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dynamic QR Code Manager</title>
+  
+  <!-- Google Fonts & Material Symbols -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+
+  <!-- Firebase Legacy/Compat SDK (Ideal for direct browser loading) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+  <!-- QR Code Generator Library -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+
+  <!-- jsPDF for PDF generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    /* CSS CSS Reset & Variables */
+    :root {
+      --bg-gradient: linear-gradient(135deg, #0b071e 0%, #130a2a 100%);
+      --card-bg: rgba(22, 16, 45, 0.5);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text-primary: #f5f5f7;
+      --text-secondary: #9e9ea8;
+      --text-muted: #676775;
+      --accent: #7c3aed;
+      --accent-hover: #6d28d9;
+      --accent-light: rgba(124, 58, 237, 0.15);
+      --accent-rgb: 124, 58, 237;
+      --bg-body: #070414;
+      --success: #10b981;
+      --success-light: rgba(16, 185, 129, 0.15);
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --danger-light: rgba(239, 68, 68, 0.15);
+      --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      --font: 'Plus Jakarta Sans', sans-serif;
+      --glass-blur: 16px;
+      --border-radius: 16px;
+    }
+
+    [data-theme="light"] {
+      --bg-gradient: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+      --card-bg: rgba(255, 255, 255, 0.7);
+      --card-border: rgba(0, 0, 0, 0.06);
+      --text-primary: #111827;
+      --text-secondary: #4b5563;
+      --text-muted: #9ca3af;
+      --accent: #6d28d9;
+      --accent-hover: #5b21b6;
+      --accent-light: rgba(109, 40, 217, 0.1);
+      --bg-body: #f9fafb;
+      --success: #059669;
+      --success-light: rgba(5, 150, 105, 0.1);
+      --warning: #d97706;
+      --danger: #dc2626;
+      --danger-light: rgba(220, 38, 38, 0.1);
+      --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: var(--font);
+      scrollbar-width: thin;
+      scrollbar-color: var(--accent) transparent;
+    }
+
+    /* Scrollbars */
+    *::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    *::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    *::-webkit-scrollbar-thumb {
+      background-color: var(--card-border);
+      border-radius: 20px;
+    }
+
+    body {
+      background: var(--bg-body);
+      background-image: var(--bg-gradient);
+      background-attachment: fixed;
+      background-size: cover;
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* Utility Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(0.96); }
+    }
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Core Layout */
+    .app-wrapper {
+      display: flex;
+      flex: 1;
+      width: 100%;
+      max-width: 1440px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    /* Sidebar - Desktop Navigation */
+    aside {
+      width: 260px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--card-border);
+      background: var(--card-bg);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      z-index: 100;
+      transition: background 0.3s;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 40px;
+    }
+
+    .brand-icon {
+      background: var(--accent);
+      color: #fff;
+      padding: 8px;
+      border-radius: 12px;
+      font-size: 28px;
+    }
+
+    .brand-name h1 {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, var(--accent) 0%, #a78bfa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .nav-links {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      list-style: none;
+    }
+
+    .nav-links li a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      border-radius: var(--border-radius);
+      font-weight: 500;
+      font-size: 15px;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .nav-links li a:hover,
+    .nav-links li.active a {
+      color: var(--text-primary);
+      background: var(--accent-light);
+    }
+
+    .nav-links li.active a {
+      border-left: 4px solid var(--accent);
+      padding-left: 12px;
+    }
+
+    /* Sidebar Footer Toggle */
+    .sidebar-footer {
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .theme-toggle-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px;
+      background: var(--card-border);
+      border: 1px solid var(--card-border);
+      color: var(--text-primary);
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: background 0.3s;
+    }
+    
+    .theme-toggle-btn:hover {
+      background: var(--accent-light);
+    }
+
+    /* Mobile Bottom Navigation (Hidden on desktop) */
+    .mobile-nav {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: var(--card-bg);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border-top: 1px solid var(--card-border);
+      z-index: 1000;
+      justify-content: space-around;
+      padding: 10px 0;
+    }
+
+    .mobile-nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 11px;
+      font-weight: 500;
+      gap: 4px;
+      width: 20%;
+      transition: color 0.2s;
+    }
+
+    .mobile-nav-item span.material-symbols-rounded {
+      font-size: 24px;
+    }
+
+    .mobile-nav-item.active {
+      color: var(--accent);
+    }
+
+    /* Main Area */
+    main {
+      flex: 1;
+      padding: 40px;
+      overflow-y: auto;
+      height: 100vh;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+    }
+
+    header h2 {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    /* Dashboard Tab Layout */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border: 1px solid var(--card-border);
+      border-radius: var(--border-radius);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: var(--shadow);
+      transition: transform 0.3s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .stat-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .stat-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .stat-icon {
+      font-size: 24px;
+      padding: 8px;
+      border-radius: 12px;
+    }
+
+    .stat-icon.blue { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+    .stat-icon.green { background: var(--success-light); color: var(--success); }
+    .stat-icon.purple { background: var(--accent-light); color: var(--accent); }
+    .stat-icon.red { background: var(--danger-light); color: var(--danger); }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+
+    /* Top list chart on dashboard */
+    .dashboard-details {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+    }
+
+    .card-panel {
+      background: var(--card-bg);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border: 1px solid var(--card-border);
+      border-radius: var(--border-radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .panel-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .top-qrs-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .top-qr-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      transition: background 0.2s;
+    }
+
+    .top-qr-item:hover {
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .top-qr-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      max-width: 70%;
+    }
+
+    .top-qr-name {
+      font-weight: 600;
+      font-size: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .top-qr-url {
+      font-size: 12px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .top-qr-stats {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent-light);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    /* Forms: Create & Edit QR */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 3fr 2fr;
+      gap: 24px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-secondary);
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-wrapper input,
+    .input-wrapper textarea,
+    .input-wrapper select {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--card-border);
+      color: var(--text-primary);
+      border-radius: 10px;
+      font-size: 15px;
+      outline: none;
+      transition: all 0.3s;
+    }
+
+    .input-wrapper textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .input-wrapper input:focus,
+    .input-wrapper textarea:focus,
+    .input-wrapper select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-light);
+    }
+
+    .input-icon-left {
+      position: absolute;
+      left: 14px;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .input-wrapper.with-icon-left input {
+      padding-left: 44px;
+    }
+
+    .btn-action-input {
+      position: absolute;
+      right: 8px;
+      padding: 6px 12px;
+      background: var(--accent);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .btn-action-input:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.25s;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: var(--card-border);
+      color: var(--text-primary);
+      border: 1px solid var(--card-border);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #b91c1c;
+    }
+
+    /* Live QR Preview Panel */
+    .preview-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--border-radius);
+      padding: 24px;
+      text-align: center;
+    }
+
+    .qr-container-box {
+      background: #fff;
+      padding: 16px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .qr-container-box canvas {
+      display: block;
+    }
+
+    /* Toggle Switch */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 48px;
+      height: 24px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--card-border);
+      transition: .3s;
+      border-radius: 24px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: var(--success);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(24px);
+    }
+
+    /* QR List Container & Filtering */
+    .filter-bar {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 250px;
+    }
+
+    .qr-grid-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 24px;
+    }
+
+    .qr-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border: 1px solid var(--card-border);
+      border-radius: var(--border-radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      animation: fadeIn 0.3s ease-out;
+      position: relative;
+    }
+
+    .qr-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .qr-card-title {
+      font-weight: 700;
+      font-size: 16px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 80%;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    .status-badge.active {
+      background: var(--success-light);
+      color: var(--success);
+    }
+
+    .status-badge.inactive {
+      background: var(--danger-light);
+      color: var(--danger);
+    }
+
+    .qr-card-body {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 13px;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .info-label {
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .info-value {
+      font-weight: 600;
+      max-width: 60%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-align: right;
+    }
+
+    .info-value-link {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .qr-card-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .icon-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 1px solid var(--card-border);
+      background: rgba(255,255,255,0.03);
+      color: var(--text-primary);
+      transition: all 0.2s;
+    }
+
+    .icon-btn:hover {
+      background: var(--accent-light);
+      border-color: var(--accent);
+    }
+
+    /* Modal System */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(7, 4, 20, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+      opacity: 1;
+    }
+
+    .modal-box {
+      background: var(--bg-body);
+      border: 1px solid var(--card-border);
+      border-radius: var(--border-radius);
+      padding: 32px;
+      width: 100%;
+      max-width: 500px;
+      position: relative;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+      transform: translateY(20px);
+      transition: transform 0.3s ease;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-overlay.show .modal-box {
+      transform: translateY(0);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      font-size: 24px;
+      transition: color 0.2s;
+    }
+
+    .modal-close:hover {
+      color: var(--text-primary);
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .modal-body {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Toast Notification Container */
+    .toast-container {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 9999;
+    }
+
+    .toast {
+      min-width: 280px;
+      padding: 16px 20px;
+      border-radius: 12px;
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      animation: fadeIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+      transition: opacity 0.3s, transform 0.3s;
+    }
+
+    .toast-icon {
+      font-size: 22px;
+    }
+
+    .toast-success { border-left: 4px solid var(--success); }
+    .toast-success .toast-icon { color: var(--success); }
+
+    .toast-danger { border-left: 4px solid var(--danger); }
+    .toast-danger .toast-icon { color: var(--danger); }
+
+    .toast-warning { border-left: 4px solid var(--warning); }
+    .toast-warning .toast-icon { color: var(--warning); }
+
+    .toast-message {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    /* Settings Page Specifics */
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+    }
+
+    .danger-zone {
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      background: rgba(239, 68, 68, 0.02);
+    }
+    
+    .danger-zone .panel-title {
+      color: var(--danger);
+    }
+
+    .setting-action-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .setting-action-row:last-child {
+      border-bottom: none;
+    }
+
+    .setting-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      max-width: 70%;
+    }
+
+    .setting-title {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .setting-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* Loading Spinner Component */
+    .loader-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 40px;
+    }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid var(--accent-light);
+      border-top: 4px solid var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    /* Redirect Module Screen (Whole screen takeover when path contains ?id=) */
+    #redirect-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: var(--bg-body);
+      background-image: var(--bg-gradient);
+      background-size: cover;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+    }
+
+    .redirect-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid var(--card-border);
+      padding: 40px;
+      border-radius: 24px;
+      text-align: center;
+      max-width: 420px;
+      width: 90%;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    .redirect-logo {
+      font-size: 56px;
+      color: var(--accent);
+      margin-bottom: 24px;
+      animation: pulse 2s infinite ease-in-out;
+    }
+
+    .redirect-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .redirect-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 28px;
+      line-height: 1.5;
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      height: 6px;
+      background: var(--card-border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      border-radius: 10px;
+      transition: width 0.1s linear;
+    }
+
+    .redirect-error-icon {
+      font-size: 56px;
+      color: var(--danger);
+      margin-bottom: 24px;
+    }
+
+    /* Tab Switch Visibility Helper */
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    /* Screen Size Media Queries */
+    @media (max-width: 868px) {
+      aside {
+        display: none;
+      }
+      .mobile-nav {
+        display: flex;
+      }
+      main {
+        padding: 24px 20px 100px 20px;
+        height: auto;
+      }
+      header {
+        margin-bottom: 24px;
+      }
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      .dashboard-details {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ================= REDIRECT FLOW OVERLAY ================= -->
+  <div id="redirect-screen" style="display: none;">
+    <div class="redirect-card" id="redirect-status-box">
+      <!-- Loading State -->
+      <div id="redirect-loading-state">
+        <span class="material-symbols-rounded redirect-logo">qr_code_2</span>
+        <h3 class="redirect-title">Checking Destination...</h3>
+        <p class="redirect-desc">Verifying redirect credentials and connection security.</p>
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" id="redirect-progress"></div>
+        </div>
+      </div>
+      <!-- Error State -->
+      <div id="redirect-error-state" style="display: none;">
+        <span class="material-symbols-rounded redirect-error-icon">cancel</span>
+        <h3 class="redirect-title" id="redirect-error-title">Link Restricted</h3>
+        <p class="redirect-desc" id="redirect-error-desc">This QR Code is inactive, expired, or doesn't exist.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= ADMIN PANEL WRAPPER ================= -->
+  <div class="app-wrapper" id="admin-panel" style="display: flex;">
+    
+    <!-- Sidebar (Desktop Navigation) -->
+    <aside>
+      <div class="brand">
+        <span class="material-symbols-rounded brand-icon">qr_code_2</span>
+        <div class="brand-name">
+          <h1>QR Manager</h1>
+        </div>
+      </div>
+      <ul class="nav-links">
+        <li class="nav-item active" data-tab="dashboard">
+          <a href="#"><span class="material-symbols-rounded">dashboard</span>Dashboard</a>
+        </li>
+        <li class="nav-item" data-tab="create">
+          <a href="#"><span class="material-symbols-rounded">add_box</span>Create QR</a>
+        </li>
+        <li class="nav-item" data-tab="list">
+          <a href="#"><span class="material-symbols-rounded">format_list_bulleted</span>QR List</a>
+        </li>
+        <li class="nav-item" data-tab="settings">
+          <a href="#"><span class="material-symbols-rounded">settings</span>Settings</a>
+        </li>
+      </ul>
+      <div class="sidebar-footer">
+        <button class="theme-toggle-btn" onclick="toggleTheme()">
+          <span class="material-symbols-rounded" id="theme-btn-icon">light_mode</span>
+          <span id="theme-btn-text">Light Mode</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Mobile Navigation (Bottom Nav) -->
+    <nav class="mobile-nav">
+      <a href="#" class="mobile-nav-item active" data-tab="dashboard">
+        <span class="material-symbols-rounded">dashboard</span>Dashboard
+      </a>
+      <a href="#" class="mobile-nav-item" data-tab="create">
+        <span class="material-symbols-rounded">add_box</span>Create
+      </a>
+      <a href="#" class="mobile-nav-item" data-tab="list">
+        <span class="material-symbols-rounded">format_list_bulleted</span>List
+      </a>
+      <a href="#" class="mobile-nav-item" data-tab="settings">
+        <span class="material-symbols-rounded">settings</span>Settings
+      </a>
+      <a href="#" class="mobile-nav-item" onclick="toggleTheme(); return false;">
+        <span class="material-symbols-rounded" id="theme-mobile-icon">light_mode</span>Theme
+      </a>
+    </nav>
+
+    <!-- Content Workspace -->
+    <main>
+      
+      <!-- ================= 1. DASHBOARD TAB ================= -->
+      <section id="dashboard" class="tab-content active">
+        <header>
+          <h2>Dashboard Overview</h2>
+        </header>
+
+        <div class="dashboard-grid">
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-title">Total QR Codes</span>
+              <span class="material-symbols-rounded stat-icon blue">qr_code_2</span>
+            </div>
+            <div class="stat-value" id="stat-total-qrs">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-title">Total Scans</span>
+              <span class="material-symbols-rounded stat-icon green">bar_chart</span>
+            </div>
+            <div class="stat-value" id="stat-total-scans">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-title">Active Linkage</span>
+              <span class="material-symbols-rounded stat-icon purple">toggle_on</span>
+            </div>
+            <div class="stat-value" id="stat-active-qrs">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-title">Deactivated</span>
+              <span class="material-symbols-rounded stat-icon red">toggle_off</span>
+            </div>
+            <div class="stat-value" id="stat-inactive-qrs">0</div>
+          </div>
+        </div>
+
+        <div class="dashboard-details">
+          <div class="card-panel">
+            <div class="panel-title">
+              <span class="material-symbols-rounded" style="color:var(--accent);">insights</span>
+              Top Performing Links
+            </div>
+            <div class="top-qrs-list" id="dashboard-top-qrs-list">
+              <div class="loader-container"><div class="spinner"></div></div>
+            </div>
+          </div>
+          <div class="card-panel">
+            <div class="panel-title">
+              <span class="material-symbols-rounded" style="color:var(--success);">help_outline</span>
+              Quick Guide
+            </div>
+            <div style="font-size: 14px; line-height: 1.6; color: var(--text-secondary); display: flex; flex-direction: column; gap: 12px;">
+              <p><b>1. Create:</b> Generate dynamic QR codes linked to real URLs.</p>
+              <p><b>2. Share:</b> Distribute redirect links pointing to index.html with the unique code parameter.</p>
+              <p><b>3. Measure:</b> Track usage metrics dynamically.</p>
+              <p><b>4. Control:</b> Edit destination targets or expiry configurations instantly without replacing printed graphics.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 2. CREATE QR TAB ================= -->
+      <section id="create" class="tab-content">
+        <header>
+          <h2>Create New QR Code</h2>
+        </header>
+
+        <div class="form-grid">
+          <div class="card-panel">
+            <form id="create-qr-form" onsubmit="handleCreateQR(event)">
+              <div class="form-group">
+                <label for="create-qr-name">QR Code Label / Name</label>
+                <div class="input-wrapper with-icon-left">
+                  <span class="material-symbols-rounded input-icon-left">label</span>
+                  <input type="text" id="create-qr-name" placeholder="e.g. Website Home, Shop Poster" required autocomplete="off">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="create-qr-id">Unique QR ID (URL identifier)</label>
+                <div class="input-wrapper with-icon-left">
+                  <span class="material-symbols-rounded input-icon-left">fingerprint</span>
+                  <input type="text" id="create-qr-id" placeholder="Auto-generated or custom characters" required autocomplete="off">
+                  <button type="button" class="btn-action-input" onclick="regenerateCustomId()">Re-gen</button>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="create-qr-url">Destination Redirect URL</label>
+                <div class="input-wrapper with-icon-left">
+                  <span class="material-symbols-rounded input-icon-left">link</span>
+                  <input type="url" id="create-qr-url" placeholder="https://example.com/target" required autocomplete="off" oninput="updateLivePreview()">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="create-qr-description">Description</label>
+                <div class="input-wrapper with-icon-left">
+                  <span class="material-symbols-rounded input-icon-left">description</span>
+                  <textarea id="create-qr-description" placeholder="Notes, tracking details, usage scopes..."></textarea>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="create-qr-expiry">Expiry Date & Time (Optional)</label>
+                <div class="input-wrapper with-icon-left">
+                  <span class="material-symbols-rounded input-icon-left">event_busy</span>
+                  <input type="datetime-local" id="create-qr-expiry">
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
+                <span class="material-symbols-rounded">add_circle</span>Create QR Link
+              </button>
+            </form>
+          </div>
+
+          <div class="preview-panel">
+            <h3 style="font-weight: 700;">Live Design Preview</h3>
+            <div class="qr-container-box" id="live-qr-preview-container">
+              <!-- Live canvas gets loaded here dynamically -->
+              <canvas id="live-preview-canvas"></canvas>
+            </div>
+            <p id="live-preview-text" style="font-size: 13px; color: var(--text-secondary); word-break: break-all; max-width: 100%;">
+              https://your-domain/go.html?id=...
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 3. QR LIST TAB ================= -->
+      <section id="list" class="tab-content">
+        <header>
+          <h2>Manage Created QRs</h2>
+        </header>
+
+        <div class="filter-bar">
+          <div class="input-wrapper with-icon-left search-box">
+            <span class="material-symbols-rounded input-icon-left">search</span>
+            <input type="text" id="search-input" placeholder="Search QR names, IDs, destination links..." oninput="renderQRList()">
+          </div>
+        </div>
+
+        <div class="qr-grid-list" id="qr-list-grid">
+          <!-- Dynamically populated -->
+          <div class="loader-container" style="grid-column: 1 / -1;"><div class="spinner"></div></div>
+        </div>
+      </section>
+
+      <!-- ================= 4. SETTINGS TAB ================= -->
+      <section id="settings" class="tab-content">
+        <header>
+          <h2>System Management Settings</h2>
+        </header>
+
+        <div class="settings-grid">
+          <div class="card-panel">
+            <div class="panel-title">
+              <span class="material-symbols-rounded" style="color:var(--accent);">backup</span>
+              Database Backup & Recovery
+            </div>
+            
+            <div class="setting-action-row">
+              <div class="setting-meta">
+                <span class="setting-title">Export Database</span>
+                <span class="setting-desc">Download current QR records database locally as a JSON backup.</span>
+              </div>
+              <button class="btn btn-secondary" onclick="exportDatabaseBackup()">
+                <span class="material-symbols-rounded">download</span>Backup JSON
+              </button>
+            </div>
+
+            <div class="setting-action-row">
+              <div class="setting-meta">
+                <span class="setting-title">Import / Restore Backup</span>
+                <span class="setting-desc">Upload a database JSON to merge/overwrite your current links list.</span>
+              </div>
+              <div>
+                <input type="file" id="import-file-input" style="display:none;" accept=".json" onchange="handleImportDatabase(event)">
+                <button class="btn btn-secondary" onclick="document.getElementById('import-file-input').click()">
+                  <span class="material-symbols-rounded">upload</span>Restore JSON
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-panel danger-zone">
+            <div class="panel-title">
+              <span class="material-symbols-rounded">warning</span>
+              Danger Zone
+            </div>
+            
+            <div class="setting-action-row">
+              <div class="setting-meta">
+                <span class="setting-title">Delete All Records</span>
+                <span class="setting-desc">Permanently wipe all dynamic QR configurations from Firebase database. This is irreversible.</span>
+              </div>
+              <button class="btn btn-danger" onclick="triggerDeleteAllDB()">
+                <span class="material-symbols-rounded">delete_forever</span>Reset Database
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ================= CUSTOM MODALS ================= -->
+  
+  <!-- QR Details Action Modal -->
+  <div class="modal-overlay" id="qr-action-modal">
+    <div class="modal-box">
+      <span class="material-symbols-rounded modal-close" onclick="closeModal('qr-action-modal')">close</span>
+      <div class="modal-title">
+        <span class="material-symbols-rounded" style="color: var(--accent);">qr_code_2</span>
+        QR Export Options
+      </div>
+      <div class="modal-body" style="align-items: center; text-align: center;">
+        <h3 id="modal-qr-title" style="margin-bottom: 4px; font-weight:700;">QR Name</h3>
+        <p id="modal-qr-id" style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px;">ID: text_id</p>
+
+        <div class="qr-container-box" style="margin-bottom: 20px;" id="modal-qr-container">
+          <canvas id="modal-export-canvas"></canvas>
+        </div>
+
+        <p id="modal-qr-target" style="font-size: 13px; color: var(--text-secondary); word-break: break-all; margin-bottom: 12px; background: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: 8px; width: 100%;">
+          Target: ...
+        </p>
+
+        <div style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
+          <button class="btn btn-secondary" onclick="copyModalRedirectLink()" style="justify-content: flex-start;">
+            <span class="material-symbols-rounded" style="color:var(--accent);">content_copy</span>Copy Redirect Link
+          </button>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%;">
+            <button class="btn btn-secondary" onclick="downloadPNG()">
+              <span class="material-symbols-rounded" style="color:var(--success);">image</span>PNG
+            </button>
+            <button class="btn btn-secondary" onclick="downloadSVG()">
+              <span class="material-symbols-rounded" style="color:var(--warning);">code</span>SVG
+            </button>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%;">
+            <button class="btn btn-secondary" onclick="downloadPDF()">
+              <span class="material-symbols-rounded" style="color:var(--danger);">picture_as_pdf</span>PDF
+            </button>
+            <button class="btn btn-secondary" onclick="printQR()">
+              <span class="material-symbols-rounded">print</span>Print QR
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit QR Code Modal -->
+  <div class="modal-overlay" id="edit-qr-modal">
+    <div class="modal-box">
+      <span class="material-symbols-rounded modal-close" onclick="closeModal('edit-qr-modal')">close</span>
+      <div class="modal-title">
+        <span class="material-symbols-rounded" style="color: var(--accent);">edit</span>
+        Edit QR Code
+      </div>
+      <div class="modal-body">
+        <form id="edit-qr-form" onsubmit="handleSaveEdit(event)">
+          <input type="hidden" id="edit-qr-id">
+          
+          <div class="form-group">
+            <label for="edit-qr-name">QR Code Label / Name</label>
+            <div class="input-wrapper with-icon-left">
+              <span class="material-symbols-rounded input-icon-left">label</span>
+              <input type="text" id="edit-qr-name" required autocomplete="off">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="edit-qr-url">Destination Redirect URL</label>
+            <div class="input-wrapper with-icon-left">
+              <span class="material-symbols-rounded input-icon-left">link</span>
+              <input type="url" id="edit-qr-url" required autocomplete="off">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="edit-qr-description">Description</label>
+            <div class="input-wrapper with-icon-left">
+              <span class="material-symbols-rounded input-icon-left">description</span>
+              <textarea id="edit-qr-description"></textarea>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="edit-qr-expiry">Expiry Date & Time (Optional)</label>
+            <div class="input-wrapper with-icon-left">
+              <span class="material-symbols-rounded input-icon-left">event_busy</span>
+              <input type="datetime-local" id="edit-qr-expiry">
+            </div>
+          </div>
+
+          <div class="form-group" style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px; background: rgba(0,0,0,0.15); padding: 12px; border-radius: 10px; border: 1px solid var(--card-border);">
+            <div>
+              <span style="font-size:14px; font-weight:700; display:block;">Active / Inactive Status</span>
+              <span style="font-size:11px; color: var(--text-secondary);">Toggle switch to restrict redirection access</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="edit-qr-status">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div style="display: flex; gap: 12px; margin-top: 24px;">
+            <button type="button" class="btn btn-secondary" style="flex:1;" onclick="closeModal('edit-qr-modal')">Cancel</button>
+            <button type="submit" class="btn btn-primary" style="flex:1;">Save Updates</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Confirmation Dialog Modal -->
+  <div class="modal-overlay" id="confirm-modal">
+    <div class="modal-box" style="max-width: 400px;">
+      <div class="modal-title" id="confirm-modal-title">Are you sure?</div>
+      <div class="modal-body">
+        <p id="confirm-modal-message" style="font-size: 14px; color: var(--text-secondary); line-height: 1.6;"></p>
+        <div style="display: flex; gap: 12px; margin-top: 16px;">
+          <button class="btn btn-secondary" style="flex:1;" onclick="closeConfirmModal(false)">Cancel</button>
+          <button class="btn btn-danger" style="flex:1;" id="confirm-modal-ok-btn" onclick="closeConfirmModal(true)">Proceed</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- ================= APPLICATION CODE ================= -->
+  <script>
+    // ================= 1. FIREBASE CONFIG & INITIALIZATION =================
+    // Configured for database URL provided by USER
+    const firebaseConfig = {
+      databaseURL: "https://my-shop-ea9ba-default-rtdb.firebaseio.com/"
+    };
+    
+    // Initialize Firebase Compatibility Library
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    
+    // Local In-Memory state representation
+    let qrcodesLocalData = {};
+    let activeModalQr = null; // Stores QR object actively loaded in Action modal
+    let activeConfirmPromise = null; // Stores resolve callback for custom confirmation modals
+
+    // ================= 2. THEME CONTROLLER =================
+    function initTheme() {
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      updateThemeUI(savedTheme);
+    }
+
+    function toggleTheme() {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      updateThemeUI(newTheme);
+    }
+
+    function updateThemeUI(theme) {
+      const btnIcon = document.getElementById('theme-btn-icon');
+      const btnText = document.getElementById('theme-btn-text');
+      const mobileIcon = document.getElementById('theme-mobile-icon');
+      
+      if (theme === 'light') {
+        if(btnIcon) btnIcon.textContent = 'dark_mode';
+        if(btnText) btnText.textContent = 'Dark Mode';
+        if(mobileIcon) mobileIcon.textContent = 'dark_mode';
+      } else {
+        if(btnIcon) btnIcon.textContent = 'light_mode';
+        if(btnText) btnText.textContent = 'Light Mode';
+        if(mobileIcon) mobileIcon.textContent = 'light_mode';
+      }
+    }
+
+    // ================= 3. UTILITY FUNCS & TOAST SYSTEM =================
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      
+      let icon = 'check_circle';
+      if (type === 'danger') icon = 'error';
+      if (type === 'warning') icon = 'warning';
+      
+      toast.innerHTML = `
+        <span class="material-symbols-rounded toast-icon">${icon}</span>
+        <div class="toast-message">${message}</div>
+      `;
+      
+      container.appendChild(toast);
+      
+      // Auto fadeout after 3.5s
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-15px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // Custom non-blocking visual confirmation prompts
+    function requestConfirm(title, message, okText = 'Confirm', isDanger = false) {
+      return new Promise((resolve) => {
+        document.getElementById('confirm-modal-title').textContent = title;
+        document.getElementById('confirm-modal-message').textContent = message;
+        
+        const okBtn = document.getElementById('confirm-modal-ok-btn');
+        okBtn.textContent = okText;
+        if (isDanger) {
+          okBtn.className = 'btn btn-danger';
+        } else {
+          okBtn.className = 'btn btn-primary';
+        }
+        
+        openModal('confirm-modal');
+        activeConfirmPromise = resolve;
+      });
+    }
+
+    function closeConfirmModal(result) {
+      closeModal('confirm-modal');
+      if (activeConfirmPromise) {
+        activeConfirmPromise(result);
+        activeConfirmPromise = null;
+      }
+    }
+
+    function generateUniqueId() {
+      // Clean letters excluding O, 0, I, 1 to prevent reading confusion
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+      let result = '';
+      for (let i = 0; i < 6; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return result;
+    }
+
+    function isValidUrl(str) {
+      try {
+        const url = new URL(str);
+        return url.protocol === "http:" || url.protocol === "https:";
+      } catch (_) {
+        return false;  
+      }
+    }
+
+    function getRedirectLink(qrId) {
+      // Normalizes domain dynamically based on current page address context
+      const loc = window.location;
+      const path = loc.pathname.substring(0, loc.pathname.lastIndexOf('/') + 1);
+      return `${loc.protocol}//${loc.host}${path}go.html?id=${qrId}`;
+    }
+
+    function getAlternativeLink(qrId) {
+      // Backing compatibility link using index.html parameter directly
+      const loc = window.location;
+      const path = loc.pathname;
+      return `${loc.protocol}//${loc.host}${path}?id=${qrId}`;
+    }
+
+    // ================= 4. ROUTER SYSTEM (REDIRECT OR ADMIN) =================
+    function checkRouter() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const qrId = urlParams.get('id') || urlParams.get('go');
+      
+      if (qrId) {
+        // Toggle view rendering immediately to Redirect overlay
+        document.getElementById('admin-panel').style.display = 'none';
+        document.getElementById('redirect-screen').style.display = 'flex';
+        executeRedirectionFlow(qrId);
+      } else {
+        // Init Admin Panel UI flow
+        document.getElementById('redirect-screen').style.display = 'none';
+        document.getElementById('admin-panel').style.display = 'flex';
+        initTheme();
+        initAdminNavigation();
+        regenerateCustomId();
+        startRealtimeListeners();
+      }
+    }
+
+    function executeRedirectionFlow(qrId) {
+      const fillBar = document.getElementById('redirect-progress');
+      fillBar.style.width = '20%';
+      
+      // Perform lookup in Firebase
+      db.ref('qrcodes/' + qrId).once('value')
+        .then((snapshot) => {
+          fillBar.style.width = '60%';
+          if (!snapshot.exists()) {
+            throw new Error('Link Not Found: The requested QR reference does not exist on this server.');
+          }
+          
+          const qrData = snapshot.val();
+          
+          // Verify Active State
+          if (qrData.active === false) {
+            throw new Error('QR Link Suspended: This redirection link has been deactivated by the system administrator.');
+          }
+          
+          // Verify Expiry
+          if (qrData.expiry) {
+            const expiryTime = new Date(qrData.expiry).getTime();
+            const now = Date.now();
+            if (now > expiryTime) {
+              throw new Error('QR Link Expired: The expiry time limit set for this redirection has passed.');
+            }
+          }
+
+          // Verify URL safety
+          if (!isValidUrl(qrData.url)) {
+            throw new Error('Redirect Failed: The destination URL linked is invalid or structurally broken.');
+          }
+
+          fillBar.style.width = '90%';
+          
+          // Increment database values atomically
+          db.ref('qrcodes/' + qrId).transaction((currentVal) => {
+            if (currentVal) {
+              currentVal.scanCount = (currentVal.scanCount || 0) + 1;
+              currentVal.lastScan = Date.now();
+            }
+            return currentVal;
+          }, (error, committed) => {
+            fillBar.style.width = '100%';
+            // Redirect to site location
+            setTimeout(() => {
+              window.location.replace(qrData.url);
+            }, 250);
+          });
+        })
+        .catch((error) => {
+          // Display error card to redirected clients
+          document.getElementById('redirect-loading-state').style.display = 'none';
+          document.getElementById('redirect-error-state').style.display = 'block';
+          
+          const titleEl = document.getElementById('redirect-error-title');
+          const descEl = document.getElementById('redirect-error-desc');
+          
+          if (error.message.includes('Link Not Found')) {
+            titleEl.textContent = 'Link Not Found';
+            descEl.textContent = 'The QR Code ID is invalid or has been permanently removed.';
+          } else if (error.message.includes('Suspended')) {
+            titleEl.textContent = 'Inactive QR Link';
+            descEl.textContent = 'This QR link is currently deactivated. Please contact the administrator.';
+          } else if (error.message.includes('Expired')) {
+            titleEl.textContent = 'Redirection Expired';
+            descEl.textContent = 'Access timeframe expired. This link is no longer valid.';
+          } else {
+            titleEl.textContent = 'Security Restriction';
+            descEl.textContent = error.message || 'Unable to complete network redirect operations safely.';
+          }
+        });
+    }
+
+    // ================= 5. ADMIN NAV & TAB CONTROLLER =================
+    function initAdminNavigation() {
+      const tabs = document.querySelectorAll('[data-tab]');
+      
+      tabs.forEach(tab => {
+        tab.addEventListener('click', (e) => {
+          e.preventDefault();
+          const targetTabId = tab.getAttribute('data-tab');
+          
+          // Update navigation styles
+          document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+          document.querySelectorAll('.mobile-nav-item').forEach(item => item.classList.remove('active'));
+          
+          document.querySelectorAll(`[data-tab="${targetTabId}"]`).forEach(item => {
+            item.classList.add('active');
+          });
+          
+          // Show contents
+          document.querySelectorAll('.tab-content').forEach(section => {
+            section.classList.remove('active');
+          });
+          document.getElementById(targetTabId).classList.add('active');
+        });
+      });
+    }
+
+    function openModal(modalId) {
+      const modal = document.getElementById(modalId);
+      modal.style.display = 'flex';
+      // Tiny delay to ensure browser register transition animation trigger
+      setTimeout(() => modal.classList.add('show'), 10);
+    }
+
+    function closeModal(modalId) {
+      const modal = document.getElementById(modalId);
+      modal.classList.remove('show');
+      setTimeout(() => modal.style.display = 'none', 300);
+    }
+
+    // ================= 6. FIREBASE REALTIME LISTENERS & STATS =================
+    function startRealtimeListeners() {
+      // Connect to global ref path
+      db.ref('qrcodes').on('value', (snapshot) => {
+        const val = snapshot.val();
+        qrcodesLocalData = val || {};
+        
+        updateDashboardCounters();
+        renderTopQRList();
+        renderQRList();
+      }, (error) => {
+        showToast('Database Sync Error: ' + error.message, 'danger');
+      });
+    }
+
+    function updateDashboardCounters() {
+      const items = Object.values(qrcodesLocalData);
+      
+      const totalQrs = items.length;
+      let totalScans = 0;
+      let activeQrs = 0;
+      let inactiveQrs = 0;
+      
+      items.forEach(qr => {
+        totalScans += (qr.scanCount || 0);
+        if (qr.active !== false) {
+          activeQrs++;
+        } else {
+          inactiveQrs++;
+        }
+      });
+      
+      document.getElementById('stat-total-qrs').textContent = totalQrs;
+      document.getElementById('stat-total-scans').textContent = totalScans;
+      document.getElementById('stat-active-qrs').textContent = activeQrs;
+      document.getElementById('stat-inactive-qrs').textContent = inactiveQrs;
+    }
+
+    // Sort active dynamic list inside dashboard
+    function renderTopQRList() {
+      const container = document.getElementById('dashboard-top-qrs-list');
+      const items = Object.entries(qrcodesLocalData);
+      
+      if (items.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size:14px;">No QR Codes created yet. Go to 'Create QR' tab to start!</div>`;
+        return;
+      }
+      
+      // Sort in descending order based on scanCount
+      items.sort((a, b) => (b[1].scanCount || 0) - (a[1].scanCount || 0));
+      
+      // Take top 5 entries
+      const topItems = items.slice(0, 5);
+      
+      let html = '';
+      topItems.forEach(([id, data]) => {
+        html += `
+          <div class="top-qr-item">
+            <div class="top-qr-info">
+              <span class="top-qr-name">${escapeHtml(data.name)}</span>
+              <span class="top-qr-url" title="${escapeHtml(data.url)}">${escapeHtml(data.url)}</span>
+            </div>
+            <div class="top-qr-stats">
+              <span class="material-symbols-rounded" style="font-size:16px;">trending_up</span>
+              ${data.scanCount || 0} scans
+            </div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    // ================= 7. QR CODE CREATION FLOW =================
+    function regenerateCustomId() {
+      const generatedId = generateUniqueId();
+      document.getElementById('create-qr-id').value = generatedId;
+      updateLivePreview();
+    }
+
+    function updateLivePreview() {
+      const targetUrl = document.getElementById('create-qr-url').value;
+      const currentId = document.getElementById('create-qr-id').value || '...';
+      const previewText = document.getElementById('live-preview-text');
+      const previewCanvas = document.getElementById('live-preview-canvas');
+      
+      const generatedLink = getRedirectLink(currentId);
+      previewText.textContent = generatedLink;
+      
+      // Draw temporary QR Preview Canvas
+      const contentString = isValidUrl(targetUrl) ? generatedLink : "Enter Destination URL to Preview";
+      
+      // Generate Canvas
+      QRCode.toCanvas(previewCanvas, contentString, {
+        width: 180,
+        margin: 2,
+        color: {
+          dark: "#0b071e",
+          light: "#ffffff"
+        }
+      }, function (err) {
+        if (err) console.error(err);
+      });
+    }
+
+    function handleCreateQR(event) {
+      event.preventDefault();
+      
+      const name = document.getElementById('create-qr-name').value.trim();
+      const qrId = document.getElementById('create-qr-id').value.trim().replace(/[^a-zA-Z0-9-_]/g, '');
+      const url = document.getElementById('create-qr-url').value.trim();
+      const description = document.getElementById('create-qr-description').value.trim();
+      const expiry = document.getElementById('create-qr-expiry').value;
+      
+      if (!qrId) {
+        showToast('Please check the ID code characters.', 'danger');
+        return;
+      }
+      
+      if (!isValidUrl(url)) {
+        showToast('Invalid redirect URL entered. Include http:// or https://', 'danger');
+        return;
+      }
+
+      // Check duplicate ID locally
+      if (qrcodesLocalData[qrId]) {
+        showToast('This QR Unique ID already exists. Use a different unique ID.', 'danger');
+        return;
+      }
+
+      const newQR = {
+        name: name,
+        url: url,
+        description: description,
+        active: true,
+        scanCount: 0,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        lastScan: null
+      };
+
+      if (expiry) {
+        newQR.expiry = expiry;
+      }
+
+      // Write to Firebase Database
+      db.ref('qrcodes/' + qrId).set(newQR)
+        .then(() => {
+          showToast('Dynamic QR created successfully!');
+          document.getElementById('create-qr-form').reset();
+          regenerateCustomId();
+          
+          // Switch automatically to list tab
+          document.querySelector('[data-tab="list"]').click();
+        })
+        .catch((error) => {
+          showToast('Failed to save link: ' + error.message, 'danger');
+        });
+    }
+
+    // ================= 8. MANAGED QR LIST & ACTION BINDINGS =================
+    function renderQRList() {
+      const container = document.getElementById('qr-list-grid');
+      const searchQuery = document.getElementById('search-input').value.toLowerCase().trim();
+      
+      const entries = Object.entries(qrcodesLocalData);
+      
+      if (entries.length === 0) {
+        container.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding: 40px; color: var(--text-muted); font-size:15px;">No dynamic links matched your active layout context.</div>`;
+        return;
+      }
+      
+      // Filter list entries
+      const filteredEntries = entries.filter(([id, data]) => {
+        return id.toLowerCase().includes(searchQuery) ||
+               (data.name && data.name.toLowerCase().includes(searchQuery)) ||
+               (data.url && data.url.toLowerCase().includes(searchQuery)) ||
+               (data.description && data.description.toLowerCase().includes(searchQuery));
+      });
+      
+      if (filteredEntries.length === 0) {
+        container.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding: 40px; color: var(--text-muted); font-size:15px;">No search matches found. Try another search.</div>`;
+        return;
+      }
+      
+      // Sort latest first
+      filteredEntries.sort((a, b) => (b[1].createdAt || 0) - (a[1].createdAt || 0));
+
+      let html = '';
+      filteredEntries.forEach(([id, data]) => {
+        const redirectUrl = getRedirectLink(id);
+        const isActive = data.active !== false;
+        
+        // Date strings
+        const createdDate = data.createdAt ? new Date(data.createdAt).toLocaleDateString() : 'N/A';
+        const lastScanTime = data.lastScan ? new Date(data.lastScan).toLocaleString() : 'Never';
+        const expiredStatusText = data.expiry ? (new Date(data.expiry).getTime() < Date.now() ? ' (Expired)' : '') : '';
+        
+        html += `
+          <div class="qr-card">
+            <div class="qr-card-header">
+              <div class="qr-card-title" title="${escapeHtml(data.name)}">${escapeHtml(data.name)}</div>
+              <span class="status-badge ${isActive ? 'active' : 'inactive'}">
+                <span class="material-symbols-rounded" style="font-size:14px;">
+                  ${isActive ? 'check_circle' : 'remove_circle'}
+                </span>
+                ${isActive ? 'Active' : 'Disabled'}${expiredStatusText}
+              </span>
+            </div>
+            
+            <div class="qr-card-body">
+              <div class="info-row">
+                <span class="info-label">Unique ID:</span>
+                <span class="info-value font-mono" style="font-weight:700;">${id}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Current Target URL:</span>
+                <span class="info-value" title="${escapeHtml(data.url)}">
+                  <a class="info-value-link" href="${escapeHtml(data.url)}" target="_blank">${escapeHtml(data.url)}</a>
+                </span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Scan Count:</span>
+                <span class="info-value" style="font-weight:800; font-size:15px; color:var(--accent);">${data.scanCount || 0}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Created Date:</span>
+                <span class="info-value">${createdDate}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Last Scanned:</span>
+                <span class="info-value">${lastScanTime}</span>
+              </div>
+              ${data.expiry ? `
+              <div class="info-row">
+                <span class="info-label">Expiry Boundary:</span>
+                <span class="info-value text-danger" style="font-weight: 600;">${new Date(data.expiry).toLocaleString()}</span>
+              </div>` : ''}
+            </div>
+
+            <div class="qr-card-actions">
+              <button class="icon-btn" onclick="openQrActionModal('${id}')">
+                <span class="material-symbols-rounded" style="color:var(--accent);">qr_code_2</span>Get Code
+              </button>
+              <button class="icon-btn" onclick="openEditModal('${id}')">
+                <span class="material-symbols-rounded">edit</span>Edit Link
+              </button>
+              <button class="icon-btn" onclick="copyCardRedirectLink('${id}')">
+                <span class="material-symbols-rounded">content_copy</span>Copy Link
+              </button>
+              <button class="icon-btn" onclick="triggerDeleteQr('${id}')" style="color:var(--danger);">
+                <span class="material-symbols-rounded">delete</span>Delete
+              </button>
+            </div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    function copyCardRedirectLink(id) {
+      const redirectLink = getRedirectLink(id);
+      navigator.clipboard.writeText(redirectLink)
+        .then(() => showToast('Redirect link copied to clipboard!'))
+        .catch(err => {
+          // Fallback manually if clipboard API restricted by permissions
+          const altLink = getAlternativeLink(id);
+          navigator.clipboard.writeText(altLink);
+          showToast('Redirect link copied (fallback method)!');
+        });
+    }
+
+    // ================= 9. QR EXPORT MODAL OPTIONS =================
+    function openQrActionModal(id) {
+      const data = qrcodesLocalData[id];
+      if (!data) return;
+
+      activeModalQr = { id: id, ...data };
+      
+      document.getElementById('modal-qr-title').textContent = data.name;
+      document.getElementById('modal-qr-id').textContent = `Unique ID Reference: ${id}`;
+      document.getElementById('modal-qr-target').textContent = `Target Redirect URL: ${data.url}`;
+      
+      const modalCanvas = document.getElementById('modal-export-canvas');
+      const redirectLink = getRedirectLink(id);
+      
+      QRCode.toCanvas(modalCanvas, redirectLink, {
+        width: 250,
+        margin: 2,
+        color: {
+          dark: "#0b071e",
+          light: "#ffffff"
+        }
+      }, function (err) {
+        if (err) console.error(err);
+      });
+
+      openModal('qr-action-modal');
+    }
+
+    function copyModalRedirectLink() {
+      if (!activeModalQr) return;
+      copyCardRedirectLink(activeModalQr.id);
+    }
+
+    function downloadPNG() {
+      if (!activeModalQr) return;
+      
+      const canvas = document.createElement('canvas');
+      const redirectLink = getRedirectLink(activeModalQr.id);
+      
+      // High resolution scale for printing / clean display (1000x1000px)
+      QRCode.toCanvas(canvas, redirectLink, {
+        width: 1000,
+        margin: 2,
+        color: {
+          dark: "#000000",
+          light: "#ffffff"
+        }
+      }, function (err) {
+        if (err) {
+          showToast('Failed to render high-res Canvas: ' + err.message, 'danger');
+          return;
+        }
+        
+        const imgUrl = canvas.toDataURL('image/png');
+        const trigger = document.createElement('a');
+        trigger.href = imgUrl;
+        trigger.download = `${activeModalQr.name.replace(/[^a-zA-Z0-9]/g, '_')}_QR.png`;
+        document.body.appendChild(trigger);
+        trigger.click();
+        document.body.removeChild(trigger);
+        showToast('PNG download triggered!');
+      });
+    }
+
+    function downloadSVG() {
+      if (!activeModalQr) return;
+      
+      const redirectLink = getRedirectLink(activeModalQr.id);
+      
+      QRCode.toString(redirectLink, {
+        type: 'svg',
+        margin: 2,
+        color: {
+          dark: "#000000",
+          light: "#ffffff"
+        }
+      }, function (err, svgString) {
+        if (err) {
+          showToast('Failed to output SVG markup: ' + err.message, 'danger');
+          return;
+        }
+        
+        const blob = new Blob([svgString], { type: 'image/svg+xml' });
+        const url = URL.createObjectURL(blob);
+        const trigger = document.createElement('a');
+        trigger.href = url;
+        trigger.download = `${activeModalQr.name.replace(/[^a-zA-Z0-9]/g, '_')}_QR.svg`;
+        document.body.appendChild(trigger);
+        trigger.click();
+        document.body.removeChild(trigger);
+        URL.revokeObjectURL(url);
+        showToast('SVG download triggered!');
+      });
+    }
+
+    function downloadPDF() {
+      if (!activeModalQr) return;
+      
+      const redirectLink = getRedirectLink(activeModalQr.id);
+      const canvas = document.createElement('canvas');
+      
+      QRCode.toCanvas(canvas, redirectLink, {
+        width: 400,
+        margin: 2,
+        color: {
+          dark: "#000000",
+          light: "#ffffff"
+        }
+      }, function (error) {
+        if (error) {
+          showToast('PDF Render failed: ' + error.message, 'danger');
+          return;
+        }
+        
+        const imgData = canvas.toDataURL('image/png');
+        const { jsPDF } = window.jspdf;
+        
+        // PDF Portrait Mode Layout
+        const pdf = new jsPDF();
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(18);
+        pdf.text('Dynamic Redirect QR Code', 105, 30, { align: 'center' });
+        
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(12);
+        pdf.text(`Label: ${activeModalQr.name}`, 105, 42, { align: 'center' });
+        pdf.text(`QR ID: ${activeModalQr.id}`, 105, 50, { align: 'center' });
+        pdf.text(`Target URL: ${activeModalQr.url}`, 105, 58, { align: 'center' });
+        
+        // Add centered 100x100mm image
+        pdf.addImage(imgData, 'PNG', 55, 70, 100, 100);
+        
+        pdf.text(`Scan link: ${redirectLink}`, 105, 182, { align: 'center' });
+        
+        pdf.setFontSize(9);
+        pdf.setTextColor(140, 140, 140);
+        pdf.text('System Backup Dynamic Redirects Document', 105, 275, { align: 'center' });
+        
+        pdf.save(`${activeModalQr.name.replace(/[^a-zA-Z0-9]/g, '_')}_QR_document.pdf`);
+        showToast('PDF document saved!');
+      });
+    }
+
+    function printQR() {
+      if (!activeModalQr) return;
+      
+      const redirectLink = getRedirectLink(activeModalQr.id);
+      const canvas = document.createElement('canvas');
+      
+      QRCode.toCanvas(canvas, redirectLink, {
+        width: 400,
+        margin: 2,
+        color: {
+          dark: "#000000",
+          light: "#ffffff"
+        }
+      }, function (error) {
+        if (error) {
+          showToast('Print loading failed: ' + error.message, 'danger');
+          return;
+        }
+        
+        const imgData = canvas.toDataURL('image/png');
+        const printWindow = window.open('', '_blank');
+        
+        printWindow.document.write(`
+          <html>
+            <head>
+              <title>Print QR - ${escapeHtml(activeModalQr.name)}</title>
+              <style>
+                body {
+                  display: flex;
+                  flex-direction: column;
+                  align-items: center;
+                  justify-content: center;
+                  height: 90vh;
+                  font-family: 'Helvetica Neue', Arial, sans-serif;
+                  margin: 0;
+                  padding: 20px;
+                  color: #111;
+                }
+                .container {
+                  text-align: center;
+                  border: 2px solid #eaeaea;
+                  padding: 40px;
+                  border-radius: 16px;
+                  max-width: 450px;
+                }
+                img {
+                  width: 280px;
+                  height: 280px;
+                  margin: 20px 0;
+                }
+                h2 { margin: 0 0 10px 0; font-size: 24px; font-weight:700; }
+                p { margin: 4px 0; color: #555; font-size: 14px; word-break: break-all; }
+                .footer { font-size: 11px; color: #999; margin-top: 30px; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <h2>${escapeHtml(activeModalQr.name)}</h2>
+                <p><b>QR ID:</b> ${escapeHtml(activeModalQr.id)}</p>
+                <img src="${imgData}" />
+                <p><b>Scan Route:</b> ${redirectLink}</p>
+                <p class="footer">Dynamic QR Code Management System</p>
+              </div>
+              <script>
+                window.onload = function() {
+                  window.print();
+                  setTimeout(() => window.close(), 500);
+                }
+              <\/script>
+            </body>
+          </html>
+        `);
+        printWindow.document.close();
+      });
+    }
+
+    // ================= 10. EDIT QR CODE BINDINGS =================
+    function openEditModal(id) {
+      const data = qrcodesLocalData[id];
+      if (!data) return;
+
+      document.getElementById('edit-qr-id').value = id;
+      document.getElementById('edit-qr-name').value = data.name;
+      document.getElementById('edit-qr-url').value = data.url;
+      document.getElementById('edit-qr-description').value = data.description || '';
+      document.getElementById('edit-qr-expiry').value = data.expiry || '';
+      document.getElementById('edit-qr-status').checked = data.active !== false;
+
+      openModal('edit-qr-modal');
+    }
+
+    function handleSaveEdit(event) {
+      event.preventDefault();
+      
+      const id = document.getElementById('edit-qr-id').value;
+      const name = document.getElementById('edit-qr-name').value.trim();
+      const url = document.getElementById('edit-qr-url').value.trim();
+      const description = document.getElementById('edit-qr-description').value.trim();
+      const expiry = document.getElementById('edit-qr-expiry').value;
+      const active = document.getElementById('edit-qr-status').checked;
+
+      if (!isValidUrl(url)) {
+        showToast('Invalid redirect destination URL.', 'danger');
+        return;
+      }
+
+      const updates = {
+        name: name,
+        url: url,
+        description: description,
+        active: active,
+        updatedAt: Date.now()
+      };
+
+      if (expiry) {
+        updates.expiry = expiry;
+      } else {
+        // Clear value inside Firebase if empty input
+        updates.expiry = null;
+      }
+
+      db.ref('qrcodes/' + id).update(updates)
+        .then(() => {
+          showToast('QR configurations updated successfully!');
+          closeModal('edit-qr-modal');
+        })
+        .catch(err => {
+          showToast('Failed to edit configuration: ' + err.message, 'danger');
+        });
+    }
+
+    function triggerDeleteQr(id) {
+      const data = qrcodesLocalData[id];
+      if (!data) return;
+
+      requestConfirm(
+        'Delete QR Link?', 
+        `Are you sure you want to permanently delete "${data.name}" (ID: ${id})? Scans will stop redirecting immediately.`,
+        'Delete Link',
+        true
+      ).then((confirmed) => {
+        if (confirmed) {
+          db.ref('qrcodes/' + id).remove()
+            .then(() => showToast('Link reference removed.'))
+            .catch((err) => showToast('Removal failed: ' + err.message, 'danger'));
+        }
+      });
+    }
+
+    // ================= 11. SYSTEM SETTINGS CONTROL FLOW =================
+    function exportDatabaseBackup() {
+      try {
+        const jsonString = JSON.stringify(qrcodesLocalData, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        // Auto download trigger file
+        const a = document.createElement('a');
+        const timestamp = new Date().toISOString().slice(0, 10);
+        a.href = url;
+        a.download = `qrcodes_database_backup_${timestamp}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        showToast('Database JSON backup downloaded!');
+      } catch (err) {
+        showToast('Export failed: ' + err.message, 'danger');
+      }
+    }
+
+    function handleImportDatabase(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsedData = JSON.parse(e.target.result);
+          
+          if (typeof parsedData !== 'object' || parsedData === null) {
+            throw new Error('Root element is not a valid configuration object.');
+          }
+
+          // Simple schema validation check
+          const keys = Object.keys(parsedData);
+          for (let id of keys) {
+            const node = parsedData[id];
+            if (!node.name || !node.url) {
+              throw new Error(`Record "${id}" does not fit standard QR configurations template.`);
+            }
+          }
+
+          requestConfirm(
+            'Restore Database?',
+            `This import will merge ${keys.length} items. Keep existing codes and write additions. Proceed?`,
+            'Merge Database'
+          ).then((confirmed) => {
+            if (confirmed) {
+              db.ref('qrcodes').update(parsedData)
+                .then(() => {
+                  showToast('Database merged successfully!');
+                  event.target.value = ''; // Reset file input
+                })
+                .catch(err => showToast('Import failed writing to database: ' + err.message, 'danger'));
+            } else {
+              event.target.value = '';
+            }
+          });
+
+        } catch (err) {
+          showToast('Corrupted JSON schema: ' + err.message, 'danger');
+          event.target.value = '';
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function triggerDeleteAllDB() {
+      requestConfirm(
+        'WIPE DATABASE?',
+        'WARNING: This is an destructive developer operation. All existing QR links and metrics will be wiped permanently.',
+        'Wipe All',
+        true
+      ).then(confirmed => {
+        if (confirmed) {
+          db.ref('qrcodes').remove()
+            .then(() => {
+              showToast('Database wiped successfully.', 'warning');
+            })
+            .catch(err => showToast('Clear DB failed: ' + err.message, 'danger'));
+        }
+      });
+    }
+
+    // ================= 12. HELPER ESCAPE HTML =================
+    function escapeHtml(text) {
+      if (!text) return '';
+      const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      };
+      return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+
+    // ================= 13. APP ENTRY POINT =================
+    window.addEventListener('DOMContentLoaded', () => {
+      checkRouter();
+    });
+  </script>
+</body>
+</html>
